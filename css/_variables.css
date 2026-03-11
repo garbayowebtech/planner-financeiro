@@ -1,0 +1,52 @@
+/* ==========================================================================
+   _variables.css
+   Tokens de design: cores, tipografia, espaçamentos, sombras e radii.
+   Também contém o reset universal (*) e as configurações base do <body>.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. CSS Custom Properties (Design Tokens)
+   -------------------------------------------------------------------------- */
+:root {
+    /* --- Cores principais --- */
+    --c-primary: #4F46E5;
+    /* Indigo */
+    --c-primary-dark: #4338CA;
+    --c-primary-light: #EEF2FF;
+    --c-secondary: #0ea5e9;
+    /* Sky */
+
+    /* --- Cores semânticas --- */
+    --c-success: #10B981;
+    --c-danger: #EF4444;
+    --c-warning: #F59E0B;
+
+    /* --- Cores de superfície (light mode padrão) --- */
+    --c-bg: #F8FAFC;
+    --c-bg-card: #FFFFFF;
+
+    /* --- Cores de texto e bordas --- */
+    --c-text-main: #1E293B;
+    --c-text-muted: #64748B;
+    --c-border: #E2E8F0;
+
+    /* --- Layout e tipografia --- */
+    --font-main: 'Inter', sans-serif;
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 24px;
+
+    /* --- Sombras --- */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* --------------------------------------------------------------------------
+   2. Reset Universal
+   -------------------------------------------------------------------------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}

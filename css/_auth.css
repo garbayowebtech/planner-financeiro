@@ -1,0 +1,65 @@
+/* ==========================================================================
+   _auth.css
+   Tela de autenticação: card de login, seleção de usuário,
+   PIN numérico, exclusão de usuário e registro de novo perfil.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Auth View — Container principal
+   -------------------------------------------------------------------------- */
+#auth-view {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--c-primary-light) 0%, var(--c-bg) 100%);
+}
+
+/* --------------------------------------------------------------------------
+   2. Auth Card
+   -------------------------------------------------------------------------- */
+.auth-card {
+    background: var(--c-bg-card);
+    width: 100%;
+    max-width: 420px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 2.5rem;
+    text-align: center;
+}
+
+.auth-header {
+    margin-bottom: 2rem;
+}
+
+.auth-header .auth-logo {
+    font-size: 3rem;
+    color: var(--c-primary);
+    margin-bottom: 1rem;
+}
+
+.auth-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--c-text-main);
+}
+
+.highlight {
+    color: var(--c-primary);
+}
+
+.auth-header p {
+    color: var(--c-text-muted);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   3. Mensagem de Erro Geral
+   -------------------------------------------------------------------------- */
+.error-msg {
+    color: var(--c-danger);
+    font-size: 0.85rem;
+    min-height: 1.2rem;
+    margin-top: 0.5rem;
+    font-weight: 500;
+}

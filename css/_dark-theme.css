@@ -1,0 +1,94 @@
+/* ==========================================================================
+   _dark-theme.css
+   Sobrescritas de variáveis e estilos específicos para o tema escuro.
+   Ativado pela classe `.dark-theme` no elemento <body>.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Redefinição de Variáveis no Tema Escuro
+   -------------------------------------------------------------------------- */
+body.dark-theme {
+    --c-primary-light: #1E1B4B;
+    --c-bg: #0F172A;
+    --c-bg-card: #1E293B;
+    --c-text-main: #F1F5F9;
+    --c-text-muted: #94A3B8;
+    --c-border: #334155;
+    color-scheme: dark;
+}
+
+/* --------------------------------------------------------------------------
+   2. Ajustes específicos de componentes no tema escuro
+   -------------------------------------------------------------------------- */
+
+/* Overlay do modal com opacidade maior (fundo já é escuro) */
+body.dark-theme .modal-overlay {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+/* Inputs, selects e textareas com fundo escuro */
+body.dark-theme input,
+body.dark-theme select,
+body.dark-theme textarea {
+    background-color: #0F172A;
+    color: #F1F5F9;
+    border-color: #334155;
+}
+
+/* Select customizado no tema escuro */
+body.dark-theme .form-select {
+    background-color: #0F172A;
+}
+
+/* --------------------------------------------------------------------------
+   3. Ajustes no Popup de Alerta de Metas
+   -------------------------------------------------------------------------- */
+
+/* Card do alerta herda o bg-card do tema escuro via variável */
+.dark-theme .goal-alert-popup {
+    background: var(--c-bg-card);
+}
+
+/* Itens no estado "atingida" ficam com cor mais brilhante no escuro */
+.dark-theme .goal-alert-list li.reached {
+    color: var(--c-warning);
+}
+
+/* --------------------------------------------------------------------------
+   4. Footer no Tema Escuro
+   -------------------------------------------------------------------------- */
+body.dark-theme .app-footer {
+    background-color: var(--c-bg-card);
+    border-top-color: var(--c-border);
+    color: var(--c-text-main);
+}
+
+body.dark-theme .footer-brand h4 {
+    color: var(--c-text-main);
+}
+
+body.dark-theme .footer-info p {
+    color: var(--c-text-muted);
+}
+
+body.dark-theme .footer-info a {
+    color: var(--c-primary);
+    text-decoration: none;
+}
+
+body.dark-theme .footer-social a {
+    background-color: var(--c-bg);
+    color: var(--c-text-main);
+    border-color: var(--c-border);
+}
+
+body.dark-theme .footer-social a:hover {
+    background-color: var(--c-primary);
+    color: white;
+    border-color: var(--c-primary);
+}
+
+body.dark-theme .footer-bottom {
+    border-top-color: var(--c-border);
+    color: var(--c-text-muted);
+}

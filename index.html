@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planner Financeiro - Premium</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Supabase JS v2 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+    <!-- Login / Auth View -->
+    <div id="auth-view" class="view-container active">
+        <div class="auth-card">
+            <div class="auth-header">
+                <i class="fa-solid fa-wallet auth-logo"></i>
+                <h1>Planner <span class="highlight">Financeiro</span></h1>
+                <p>Bem-vindo(a). Entre com sua conta para continuar.</p>
+            </div>
+
+            <!-- Login Section -->
+            <div id="login-section">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-email">E-mail</label>
+                        <input type="email" id="login-email" required placeholder="seuemail@exemplo.com"
+                            autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Senha</label>
+                        <input type="password" id="login-password" required placeholder="••••••"
+                            autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;margin-top:.5rem">
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i> Entrar
+                    </button>
+                    <p id="login-error-msg" class="error-msg"></p>
+                </form>
+                <div class="auth-actions" style="flex-direction:column;gap:.5rem;margin-top:1rem">
+                    <button id="btn-show-register" class="btn btn-outline">
+                        <i class="fa-solid fa-user-plus"></i> Criar Nova Conta
+                    </button>
+                    <button id="btn-forgot-password" class="btn btn-text"
+                        style="font-size:.85rem;color:var(--c-text-muted)">
+                        Esqueci minha senha
+                    </button>
+                </div>
+            </div>
+
+            <!-- Register Section (Hidden by default) -->
+            <div id="register-section" class="register-container hidden">
+                <h3>Criar Novo Perfil</h3>
+                <p class="subtitle">Preencha os dados para criar sua conta.</p>
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="reg-name">Seu Nome</label>
+                        <input type="text" id="reg-name" required maxlength="30" placeholder="Ex: João Silva"
+                            autocomplete="name">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-email">E-mail</label>
+                        <input type="email" id="reg-email" required placeholder="seuemail@exemplo.com"
+                            autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password">Senha (mínimo 6 caracteres)</label>
+                        <input type="password" id="reg-password" required minlength="6" placeholder="••••••"
+                            autocomplete="new-password">
+                    </div>
+                    <div class="form-actions"
+                        style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;">
+                        <button type="button" id="btn-reg-cancel" class="btn btn-text">Já tenho conta</button>
+                        <button type="submit" class="btn btn-primary">Registrar</button>
+                    </div>
+                    <p id="reg-error-msg" class="error-msg"></p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App View (Hidden by default) -->
+    <div id="app-view" class="view-container hidden">
+        <!-- Absolute Top Calendar Bar -->
+        <div id="top-calendar-bar" class="top-calendar-bar">
+            <div class="calendar-content">
+                <i class="fa-regular fa-calendar-days"></i>
+                <span id="calendar-date">--/--/----</span>
+                <span class="separator">•</span>
+                <i class="fa-regular fa-clock"></i>
+                <span id="calendar-time">--:--</span>
+            </div>
+        </div>
+
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <i class="fa-solid fa-wallet logo-icon"></i>
+                <h2>Planner</h2>
+            </div>
+            <div class="user-profile">
+                <div class="avatar-wrapper" title="Alterar foto de perfil">
+                    <div class="avatar" id="app-user-avatar">?</div>
+                    <div class="avatar-overlay">
+                        <i class="fa-solid fa-camera"></i>
+                    </div>
+                    <input type="file" id="avatar-upload" accept="image/jpeg, image/png, image/webp"
+                        style="display: none;">
+                </div>
+                <div class="user-info">
+                    <span class="greeting" id="greeting-text">Olá,</span>
+                    <strong id="app-user-name">Usuário</strong>
+                </div>
+            </div>
+            <nav class="main-nav">
+                <a href="#dashboard" class="active"><i class="fa-solid fa-chart-pie"></i> Visão Geral</a>
+                <a href="#credit"><i class="fa-regular fa-credit-card"></i> Cartão de Crédito</a>
+                <a href="#installments"><i class="fa-solid fa-cart-shopping"></i> Compras Parceladas</a>
+                <a href="#debit"><i class="fa-solid fa-building-columns"></i> Débito / Pix</a>
+                <a href="#consolidated-extracts" id="nav-consolidated-extracts"><i
+                        class="fa-solid fa-file-invoice-dollar"></i> Extratos Consolidados</a>
+                <a href="#categories"><i class="fa-solid fa-tags"></i> Categorias</a>
+                <a href="#settings"><i class="fa-solid fa-gear"></i> Configurações</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="btn-logout" class="btn-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    Sair</button>
+            </div>
+        </aside>
+        <!-- Sidebar Overlay for mobile -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <main class="main-content">
+            <header class="top-header" style="justify-content: flex-start; gap: 1rem; position: relative;">
+                <button class="btn-hamburger" id="btn-hamburger" aria-label="Menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <h1 id="page-title">Demonstrativo de Cartões</h1>
+
+                <div id="month-navigation" class="month-nav"
+                    style="display: flex; align-items: center; gap: 1rem; position: absolute; left: 50%; transform: translateX(-50%); background: var(--c-bg-card); padding: 0.4rem 1rem; border-radius: 99px; box-shadow: var(--shadow-sm); border: 1px solid var(--c-border); z-index: 5;">
+                    <button id="btn-prev-month" class="btn-icon" title="Mês Anterior" style="font-size: 1.2rem;"><i
+                            class="fa-solid fa-chevron-left"></i></button>
+                    <span id="label-current-month"
+                        style="font-weight: 700; font-size: 1.2rem; min-width: 150px; text-align: center; color: var(--c-primary);">Janeiro
+                        2026</span>
+                    <button id="btn-next-month" class="btn-icon" title="Próximo Mês" style="font-size: 1.2rem;"><i
+                            class="fa-solid fa-chevron-right"></i></button>
+                </div>
+
+                <button id="btn-header-darkmode" class="btn-icon" style="margin-left: auto;"
+                    title="Alternar Tema Escuro">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </header>
+
+            <div class="content-scroll">
+                <!-- Dual Tables Area -->
+                <div id="dashboard-grid" class="dashboard-grid">
+
+                    <!-- Top row: Goals and Overall Pie Chart -->
+                    <!-- Category Goals Chart Section -->
+                    <section id="section-goals" class="card-section" style="grid-column: 1 / -1;">
+                        <div class="section-header">
+                            <div class="header-title">
+                                <i class="fa-solid fa-bullseye" style="color: var(--c-warning)"></i>
+                                <h3>Metas de Categorias</h3>
+                            </div>
+                        </div>
+                        <p class="subtitle" style="margin-bottom: 1rem;">Acompanhe o limite numérico e visual de gastos
+                            definido para cada
+                            categoria neste mês.</p>
+
+                        <!-- Goals Balance Widget -->
+                        <div id="goals-balance-widget" style="margin-bottom: 1.5rem;"></div>
+
+                        <!-- Textual Summary Area -->
+                        <div id="goals-text-summary"
+                            style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+                            <!-- Injected by JS -->
+                        </div>
+
+                        <div class="dashboard-grid goals-charts-grid"
+                            style="gap: 1.5rem; margin-top: 0; padding-top: 0; border-top: none;">
+                            <div class="chart-container" style="margin-top: 0; padding-top: 0; border-top: none;">
+                                <h4>Progresso das Metas</h4>
+                                <div class="chart-wrapper" style="height: 350px;">
+                                    <canvas id="goals-chart"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-container" style="margin-top: 0; padding-top: 0; border-top: none;">
+                                <h4 style="font-size: 0.95rem;">Distribuição (Crédito + Débito + Parcelado)</h4>
+                                <div class="chart-wrapper" style="height: 350px;">
+                                    <canvas id="overall-pie-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Credit Card Section -->
+                    <section id="section-credit" class="card-section">
+                        <div class="section-header">
+                            <div class="header-title">
+                                <i class="fa-regular fa-credit-card icon-credit"></i>
+                                <h3>Cartão de Crédito</h3>
+                            </div>
+                            <div class="header-actions" style="display:flex; gap:0.5rem; align-items: center;">
+                                <button id="btn-new-transaction" class="btn btn-primary btn-shadow">
+                                    <i class="fa-solid fa-plus"></i> Nova Transação
+                                </button>
+                            </div>
+                        </div>
+                        <div class="summary-cards">
+                            <div class="summary-card">
+                                <span class="label">Pagamentos à Vista</span>
+                                <span class="value text-danger" id="credit-current-value">R$ 0,00</span>
+                            </div>
+                            <div class="summary-card" id="credit-total-card">
+                                <span class="label">Fatura Total deste Mês</span>
+                                <span class="value text-danger" id="credit-total-value">R$ 0,00</span>
+                                <span class="label" style="font-size: 0.75rem; opacity: 0.7;">pagamentos à vista +
+                                    parcelas</span>
+                            </div>
+                            <div class="summary-card">
+                                <span class="label">Próxima Fatura</span>
+                                <span class="value text-warning" id="credit-next-value">R$ 0,00</span>
+                                <span class="label" style="font-size: 0.75rem; opacity: 0.7;">pagamentos à vista + parcelas</span>
+                            </div>
+                        </div>
+
+                        <div class="list-controls"
+                            style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                            <div class="filter-group">
+                                <span class="filter-label">Filtrar pesquisa:</span>
+                                <div class="filter-selects">
+                                    <select id="filter-cat-credit" class="form-select filter-select">
+                                        <option value="all">Todas as Categorias</option>
+                                    </select>
+                                    <select id="sort-credit" class="form-select filter-select">
+                                        <option value="date_desc">Data (Mais Novas)</option>
+                                        <option value="date_asc">Data (Mais Antigas)</option>
+                                        <option value="val_desc">Maior Valor</option>
+                                        <option value="val_asc">Menor Valor</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="data-table" id="credit-table">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Descrição</th>
+                                        <th>Categoria</th>
+                                        <th>Vigência</th>
+                                        <th>Vencimento</th>
+                                        <th class="text-right">Valor</th>
+                                        <th class="text-center" style="width: 50px;">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="empty-row">
+                                        <td colspan="7">Nenhuma despesa registrada.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="pagination-controls"
+                            style="display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 1rem; margin-bottom: 1rem;">
+                            <button id="btn-prev-credit" class="btn-icon" disabled><i
+                                    class="fa-solid fa-chevron-left"></i></button>
+                            <span id="page-info-credit" style="font-size: 0.85rem; color: var(--c-text-muted);">1 /
+                                1</span>
+                            <button id="btn-next-credit" class="btn-icon" disabled><i
+                                    class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+
+                        <div class="chart-container">
+                            <h4>Despesas por Categoria</h4>
+                            <div class="chart-wrapper">
+                                <canvas id="credit-chart"></canvas>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Installments Section -->
+                    <section id="section-installments" class="card-section" style="grid-column: 1 / -1;">
+                        <div class="section-header">
+                            <div class="header-title">
+                                <i class="fa-solid fa-cart-shopping" style="color: var(--c-primary)"></i>
+                                <h3>Compras Parceladas</h3>
+                            </div>
+                            <div class="header-actions" style="display:flex; gap:0.5rem; align-items: center;">
+                                <button id="btn-new-installment" class="btn btn-primary btn-shadow">
+                                    <i class="fa-solid fa-plus"></i> Nova Transação
+                                </button>
+                            </div>
+                        </div>
+                        <div class="summary-cards">
+                            <div class="summary-card">
+                                <span class="label">Total em Aberto</span>
+                                <span class="value text-danger" id="inst-total-open">R$ 0,00</span>
+                                <span class="label" style="font-size: 0.75rem; opacity: 0.7;">soma da totalidade das parcelas</span>
+                            </div>
+                            <div class="summary-card">
+                                <span class="label">Parcelas este Mês</span>
+                                <span class="value text-warning" id="inst-this-month">R$ 0,00</span>
+                                <span class="label" style="font-size: 0.75rem; opacity: 0.7;">parcelas a serem pagas na vigência desta fatura</span>
+                            </div>
+                            <div class="summary-card">
+                                <span class="label">Nº de Compras Ativas</span>
+                                <span class="value" id="inst-active-count">0</span>
+                            </div>
+                        </div>
+
+                        <div class="list-controls"
+                            style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                            <div class="filter-group">
+                                <span class="filter-label">Filtrar pesquisa:</span>
+                                <div class="filter-selects">
+                                    <select id="filter-cat-inst" class="form-select filter-select">
+                                        <option value="all">Todas as Categorias</option>
+                                    </select>
+                                    <select id="sort-inst" class="form-select filter-select">
+                                        <option value="date_desc">Data (Mais Novas)</option>
+                                        <option value="date_asc">Data (Mais Antigas)</option>
+                                        <option value="val_desc">Maior Valor/Parcela</option>
+                                        <option value="val_asc">Menor Valor/Parcela</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="data-table" id="installments-table">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Descrição</th>
+                                        <th>Categoria</th>
+                                        <th class="text-center">Parcela</th>
+                                        <th class="text-right">Valor/Parcela</th>
+                                        <th class="text-right">Total Restante</th>
+                                        <th class="text-center" style="width: 50px;">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="installments-table-body">
+                                    <tr class="empty-row">
+                                        <td colspan="7">Nenhuma compra parcelada registrada.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="pagination-controls"
+                            style="display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 1rem; margin-bottom: 1rem;">
+                            <button id="btn-prev-inst" class="btn-icon" disabled><i
+                                    class="fa-solid fa-chevron-left"></i></button>
+                            <span id="page-info-inst" style="font-size: 0.85rem; color: var(--c-text-muted);">1 /
+                                1</span>
+                            <button id="btn-next-inst" class="btn-icon" disabled><i
+                                    class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+
+                        <div class="chart-container">
+                            <h4>Parcelas por Categoria</h4>
+                            <div class="chart-wrapper">
+                                <canvas id="installments-chart"></canvas>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Debit / Pix Section -->
+                    <section id="section-debit" class="card-section">
+                        <div class="section-header">
+                            <div class="header-title">
+                                <i class="fa-solid fa-building-columns icon-debit"></i>
+                                <h3>Débito / Pix</h3>
+                            </div>
+                            <button id="btn-new-debit" class="btn btn-primary btn-shadow">
+                                <i class="fa-solid fa-plus"></i> Nova Transação
+                            </button>
+                        </div>
+                        <div class="summary-cards">
+                            <div class="summary-card">
+                                <span class="label">Saldo Mensal</span>
+                                <span class="value text-success">R$ 0,00</span>
+                            </div>
+                        </div>
+
+                        <div class="list-controls"
+                            style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                            <div class="filter-group">
+                                <span class="filter-label">Filtrar pesquisa:</span>
+                                <div class="filter-selects">
+                                    <select id="filter-cat-debit" class="form-select filter-select">
+                                        <option value="all">Todas as Categorias</option>
+                                    </select>
+                                    <select id="sort-debit" class="form-select filter-select">
+                                        <option value="date_desc">Data (Mais Novas)</option>
+                                        <option value="date_asc">Data (Mais Antigas)</option>
+                                        <option value="val_desc">Maior Valor</option>
+                                        <option value="val_asc">Menor Valor</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="data-table" id="debit-table">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Descrição</th>
+                                        <th>Categoria</th>
+                                        <th>Tipo</th>
+                                        <th class="text-right">Valor</th>
+                                        <th class="text-center" style="width: 50px;">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="empty-row">
+                                        <td colspan="6">Nenhuma transação registrada.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="pagination-controls"
+                            style="display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 1rem; margin-bottom: 1rem;">
+                            <button id="btn-prev-debit" class="btn-icon" disabled><i
+                                    class="fa-solid fa-chevron-left"></i></button>
+                            <span id="page-info-debit" style="font-size: 0.85rem; color: var(--c-text-muted);">1 /
+                                1</span>
+                            <button id="btn-next-debit" class="btn-icon" disabled><i
+                                    class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+
+                        <div class="chart-container">
+                            <h4>Transações por Categoria</h4>
+                            <div class="chart-wrapper">
+                                <canvas id="debit-chart"></canvas>
+                            </div>
+                        </div>
+                    </section>
+
+                    </section>
+                </div>
+
+                <!-- Categories Grid (Hidden by default) -->
+                <div id="categories-grid" class="dashboard-grid hidden">
+                    <section class="card-section">
+                        <div class="section-header">
+                            <div class="header-title">
+                                <i class="fa-solid fa-tags" style="color: var(--c-primary)"></i>
+                                <h3>Gerenciador de Categorias</h3>
+                            </div>
+                        </div>
+
+                        <!-- Form to add category -->
+                        <form id="category-form" class="category-form"
+                            style="display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap;">
+                            <div class="form-group" style="flex-grow: 1; margin: 0; min-width: 200px;">
+                                <label for="cat-name">Nome da Categoria</label>
+                                <input type="text" id="cat-name" required placeholder="Ex: Lazer">
+                            </div>
+                            <div class="form-group" style="margin: 0; width: 150px;">
+                                <label for="cat-goal">Meta de Gasto (R$)</label>
+                                <input type="number" id="cat-goal" required step="0.01" min="0" placeholder="0.00">
+                            </div>
+                            <div class="form-group" style="margin: 0;">
+                                <label for="cat-bg">Cor de Fundo</label>
+                                <input type="color" id="cat-bg" value="#3B82F6"
+                                    style="height: 44px; padding: 0.25rem; cursor: pointer; border-radius: 6px;">
+                            </div>
+                            <div class="form-group" style="margin: 0;">
+                                <label for="cat-text">Cor do Texto</label>
+                                <input type="color" id="cat-text" value="#FFFFFF"
+                                    style="height: 44px; padding: 0.25rem; cursor: pointer; border-radius: 6px;">
+                            </div>
+                            <button type="submit" id="btn-save-category" class="btn btn-primary"
+                                style="height: 44px;">Adicionar</button>
+                            <button type="button" id="btn-cancel-category-edit" class="btn btn-outline hidden"
+                                style="height: 44px;">Cancelar</button>
+                        </form>
+
+                        <!-- Table to list categories -->
+                        <div class="table-container">
+                            <table class="data-table" id="categories-table">
+                                <thead>
+                                    <tr>
+                                        <th>Pré-visualização</th>
+                                        <th>Nome</th>
+                                        <th class="text-right">Meta (R$)</th>
+                                        <th class="text-center" style="width: 50px;">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Injected by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Settings Grid (Hidden by default) -->
+                <div id="settings-grid" class="dashboard-grid hidden">
+                    <section class="card-section">
+                        <div class="section-header">
+                            <div class="header-title">
+                                <i class="fa-solid fa-gear" style="color: var(--c-text-muted)"></i>
+                                <h3>Configurações do Cartão</h3>
+                            </div>
+                        </div>
+
+                        <form id="settings-form" style="max-width: 400px;">
+                            <p class="subtitle" style="margin-bottom: 2rem;">Defina os dias de fechamento e vencimento
+                                para automatizar os ciclos das despesas.</p>
+                            <div class="form-group">
+                                <label for="set-closing-day">Dia de Fechamento da Fatura (Vigência)</label>
+                                <input type="number" id="set-closing-day" required min="1" max="31"
+                                    placeholder="Ex: 11">
+                            </div>
+                            <div class="form-group">
+                                <label for="set-due-day">Dia de Vencimento da Fatura</label>
+                                <input type="number" id="set-due-day" required min="1" max="31" placeholder="Ex: 20">
+                            </div>
+                            <div style="margin-top: 1.5rem;">
+                                <button type="submit" class="btn btn-primary" style="width: 100%;">Salvar
+                                    Configurações</button>
+                            </div>
+                            <p id="settings-msg" class="text-success"
+                                style="margin-top: 1rem; font-size: 0.85rem; display: none;">Configurações salvas com
+                                sucesso!</p>
+                        </form>
+                    </section>
+
+                    <!-- User Profile Settings Card -->
+                    <section class="card-section">
+                        <div class="section-header">
+                            <div class="header-title">
+                                <i class="fa-solid fa-circle-user" style="color: var(--c-primary)"></i>
+                                <h3>Configurações de Usuário</h3>
+                            </div>
+                        </div>
+
+                        <!-- Change Name -->
+                        <form id="change-name-form" style="max-width: 400px; margin-bottom: 2rem;">
+                            <p class="subtitle" style="margin-bottom: 1.5rem;">Altere o nome exibido no sistema.</p>
+                            <div class="form-group">
+                                <label for="user-new-name">Novo Nome</label>
+                                <input type="text" id="user-new-name" placeholder="Digite o novo nome"
+                                    autocomplete="off">
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                <i class="fa-solid fa-pen"></i> Salvar Nome
+                            </button>
+                            <p id="name-change-msg" style="margin-top: 0.75rem; font-size: 0.85rem; display: none;"></p>
+                        </form>
+
+                        <hr style="border: none; border-top: 1px solid var(--c-border); margin: 1.5rem 0;">
+
+                        <!-- Change Password -->
+                        <form id="change-pin-form" style="max-width: 400px;">
+                            <p class="subtitle" style="margin-bottom: 1.5rem;">Para alterar sua senha, informe a nova
+                                senha de no mínimo 6 caracteres.</p>
+                            <div class="form-group">
+                                <label for="user-new-pin">Nova Senha</label>
+                                <input type="password" id="user-new-pin" minlength="6" placeholder="••••••"
+                                    autocomplete="new-password">
+                            </div>
+                            <div class="form-group">
+                                <label for="user-confirm-pin">Confirmar Nova Senha</label>
+                                <input type="password" id="user-confirm-pin" minlength="6" placeholder="••••••"
+                                    autocomplete="new-password">
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                <i class="fa-solid fa-lock"></i> Alterar Senha
+                            </button>
+                            <p id="pin-change-msg" style="margin-top: 0.75rem; font-size: 0.85rem; display: none;"></p>
+                        </form>
+
+                        <hr style="border: none; border-top: 1px solid var(--c-border); margin: 1.5rem 0;">
+
+                        <!-- Custom Appearance -->
+                        <div style="max-width: 400px;">
+                            <p class="subtitle" style="margin-bottom: 1.5rem;">Aparência do Sistema</p>
+                            <div
+                                style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; border: 1px solid var(--c-border); border-radius: var(--radius-md);">
+                                <span style="font-weight: 500;">Modo Escuro</span>
+                                <label class="switch"
+                                    style="position: relative; display: inline-block; width: 50px; height: 28px;">
+                                    <input type="checkbox" id="user-dark-mode" style="opacity: 0; width: 0; height: 0;">
+                                    <span class="slider round"
+                                        style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--c-border); transition: .4s; border-radius: 34px;"></span>
+                                </label>
+                            </div>
+                            <div
+                                style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; border: 1px solid var(--c-border); border-radius: var(--radius-md); margin-top: 0.75rem;">
+                                <span style="font-weight: 500;">Barra de Calendário</span>
+                                <label class="switch"
+                                    style="position: relative; display: inline-block; width: 50px; height: 28px;">
+                                    <input type="checkbox" id="user-calendar-bar" checked style="opacity: 0; width: 0; height: 0;">
+                                    <span class="slider round"
+                                        style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--c-border); transition: .4s; border-radius: 34px;"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <hr style="border: none; border-top: 1px solid var(--c-border); margin: 1.5rem 0;">
+
+                        <!-- Tutorial Replay -->
+                        <div style="max-width: 400px;">
+                            <p class="subtitle" style="margin-bottom: 1.5rem;">Tutoriais e Ajuda</p>
+                            <button id="btn-replay-tutorial" class="btn btn-outline" style="width: 100%;">
+                                <i class="fa-solid fa-graduation-cap"></i> Assistir Tutorial Inicial
+                            </button>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Extracts Grid (Hidden by default) -->
+                <div id="extracts-grid" class="dashboard-grid hidden">
+                    <section class="card-section" style="grid-column: 1 / -1;">
+                        <div class="section-header">
+                            <div class="header-title">
+                                <i class="fa-solid fa-file-invoice-dollar" style="color: var(--c-primary)"></i>
+                                <h3>Extratos Mensais Consolidados &mdash; <span id="extract-month-label"></span></h3>
+                            </div>
+                        </div>
+                        <p class="subtitle" style="margin-bottom: 1.5rem;">Resumo completo da sua atividade financeira
+                            no mês, incluindo métricas e progresso das metas de categorias.</p>
+
+                        <div class="summary-cards" style="margin-bottom: 2rem;">
+                            <div class="summary-card">
+                                <span class="label">Total de Receitas</span>
+                                <span class="value text-success" id="extract-total-income">R$ 0,00</span>
+                            </div>
+                            <div class="summary-card">
+                                <span class="label">Total de Despesas</span>
+                                <span class="value text-danger" id="extract-total-expense">R$ 0,00</span>
+                            </div>
+                            <div class="summary-card">
+                                <span class="label">Saldo do Mês</span>
+                                <span class="value" id="extract-balance">R$ 0,00</span>
+                            </div>
+                        </div>
+
+                        <!-- Extract Goals Balance Widget -->
+                        <div id="extract-balance-widget" style="margin-bottom: 2rem;"></div>
+
+                        <div class="dashboard-grid goals-charts-grid"
+                            style="gap: 1.5rem; margin-top: 0; padding-top: 0; border-top: none;">
+                            <div class="chart-container" style="margin-top: 0; padding-top: 0; border-top: none;">
+                                <h4>Distribuição de Despesas por Categoria</h4>
+                                <div class="chart-wrapper" style="height: 320px;">
+                                    <canvas id="extract-pie-chart"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-container"
+                                style="margin-top: 0; padding-top: 0; border-top: none; display: flex; flex-direction: column;">
+                                <h4>Resumo das Metas</h4>
+                                <div id="extract-goals-summary"
+                                    style="flex: 1; padding: 0.5rem 0; margin-top: 0.75rem;">
+                                    <!-- Injected by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <footer class="app-footer">
+                    <div class="footer-content">
+                        <div class="footer-brand">
+                            <img src="./assets/logo_garbayo.png" alt="Logo Garbayo Web&Tech" class="footer-logo">
+                        </div>
+                        <div class="footer-info">
+                            <p>CNPJ: 00.000.000.0000/00</p>
+                            <p><i class="fa-brands fa-whatsapp"></i> (21) 98769-2747</p>
+                            <p><i class="fa-regular fa-envelope"></i> <a
+                                    href="mailto:garbayowebtech@gmail.com">garbayowebtech@gmail.com</a></p>
+                        </div>
+                        <div class="footer-social">
+                            <a href="#" target="_blank" title="Instagram" aria-label="Instagram"><i
+                                    class="fa-brands fa-instagram"></i></a>
+                            <a href="#" target="_blank" title="Facebook" aria-label="Facebook"><i
+                                    class="fa-brands fa-facebook"></i></a>
+                        </div>
+                    </div>
+                    <div class="footer-bottom">
+                        &copy; <span id="current-year">2026</span> Garbayo Web&Tech. Todos os direitos reservados.
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Installment Modal -->
+    <div id="installment-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Nova Compra Parcelada</h3>
+                <button class="btn-close" id="btn-close-installment"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="installment-form" class="modal-body">
+                <div class="form-group">
+                    <label for="inst-name">Descrição</label>
+                    <input type="text" id="inst-name" required placeholder="Ex: TV Samsung">
+                </div>
+                <div class="form-grid-3">
+                    <div class="form-group">
+                        <label for="inst-amount">Valor da Parcela (R$)</label>
+                        <input type="number" id="inst-amount" required step="0.01" min="0.01" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="inst-total">Total de Parcelas</label>
+                        <input type="number" id="inst-total" required min="1" max="99" placeholder="Ex: 12">
+                    </div>
+                    <div class="form-group">
+                        <label for="inst-current">Parcela Atual</label>
+                        <input type="number" id="inst-current" required min="1" max="99" placeholder="Ex: 1">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inst-date">Data da Compra</label>
+                    <input type="date" id="inst-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="inst-category">Categoria</label>
+                    <select id="inst-category" required class="form-select">
+                        <option value="">Selecione...</option>
+                        <!-- Injected by JS -->
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-text" id="btn-cancel-installment">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Compra</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="expense-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Nova Despesa de Crédito</h3>
+                <button class="btn-close" id="btn-close-expense"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="expense-form" class="modal-body">
+                <div class="form-group">
+                    <label for="exp-name">Descrição</label>
+                    <input type="text" id="exp-name" required placeholder="Ex: Supermercado">
+                </div>
+                <div class="form-group">
+                    <label for="exp-amount">Valor (R$)</label>
+                    <input type="number" id="exp-amount" required step="0.01" min="0.01" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label for="exp-date">Data da Despesa</label>
+                    <input type="date" id="exp-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="exp-category">Categoria</label>
+                    <select id="exp-category" required class="form-select">
+                        <option value="">Selecione...</option>
+                        <!-- Injected by JS -->
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-text" id="btn-cancel-expense">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Despesa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="debit-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Nova Transação Débito/Pix</h3>
+                <button class="btn-close" id="btn-close-debit"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="debit-form" class="modal-body">
+                <div class="form-group">
+                    <label for="deb-name">Descrição</label>
+                    <input type="text" id="deb-name" required placeholder="Ex: Conta de Luz">
+                </div>
+                <div class="form-group">
+                    <label for="deb-amount">Valor (R$)</label>
+                    <input type="number" id="deb-amount" required step="0.01" min="0.01" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label for="deb-type">Tipo de Transação</label>
+                    <select id="deb-type" required class="form-select">
+                        <option value="expense">Saída (Despesa)</option>
+                        <option value="income">Entrada (Receita)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="deb-date">Data da Transação</label>
+                    <input type="date" id="deb-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="deb-category">Categoria</label>
+                    <select id="deb-category" required class="form-select">
+                        <option value="">Selecione...</option>
+                        <!-- Injected by JS -->
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-text" id="btn-cancel-debit">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Transação</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Goal Alert Popup -->
+    <div id="goal-alert-popup" class="goal-alert-popup hidden">
+        <div class="goal-alert-header">
+            <span class="goal-alert-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+            <strong>Alerta de Metas!</strong>
+            <button id="btn-close-alert-once" class="goal-alert-close" title="Fechar">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <p class="goal-alert-msg">Atenção! A(s) seguinte(s) meta(s) foi(foram) extrapolada(s):</p>
+        <ul id="goal-alert-list" class="goal-alert-list"></ul>
+        <div class="goal-alert-actions">
+            <button id="btn-dismiss-alert-month" class="btn btn-text" style="font-size: 0.8rem;">
+                <i class="fa-solid fa-bell-slash"></i> Não mostrar até o próximo mês
+            </button>
+        </div>
+    </div>
+
+    <!-- Tutorial Modal -->
+    <div id="tutorial-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Tutorial do App</h3>
+                <button class="btn-close" id="btn-close-tutorial" title="Pular Tutorial"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" style="padding: 0;">
+                <div class="tutorial-slider" id="tutorial-slider">
+                    <!-- Slide 1 -->
+                    <div class="tutorial-slide">
+                        <div class="tutorial-icon"><i class="fa-solid fa-hand-sparkles"></i></div>
+                        <h4 class="tutorial-title">Bem-vindo(a)!</h4>
+                        <p class="tutorial-text">Obrigado por utilizar o nosso app! Preparamos esse passo-a-passo para te mostrar como aproveitar ao máximo cada funcionalidade do Planner Financeiro.</p>
+                    </div>
+                    <!-- Slide 2 -->
+                    <div class="tutorial-slide">
+                        <div class="tutorial-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                        <h4 class="tutorial-title">Visão Geral</h4>
+                        <p class="tutorial-text">Aqui você encontra um panorama completo das suas finanças: o progresso das metas por categorias, gráficos de distribuição e o saldo dos diferentes meios de pagamento.</p>
+                    </div>
+                    <!-- Slide 3 -->
+                    <div class="tutorial-slide">
+                        <div class="tutorial-icon"><i class="fa-solid fa-credit-card"></i></div>
+                        <h4 class="tutorial-title">Cartão de Crédito</h4>
+                        <p class="tutorial-text">Cadastre as compras feitas no crédito, na modalidade <strong>à vista</strong>, sempre com uma categoria. Essas despesas entrarão automaticamente na fatura correspondente ao ciclo de fechamento configurado.</p>
+                    </div>
+                    <!-- Slide 4 -->
+                    <div class="tutorial-slide">
+                        <div class="tutorial-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+                        <h4 class="tutorial-title">Compras Parceladas</h4>
+                        <p class="tutorial-text">Aqui estão as compras que você parcela na maquininha ou online. É importante inserir corretamente o valor de <strong>uma</strong> parcela, o número da parcela <strong>atual</strong> e o <strong>total</strong> de parcelas para cálculos precisos.</p>
+                    </div>
+                    <!-- Slide 5 -->
+                    <div class="tutorial-slide">
+                        <div class="tutorial-icon"><i class="fa-solid fa-building-columns"></i></div>
+                        <h4 class="tutorial-title">Débito e Pix</h4>
+                        <p class="tutorial-text">Nesta área você deve cadastrar as compras à vista ou receitas que movimentam <strong>diretamente a sua conta corrente</strong> (saldo atual), seja via débito, Pix, transferências ou boletos.</p>
+                    </div>
+                    <!-- Slide 6 -->
+                    <div class="tutorial-slide">
+                        <div class="tutorial-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                        <h4 class="tutorial-title">Extratos Consolidados</h4>
+                        <p class="tutorial-text">Um resumo completo e fechado da sua atividade financeira naquele mês: total de receitas, total de despesas, gráficos específicos e o acompanhamento exato de cada meta de categoria.</p>
+                    </div>
+                    <!-- Slide 7 -->
+                    <div class="tutorial-slide">
+                        <div class="tutorial-icon"><i class="fa-solid fa-tags"></i></div>
+                        <h4 class="tutorial-title">Categorias</h4>
+                        <p class="tutorial-text"><strong>A chave da organização!</strong> Cadastre categorias que englobem todas as suas despesas (usuais ou não) e defina metas (limites de gastos). Quanto mais específico, melhor e mais visual será o seu controle.</p>
+                    </div>
+                    <!-- Slide 8 -->
+                    <div class="tutorial-slide">
+                        <div class="tutorial-icon"><i class="fa-solid fa-gear"></i></div>
+                        <h4 class="tutorial-title">Configurações</h4>
+                        <p class="tutorial-text">Preste atenção às configurações do cartão: os <strong>dias de fechamento e vencimento da fatura</strong> influenciam diretamente nos balanços mensais. Aqui você também ajusta seu perfil e preferências de visual.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tutorial-footer">
+                <div class="tutorial-dots" id="tutorial-dots">
+                    <!-- Gerados via JS -->
+                </div>
+                <div class="tutorial-nav">
+                    <button class="btn btn-text" id="btn-tut-prev" style="visibility: hidden;"><i class="fa-solid fa-arrow-left"></i> <span>Voltar</span></button>
+                    <button class="btn btn-primary" id="btn-tut-next">Próximo <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/db.js"></script>
+    <script src="js/app-auth.js"></script>
+    <script src="js/app-crud.js"></script>
+    <script src="js/script.js"></script>
+</body>
+
+</html>

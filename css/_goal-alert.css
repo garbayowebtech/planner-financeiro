@@ -1,0 +1,187 @@
+/* ==========================================================================
+   _goal-alert.css
+   Popup de alerta de metas de categoria:
+   exibido no canto inferior direito quando uma meta é atingida/extrapolada.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Container do Popup
+   -------------------------------------------------------------------------- */
+.goal-alert-popup {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 340px;
+    background: var(--c-bg-card);
+    border: 1px solid var(--c-border);
+    border-left: 4px solid var(--c-warning);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: 1rem 1.2rem;
+    z-index: 9999;
+    animation: slideInRight 0.35s ease;
+}
+
+/* Animação de entrada (slide da direita) */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(40px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Pulso para ícone de meta estourada */
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.6;
+        transform: scale(1.2);
+    }
+}
+
+/* --------------------------------------------------------------------------
+   2. Header do Popup
+   -------------------------------------------------------------------------- */
+.goal-alert-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.6rem;
+}
+
+.goal-alert-icon {
+    color: var(--c-warning);
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.goal-alert-header strong {
+    flex: 1;
+    font-size: 0.95rem;
+    color: var(--c-text-main);
+}
+
+/* Botão de fechar */
+.goal-alert-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--c-text-muted);
+    font-size: 1rem;
+    padding: 0.15rem 0.3rem;
+    border-radius: var(--radius-sm);
+    transition: color 0.2s, background 0.2s;
+}
+
+.goal-alert-close:hover {
+    color: var(--c-danger);
+    background: rgba(239, 68, 68, 0.08);
+}
+
+/* --------------------------------------------------------------------------
+   3. Mensagem e Lista de Metas
+   -------------------------------------------------------------------------- */
+.goal-alert-msg {
+    font-size: 0.82rem;
+    color: var(--c-text-muted);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.goal-alert-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0.75rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+/* Item padrão */
+.goal-alert-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.84rem;
+    font-weight: 500;
+    padding: 0.3rem 0.5rem;
+    border-radius: var(--radius-sm);
+    background: rgba(245, 158, 11, 0.08);
+}
+
+/* Meta ultrapassada */
+.goal-alert-list li.exceeded {
+    background: rgba(239, 68, 68, 0.08);
+    color: var(--c-danger);
+}
+
+/* Meta exatamente atingida */
+.goal-alert-list li.reached {
+    background: rgba(245, 158, 11, 0.1);
+    color: #B45309;
+}
+
+/* --------------------------------------------------------------------------
+   4. Ações do Popup (dispensar para o mês)
+   -------------------------------------------------------------------------- */
+.goal-alert-actions {
+    border-top: 1px solid var(--c-border);
+    padding-top: 0.6rem;
+    display: flex;
+    justify-content: center;
+}
+
+.goal-alert-actions .btn-text {
+    color: var(--c-text-muted);
+    font-size: 0.78rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.goal-alert-actions .btn-text:hover {
+    color: var(--c-primary);
+}
+
+/* ==========================================================================
+   RESPONSIVO — Mobile (≤ 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+    .goal-alert-popup {
+        /* Ocupa toda a largura com margens seguras */
+        left: 0.75rem;
+        right: 0.75rem;
+        bottom: 0.75rem;
+        width: auto;
+        /* ignora o 340px fixo */
+        max-width: none;
+        /* Animação vinda de baixo (mais natural em mobile) */
+        animation: slideInUp 0.3s ease;
+    }
+
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Centraliza os botões de ação */
+    .goal-alert-actions {
+        justify-content: center;
+    }
+}

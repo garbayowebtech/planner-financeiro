@@ -1,0 +1,463 @@
+/* ==========================================================================
+   _layout.css
+   Estrutura principal do app: sidebar, perfil do usuário, navegação,
+   header superior, área de conteúdo, grid de dashboard e summary cards.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. App View — Wrapper externo
+   -------------------------------------------------------------------------- */
+#app-view {
+    display: flex;
+    background: var(--c-bg);
+    position: relative;
+    padding-top: 40px;
+    /* Space for the absolute top calendar bar */
+}
+
+/* --------------------------------------------------------------------------
+   1.1 Top Calendar Bar
+   -------------------------------------------------------------------------- */
+.top-calendar-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    background: var(--c-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    font-size: 0.9rem;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.top-calendar-bar .calendar-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.top-calendar-bar .separator {
+    margin: 0 0.5rem;
+    opacity: 0.6;
+}
+
+/* --------------------------------------------------------------------------
+   2. Sidebar
+   -------------------------------------------------------------------------- */
+.sidebar {
+    width: 260px;
+    min-width: 260px;
+    flex-shrink: 0;
+    background: var(--c-bg-card);
+    border-right: 1px solid var(--c-border);
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    z-index: 10;
+}
+
+/* Logo da sidebar */
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+}
+
+.sidebar-header .logo-icon {
+    font-size: 1.8rem;
+    color: var(--c-primary);
+}
+
+.sidebar-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--c-text-main);
+}
+
+/* Perfil do usuário na sidebar */
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--c-primary-light);
+    border-radius: var(--radius-md);
+    margin-bottom: 2rem;
+}
+
+.user-profile .avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--c-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1.25rem;
+    overflow: hidden;
+    /* Mantém a imagem contida */
+}
+
+/* Container do avatar p/ upload de foto */
+.avatar-wrapper {
+    position: relative;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+/* Imagem de perfil carregada */
+.avatar-wrapper img.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Overlay visível no hover com ícone de câmera */
+.avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    font-size: 0.95rem;
+}
+
+.avatar-wrapper:hover .avatar-overlay {
+    opacity: 1;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-info .greeting {
+    font-size: 0.75rem;
+    color: var(--c-text-muted);
+}
+
+.user-info strong {
+    font-size: 0.95rem;
+    color: var(--c-text-main);
+}
+
+/* --------------------------------------------------------------------------
+   3. Navegação Principal
+   -------------------------------------------------------------------------- */
+.main-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-grow: 1;
+}
+
+.main-nav a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    text-decoration: none;
+    color: var(--c-text-muted);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    transition: all 0.2s;
+}
+
+.main-nav a:hover {
+    background: var(--c-bg);
+    color: var(--c-text-main);
+}
+
+.main-nav a.active {
+    background: var(--c-primary);
+    color: white;
+}
+
+.main-nav a i {
+    width: 20px;
+    text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   4. Footer da Sidebar (botão de logout)
+   -------------------------------------------------------------------------- */
+.sidebar-footer {
+    margin-top: auto;
+}
+
+.btn-logout {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.875rem;
+    background: transparent;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-md);
+    color: var(--c-text-main);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-logout:hover {
+    background: #FEF2F2;
+    color: var(--c-danger);
+    border-color: #FECACA;
+}
+
+/* --------------------------------------------------------------------------
+   5. Main Content — Área principal direita
+   -------------------------------------------------------------------------- */
+.main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* Header superior */
+.top-header {
+    height: auto;
+    min-height: 80px;
+    flex-shrink: 0;
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    /* Permite quebrar linha em telas pequenas */
+    gap: 1rem;
+    background: var(--c-bg-card);
+    border-bottom: 1px solid var(--c-border);
+    position: relative;
+}
+
+.top-header h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0;
+    /* Limpar margens */
+    text-align: center;
+}
+
+/* Utilitário para grid 3 em modais */
+.form-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+}
+
+/* Área rolável de conteúdo */
+.content-scroll {
+    flex-grow: 1;
+    min-height: 0;
+    padding: 2rem;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+/* --------------------------------------------------------------------------
+   6. Dashboard Grid e Card Sections
+   -------------------------------------------------------------------------- */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+.goals-charts-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.card-section {
+    background: var(--c-bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--c-border);
+    padding: 1.5rem;
+}
+
+/* Cabeçalho interno de cada seção */
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--c-border);
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.header-title i {
+    font-size: 1.4rem;
+}
+
+/* Cores de ícone por tipo de seção */
+.icon-credit {
+    color: var(--c-primary);
+}
+
+.icon-debit {
+    color: var(--c-success);
+}
+
+.header-title h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   7. Summary Cards (totalizadores por seção)
+   -------------------------------------------------------------------------- */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.summary-card {
+    background: var(--c-bg);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--c-border);
+}
+
+.summary-card .label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--c-text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.summary-card .value {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   8. App Footer
+   -------------------------------------------------------------------------- */
+.app-footer {
+    background-color: var(--c-primary);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 2rem 2rem 1rem 2rem;
+    margin-top: 3rem;
+    margin-left: -2rem;
+    margin-right: -2rem;
+    margin-bottom: -2rem;
+    flex-shrink: 0;
+    width: calc(100% + 4rem);
+    color: white;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.footer-logo {
+    max-width: 120px;
+    max-height: 60px;
+    height: auto;
+    object-fit: contain;
+}
+
+.footer-brand h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: white;
+}
+
+.footer-info p {
+    margin: 0.25rem 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.footer-info a {
+    color: white;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: opacity 0.2s;
+}
+
+.footer-info a:hover {
+    opacity: 0.8;
+}
+
+.footer-social {
+    display: flex;
+    gap: 1rem;
+}
+
+.footer-social a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.footer-social a:hover {
+    background-color: white;
+    color: var(--c-primary);
+    transform: translateY(-2px);
+    border-color: white;
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: 1.5rem;
+    margin-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+}

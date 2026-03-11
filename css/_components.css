@@ -1,0 +1,244 @@
+/* ==========================================================================
+   _components.css
+   Componentes reutilizáveis: botões, formulários, inputs,
+   selects, badges de categoria e switch de alternância.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Formulários e Inputs
+   -------------------------------------------------------------------------- */
+.form-group {
+    text-align: left;
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--c-text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-md);
+    font-family: inherit;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--c-primary);
+    box-shadow: 0 0 0 3px var(--c-primary-light);
+}
+
+/* --- Select estilizado com seta customizada --- */
+.form-select {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-md);
+    font-family: inherit;
+    font-size: 1rem;
+    background: var(--c-bg-card);
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%2364748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+}
+
+/* Select reduzido para controles de filtro inline */
+.filter-select {
+    width: auto !important;
+    flex: 1 1 auto;
+    max-width: fit-content;
+    padding-right: 2.5rem;
+    /* Aumenta padding à direita para distanciar a seta */
+}
+
+/* Label acima dos filtros — mesmo padrão do .summary-card .label */
+.filter-label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--c-text-muted);
+    margin-bottom: 0.25rem;
+}
+
+/* Agrupa label + selects em coluna */
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Linha com os dois selects lado a lado */
+.filter-selects {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Base de layout pros botões de filtro na listagem (telas grandes alinham p direita) */
+.list-controls {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+/* --------------------------------------------------------------------------
+   2. Botões — Base e Variantes
+   -------------------------------------------------------------------------- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.5rem;
+    border-radius: var(--radius-md);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+/* Primário */
+.btn-primary {
+    background: var(--c-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--c-primary-dark);
+}
+
+/* Contorno */
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--c-border);
+    color: var(--c-text-main);
+}
+
+.btn-outline:hover {
+    background: var(--c-bg);
+    border-color: var(--c-text-muted);
+}
+
+/* Texto */
+.btn-text {
+    background: transparent;
+    color: var(--c-text-muted);
+}
+
+.btn-text:hover {
+    color: var(--c-text-main);
+}
+
+/* Sombra elevada */
+.btn-shadow {
+    box-shadow: var(--shadow-md);
+}
+
+.btn-shadow:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-1px);
+}
+
+/* Ícone */
+.btn-icon {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--c-text-muted);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.btn-icon:hover {
+    color: var(--c-primary);
+}
+
+/* Fechar modal */
+.btn-close {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: var(--c-text-muted);
+}
+
+.btn-close:hover {
+    color: var(--c-text-main);
+}
+
+/* Excluir item (linha de tabela) */
+.btn-delete {
+    background: transparent;
+    border: none;
+    color: var(--c-text-muted);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-delete:hover {
+    color: var(--c-danger);
+    background: #FEE2E2;
+}
+
+/* --------------------------------------------------------------------------
+   3. Badge de Categoria
+   -------------------------------------------------------------------------- */
+.category-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.category-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+/* --------------------------------------------------------------------------
+   4. Switch (Toggle de tema escuro)
+   -------------------------------------------------------------------------- */
+.switch input:checked+.slider {
+    background-color: var(--c-primary);
+}
+
+.switch input:focus+.slider {
+    box-shadow: 0 0 1px var(--c-primary);
+}
+
+.switch input:checked+.slider:before {
+    transform: translateX(22px);
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}

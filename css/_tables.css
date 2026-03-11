@@ -1,0 +1,53 @@
+/* ==========================================================================
+   _tables.css
+   Tabelas de dados: estilos de th/td, hover de linha,
+   linha vazia e container com scroll horizontal.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Container com scroll horizontal (mobile-friendly)
+   -------------------------------------------------------------------------- */
+.table-container {
+    overflow-x: auto;
+}
+
+/* --------------------------------------------------------------------------
+   2. Tabela de Dados
+   -------------------------------------------------------------------------- */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+/* Cabeçalho */
+.data-table th {
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--c-text-muted);
+    border-bottom: 2px solid var(--c-border);
+    white-space: nowrap;
+}
+
+/* Células */
+.data-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--c-border);
+    font-size: 0.95rem;
+}
+
+/* Hover de linha */
+.data-table tbody tr:hover {
+    background: var(--c-bg);
+}
+
+/* --------------------------------------------------------------------------
+   3. Linha "Sem dados" (empty state)
+   -------------------------------------------------------------------------- */
+.empty-row td {
+    text-align: center;
+    color: var(--c-text-muted);
+    padding: 2rem !important;
+    font-style: italic;
+}

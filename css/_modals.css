@@ -1,0 +1,82 @@
+/* ==========================================================================
+   _modals.css
+   Modais de adição/edição: overlay, card, header, body e ações.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Overlay (fundo semi-transparente)
+   -------------------------------------------------------------------------- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 1;
+    transition: opacity 0.3s;
+}
+
+.modal-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   2. Card do Modal
+   -------------------------------------------------------------------------- */
+.modal-card {
+    background: var(--c-bg-card);
+    width: 100%;
+    max-width: 500px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(0);
+    transition: transform 0.3s;
+    overflow: hidden;
+}
+
+/* Animação de entrada/saída */
+.modal-overlay.hidden .modal-card {
+    transform: translateY(20px);
+}
+
+/* --------------------------------------------------------------------------
+   3. Header do Modal
+   -------------------------------------------------------------------------- */
+.modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--c-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   4. Body do Modal
+   -------------------------------------------------------------------------- */
+.modal-body {
+    padding: 1.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   5. Ações do Modal (botões de confirmação/cancelamento)
+   -------------------------------------------------------------------------- */
+.modal-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--c-border);
+}

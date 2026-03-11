@@ -1,0 +1,42 @@
+/* ==========================================================================
+   styles.css  —  Arquivo Principal de CSS
+   Financial Planner | Ponto de entrada único para todas as folhas de estilo.
+
+   A ordem de importação importa:
+     1. Variáveis e reset  → base para tudo
+     2. Base               → body, utilitários
+     3. Autenticação       → tela de login
+     4. Componentes        → botões, inputs, badges (reutilizáveis em todo app)
+     5. Layout             → sidebar, header, dashboard grid
+     6. Tabelas            → data-table
+     7. Gráficos           → chart-container/wrapper
+     8. Modais             → overlay, card
+     9. Responsividade     → media queries (deve vir depois dos estilos base)
+    10. Tema Escuro        → overrides de variáveis e componentes
+    11. Alerta de Metas    → popup de notificação
+   ========================================================================== */
+
+@import url('_variables.css');
+/* 1. Design tokens & reset            */
+@import url('_base.css');
+/* 2. Body, utilitários, view containers */
+@import url('_auth.css');
+/* 3. Login, PIN, registro              */
+@import url('_components.css');
+/* 4. Botões, inputs, badges, switch    */
+@import url('_layout.css');
+/* 5. Sidebar, header, dashboard        */
+@import url('_tables.css');
+/* 6. Tabelas de dados                  */
+@import url('_charts.css');
+/* 7. Gráficos Chart.js                 */
+@import url('_modals.css');
+/* 8. Modais                            */
+@import url('_responsive.css');
+/* 9. Media queries (mobile/tablet)     */
+@import url('_dark-theme.css');
+/* 10. Tema escuro                      */
+@import url('_goal-alert.css');
+/* 11. Popup de alerta de metas         */
+@import url('_tutorial.css');
+/* 12. Modal de Onboarding Tutorial     */

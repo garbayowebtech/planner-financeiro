@@ -1,0 +1,409 @@
+/* ==========================================================================
+   _responsive.css
+   Media queries para adaptação do layout em diferentes tamanhos de tela.
+
+   Breakpoints:
+     - Mobile       : ≤ 768px   → sidebar como gaveta deslizante
+     - Small Mobile : ≤ 480px   → ajustes adicionais de tipografia e espaçamento
+     - Tablet       : 769–1024px → sidebar colapsada com ícones
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Botão Hamburger — só aparece em mobile
+   -------------------------------------------------------------------------- */
+.btn-hamburger {
+    display: none;
+    background: transparent;
+    border: none;
+    font-size: 1.4rem;
+    color: var(--c-text-main);
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.btn-hamburger:hover {
+    background: var(--c-bg);
+}
+
+/* --------------------------------------------------------------------------
+   2. Overlay da Sidebar (mobile)
+   -------------------------------------------------------------------------- */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 50;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+}
+
+/* ==========================================================================
+   MOBILE BREAKPOINT (≤ 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+
+    body {
+        overflow: hidden;
+        flex-direction: column;
+    }
+
+    /* --- Sidebar: gaveta deslizante --- */
+    .sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        bottom: 0;
+        width: 280px;
+        z-index: 100;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: none;
+    }
+
+    .sidebar.open {
+        left: 0;
+        box-shadow: var(--shadow-lg);
+    }
+
+    /* Overlay ativável em mobile */
+    .sidebar-overlay {
+        display: block;
+        pointer-events: none;
+    }
+
+    .sidebar-overlay.active {
+        pointer-events: auto;
+    }
+
+    /* --- Hamburger visível em mobile --- */
+    .btn-hamburger {
+        display: inline-flex;
+    }
+
+    /* --- Top Header e Navegação de Mês --- */
+    .top-header {
+        height: auto;
+        min-height: 60px;
+        padding: 1rem;
+        flex-direction: column;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    .top-header h1 {
+        font-size: 1.1rem;
+        text-align: center;
+        width: 100%;
+        order: 1;
+    }
+
+    .btn-hamburger {
+        position: absolute;
+        left: 1rem;
+        top: 1rem;
+    }
+
+    #btn-header-darkmode {
+        position: absolute;
+        right: 1rem;
+        top: 1rem;
+        margin: 0 !important;
+    }
+
+    .month-nav {
+        order: 2;
+        width: 100%;
+        justify-content: space-between;
+        margin-top: 0.5rem;
+        position: relative !important;
+        left: auto !important;
+        transform: none !important;
+    }
+
+    #label-current-month {
+        font-size: 1.1rem !important;
+        min-width: 140px !important;
+    }
+
+    /* --- App View --- */
+    #app-view {
+        flex-direction: column;
+        height: 100dvh;
+    }
+
+    .main-content {
+        height: 100dvh;
+        overflow: hidden;
+    }
+
+    .content-scroll {
+        padding: 1rem;
+        padding-bottom: 5rem;
+        /* espaço para a nav inferior */
+    }
+
+    /* --- Dashboard Grid --- */
+    .dashboard-grid {
+        gap: 1rem;
+    }
+
+    .goals-charts-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .card-section {
+        padding: 1rem;
+    }
+
+    /* --- Summary Cards --- */
+    .summary-cards {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+
+    .summary-card .value {
+        font-size: 1.1rem;
+    }
+
+    /* --- Section Header --- */
+    .section-header {
+        flex-direction: column;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    .section-header .header-actions {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .section-header .header-title {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .section-header h3 {
+        text-align: center;
+    }
+
+    /* --- Gráficos --- */
+    .chart-wrapper {
+        height: 200px !important;
+        width: 100%;
+        max-width: 100vw;
+    }
+
+    .chart-container {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .card-section {
+        max-width: 100vw;
+        overflow: hidden;
+    }
+
+    /* --- List Controls & Filters --- */
+    .list-controls {
+        justify-content: stretch !important;
+    }
+
+    /* O grupo (label + selects) ocupa toda a largura disponível */
+    .filter-group {
+        width: 100%;
+    }
+
+    /* Os dois selects dividem o espaço 50/50 sem vazar */
+    .filter-selects {
+        width: 100%;
+    }
+
+    .filter-selects .filter-select {
+        flex: 1 1 0;
+        min-width: 0;
+        max-width: none !important;
+        width: 100% !important;
+    }
+
+    /* --- Tabelas --- */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 0.625rem 0.75rem;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+
+    /* --- Modais: sheet inferior em mobile --- */
+    .modal-card {
+        max-width: 100%;
+        width: 100%;
+        margin: 0;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        max-height: 92dvh;
+        overflow-y: auto;
+    }
+
+    .modal-overlay {
+        align-items: flex-end;
+    }
+
+    /* --- Auth Card --- */
+    .auth-card {
+        padding: 1.75rem 1.25rem;
+        border-radius: var(--radius-md);
+        margin: 1rem;
+    }
+
+    /* --- Modais e Formulários: 1 coluna no mobile --- */
+    .form-grid-3,
+    #categories-grid .card-section form>div[style*="display: grid"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    #category-form.category-form {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+
+    #category-form .form-group {
+        width: 100% !important;
+    }
+
+    #category-form button {
+        width: 100% !important;
+        margin-top: 0.5rem;
+    }
+
+    /* --- App Footer Mobile --- */
+    .app-footer {
+        padding: 1.5rem 1rem 1rem;
+        margin-top: 1.5rem;
+        margin-left: -1rem;
+        margin-right: -1rem;
+        margin-bottom: -5rem;
+        width: calc(100% + 2rem);
+    }
+
+    .footer-content {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1.5rem;
+    }
+
+    .footer-brand {
+        align-items: center;
+    }
+
+    .footer-info p {
+        justify-content: center;
+    }
+
+    .footer-social {
+        justify-content: center;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+}
+
+/* ==========================================================================
+   SMALL MOBILE BREAKPOINT (≤ 480px)
+   ========================================================================== */
+@media (max-width: 480px) {
+
+    .summary-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .section-header h3 {
+        font-size: 1rem;
+    }
+
+    .btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .data-table th,
+    .data-table td {
+        font-size: 0.8rem;
+        padding: 0.5rem 0.625rem;
+    }
+
+    .top-header h1 {
+        font-size: 1rem;
+    }
+
+    /* Ações do modal em coluna */
+    .modal-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .modal-actions .btn {
+        width: 100%;
+    }
+}
+
+/* ==========================================================================
+   TABLET BREAKPOINT (769px – 1024px)
+   ========================================================================== */
+@media (min-width: 769px) and (max-width: 1024px) {
+
+    /* Sidebar colapsada — apenas ícones */
+    .sidebar {
+        width: 72px;
+        overflow: hidden;
+        padding: 1.5rem 0.75rem;
+    }
+
+    /* Ocultar textos da sidebar */
+    .sidebar-header h2,
+    .user-info,
+    .main-nav a span,
+    .btn-logout span {
+        display: none;
+    }
+
+    /* Links centralizados */
+    .main-nav a {
+        justify-content: center;
+        padding: 0.875rem;
+    }
+
+    .main-nav a i {
+        font-size: 1.3rem;
+        margin: 0;
+    }
+
+    .user-profile {
+        justify-content: center;
+        padding: 0.75rem;
+    }
+
+    .btn-logout {
+        padding: 0.75rem;
+        justify-content: center;
+    }
+}

@@ -1,0 +1,339 @@
+/**
+ * app-auth.js — State, DOM, Initialization & Auth
+ * Load order: supabase-js > db.js > app-auth.js > script.js
+ */
+
+// ── STATE ──────────────────────────────────────────────────────
+const STATE = {
+    currentUser: null,
+    userData: null,
+    viewMonth: new Date().getMonth(),
+    viewYear: new Date().getFullYear(),
+    monthNames: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+    creditFilterCat: 'all', creditSort: 'date_desc', creditPage: 1,
+    instFilterCat: 'all', instSort: 'date_desc', instPage: 1,
+    debitFilterCat: 'all', debitSort: 'date_desc', debitPage: 1,
+    itemsPerPage: 7,
+    editingCreditId: null, editingDebitId: null, editingInstId: null
+};
+
+// ── CHART INSTANCES ────────────────────────────────────────────
+let creditChartInstance = null, debitChartInstance = null,
+    goalsChartInstance = null, overallPieChartInstance = null,
+    installmentChartInstance = null;
+
+// ── DOM ─────────────────────────────────────────────────────────
+const DOM = {
+    authView: document.getElementById('auth-view'),
+    appView: document.getElementById('app-view'),
+
+    // Auth
+    loginSection: document.getElementById('login-section'),
+    loginForm: document.getElementById('login-form'),
+    loginErrorMsg: document.getElementById('login-error-msg'),
+    registerSection: document.getElementById('register-section'),
+    btnShowRegister: document.getElementById('btn-show-register'),
+    btnRegCancel: document.getElementById('btn-reg-cancel'),
+    regForm: document.getElementById('register-form'),
+    regErrorMsg: document.getElementById('reg-error-msg'),
+
+    // App header
+    appUserName: document.getElementById('app-user-name'),
+    appUserAvatar: document.getElementById('app-user-avatar'),
+    btnLogout: document.getElementById('btn-logout'),
+    pageTitle: document.getElementById('page-title'),
+
+    // Nav & grids (re-assigned in DOMContentLoaded)
+    mainNavLinks: null,
+    dashboardGrid: null,
+    categoriesGrid: null,
+    settingsGrid: null,
+    monthNavContainer: document.getElementById('month-navigation'),
+    btnPrevMonth: document.getElementById('btn-prev-month'),
+    btnNextMonth: document.getElementById('btn-next-month'),
+    labelCurrentMonth: document.getElementById('label-current-month'),
+
+    // Modals & forms (used by script.js)
+    btnNewTransaction: document.getElementById('btn-new-transaction'),
+    expenseModal: document.getElementById('expense-modal'),
+    btnCloseExpense: document.getElementById('btn-close-expense'),
+    btnCancelExpense: document.getElementById('btn-cancel-expense'),
+    expenseForm: document.getElementById('expense-form'),
+    expCategorySelect: document.getElementById('exp-category'),
+
+    creditTableBody: document.querySelector('#credit-table tbody'),
+
+    btnNewDebit: document.getElementById('btn-new-debit'),
+    debitModal: document.getElementById('debit-modal'),
+    btnCloseDebit: document.getElementById('btn-close-debit'),
+    btnCancelDebit: document.getElementById('btn-cancel-debit'),
+    debitForm: document.getElementById('debit-form'),
+    debCategorySelect: document.getElementById('deb-category'),
+    debitTableBody: document.querySelector('#debit-table tbody'),
+
+    categoryForm: document.getElementById('category-form'),
+    categoriesTableBody: document.querySelector('#categories-table tbody'),
+    btnSaveCategory: document.getElementById('btn-save-category'),
+    btnCancelCategoryEdit: document.getElementById('btn-cancel-category-edit'),
+
+    settingsForm: document.getElementById('settings-form'),
+    setClosingDay: document.getElementById('set-closing-day'),
+    setDueDay: document.getElementById('set-due-day'),
+    settingsMsg: document.getElementById('settings-msg'),
+
+    btnNewInstallment: document.getElementById('btn-new-installment'),
+    installmentModal: document.getElementById('installment-modal'),
+    installmentForm: document.getElementById('installment-form'),
+    instCategorySelect: document.getElementById('inst-category'),
+    installmentsTableBody: document.getElementById('installments-table-body'),
+
+    filterCatCredit: document.getElementById('filter-cat-credit'),
+    sortCredit: document.getElementById('sort-credit'),
+    btnPrevCredit: document.getElementById('btn-prev-credit'),
+    btnNextCredit: document.getElementById('btn-next-credit'),
+    pageInfoCredit: document.getElementById('page-info-credit'),
+
+    filterCatInst: document.getElementById('filter-cat-inst'),
+    sortInst: document.getElementById('sort-inst'),
+    btnPrevInst: document.getElementById('btn-prev-inst'),
+    btnNextInst: document.getElementById('btn-next-inst'),
+    pageInfoInst: document.getElementById('page-info-inst'),
+
+    filterCatDebit: document.getElementById('filter-cat-debit'),
+    sortDebit: document.getElementById('sort-debit'),
+    btnPrevDebit: document.getElementById('btn-prev-debit'),
+    btnNextDebit: document.getElementById('btn-next-debit'),
+    pageInfoDebit: document.getElementById('page-info-debit')
+};
+
+// ── AUTH HELPERS ────────────────────────────────────────────────
+function showAuthSection(section) {
+    DOM.loginSection.classList.toggle('hidden', section !== 'login');
+    DOM.registerSection.classList.toggle('hidden', section !== 'register');
+}
+
+async function loadAndEnterApp(user) {
+    STATE.currentUser = user;
+
+    // Retry profile load (trigger may need a moment after signup)
+    let profile = null;
+    for (let i = 0; i < 4; i++) {
+        try { profile = await DB.getProfile(user.id); break; }
+        catch (e) { if (i < 3) await new Promise(r => setTimeout(r, 600)); else throw e; }
+    }
+
+    const [categories, creditExpenses, debitTransactions, installments] = await Promise.all([
+        DB.getCategories(user.id),
+        DB.getCreditExpenses(user.id),
+        DB.getDebitTransactions(user.id),
+        DB.getInstallments(user.id)
+    ]);
+
+    STATE.userData = {
+        name: profile.name,
+        settings: profile.settings || { cardClosingDay: 11, cardDueDay: 20, darkMode: false },
+        categories, creditExpenses, debitTransactions, installments
+    };
+
+    window.applyDarkMode(!!STATE.userData.settings.darkMode);
+    window.applyCalendarBar(STATE.userData.settings.calendarBar !== false);
+    DOM.appUserName.textContent = STATE.userData.name;
+
+    // Render profile photo or initials
+    if (profile.avatar_url) {
+        DOM.appUserAvatar.innerHTML = `<img src="${profile.avatar_url}" alt="Avatar" class="avatar-img">`;
+    } else {
+        DOM.appUserAvatar.textContent = STATE.userData.name.charAt(0).toUpperCase();
+    }
+
+    const now = new Date();
+    STATE.viewMonth = now.getMonth();
+    STATE.viewYear = now.getFullYear();
+    updateMonthLabel();
+
+    DOM.authView.classList.replace('active', 'hidden');
+    DOM.appView.classList.replace('hidden', 'active');
+
+    initDashboard();
+    // Auto-start tutorial on first login
+    if (!STATE.userData.settings.tutorialSeen) {
+        setTimeout(window.startTutorial, 600);
+    } else {
+        setTimeout(checkGoalAlerts, 500);
+    }
+}
+
+// ── DARK MODE ──────────────────────────────────────────────────
+window.applyDarkMode = function (isDark) {
+    const headerBtn = document.getElementById('btn-header-darkmode');
+    document.body.classList.toggle('dark-theme', isDark);
+    if (headerBtn) {
+        const icon = headerBtn.querySelector('i');
+        if (icon) { icon.classList.toggle('fa-sun', isDark); icon.classList.toggle('fa-moon', !isDark); }
+    }
+    const toggle = document.getElementById('user-dark-mode');
+    if (toggle) toggle.checked = isDark;
+
+    if (STATE.userData) {
+        if (!STATE.userData.settings) STATE.userData.settings = {};
+        STATE.userData.settings.darkMode = isDark;
+    }
+
+    if (STATE.currentUser && STATE.userData?.settings) {
+        DB.updateProfileSettings(STATE.currentUser.id, STATE.userData.settings).catch(console.error);
+    }
+
+    const appView = document.getElementById('app-view');
+    if (appView?.classList.contains('active')) {
+        renderCreditChart(); renderDebitChart(); renderInstallmentsChart();
+        renderGoalsChart(); renderOverallPieChart();
+    }
+};
+
+// ── CALENDAR BAR ───────────────────────────────────────────────
+window.applyCalendarBar = function (isVisible) {
+    const bar = document.getElementById('top-calendar-bar');
+    if (bar) bar.classList.toggle('hidden', !isVisible);
+
+    const appView = document.getElementById('app-view');
+    if (appView) appView.style.paddingTop = isVisible ? '40px' : '0';
+
+    const toggle = document.getElementById('user-calendar-bar');
+    if (toggle) toggle.checked = isVisible;
+
+    if (STATE.userData) {
+        if (!STATE.userData.settings) STATE.userData.settings = {};
+        STATE.userData.settings.calendarBar = isVisible;
+    }
+
+    if (STATE.currentUser && STATE.userData?.settings) {
+        DB.updateProfileSettings(STATE.currentUser.id, STATE.userData.settings).catch(console.error);
+    }
+};
+
+// ── TUTORIAL ───────────────────────────────────────────────────
+let tutorialCurrentStep = 0;
+const TUTORIAL_TOTAL_STEPS = 8;
+
+window.startTutorial = function () {
+    const modal = document.getElementById('tutorial-modal');
+    if (!modal) return;
+    tutorialCurrentStep = 0;
+    renderTutorialStep();
+    modal.classList.remove('hidden');
+};
+
+window.finishTutorial = async function () {
+    const modal = document.getElementById('tutorial-modal');
+    if (modal) modal.classList.add('hidden');
+    
+    if (STATE.userData && (!STATE.userData.settings || !STATE.userData.settings.tutorialSeen)) {
+        if (!STATE.userData.settings) STATE.userData.settings = {};
+        STATE.userData.settings.tutorialSeen = true;
+        if (STATE.currentUser) {
+            try {
+                await DB.updateProfileSettings(STATE.currentUser.id, STATE.userData.settings);
+            } catch (err) {
+                console.error("Failed to save tutorial setting:", err);
+            }
+        }
+    }
+};
+
+function renderTutorialStep() {
+    const slider = document.getElementById('tutorial-slider');
+    const dotsContainer = document.getElementById('tutorial-dots');
+    const btnPrev = document.getElementById('btn-tut-prev');
+    const btnNext = document.getElementById('btn-tut-next');
+    
+    if (!slider || !dotsContainer) return;
+    
+    // Move slider (100% width per slide)
+    slider.style.transform = `translateX(-${tutorialCurrentStep * 100}%)`;
+    
+    // Render/Update dots
+    dotsContainer.innerHTML = '';
+    for (let i = 0; i < TUTORIAL_TOTAL_STEPS; i++) {
+        const dot = document.createElement('div');
+        dot.className = `dot ${i === tutorialCurrentStep ? 'active' : ''}`;
+        dot.addEventListener('click', () => {
+            tutorialCurrentStep = i;
+            renderTutorialStep();
+        });
+        dotsContainer.appendChild(dot);
+    }
+    
+    // Update Prev button
+    btnPrev.style.visibility = tutorialCurrentStep === 0 ? 'hidden' : 'visible';
+    
+    // Update Next button
+    if (tutorialCurrentStep === TUTORIAL_TOTAL_STEPS - 1) {
+        btnNext.innerHTML = 'Começar a usar! <i class="fa-solid fa-check"></i>';
+    } else {
+        btnNext.innerHTML = 'Próximo <i class="fa-solid fa-arrow-right"></i>';
+    }
+}
+
+// ── INIT ────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+    DOM.mainNavLinks = document.querySelectorAll('.main-nav a');
+    DOM.dashboardGrid = document.getElementById('dashboard-grid');
+    DOM.categoriesGrid = document.getElementById('categories-grid');
+    DOM.settingsGrid = document.getElementById('settings-grid');
+    DOM.extractsGrid = document.getElementById('extracts-grid');
+    DOM.pageTitle = document.getElementById('page-title');
+
+    // Tutorial Listeners
+    document.getElementById('btn-close-tutorial')?.addEventListener('click', window.finishTutorial);
+    document.getElementById('btn-tut-prev')?.addEventListener('click', () => {
+        if (tutorialCurrentStep > 0) { tutorialCurrentStep--; renderTutorialStep(); }
+    });
+    document.getElementById('btn-tut-next')?.addEventListener('click', () => {
+        if (tutorialCurrentStep < TUTORIAL_TOTAL_STEPS - 1) {
+            tutorialCurrentStep++;
+            renderTutorialStep();
+        } else {
+            window.finishTutorial();
+        }
+    });
+
+    // 1. Primeiramente, atrelamos todos os listeners para que os botões funcionem
+    // imediatamente, mesmo enquanto checamos a sessão no Supabase.
+    setupEventListeners();
+    window.dispatchEvent(new Event('app-auth-ready'));
+
+    // 2. Definimos o ouvinte de autenticação do Supabase
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' && session && !STATE.currentUser) {
+            await loadAndEnterApp(session.user);
+        }
+    });
+
+    // 3. Checamos a sessão de forma assíncrona (com proteção contra erros de rede)
+    try {
+        const session = await DB.getSession();
+        if (session) {
+            await loadAndEnterApp(session.user);
+        } else {
+            showAuthSection('login');
+        }
+    } catch (err) {
+        console.error("Erro ao checar sessão:", err);
+        showAuthSection('login');
+    }
+});
+
+// ── UTIL ────────────────────────────────────────────────────────
+function updateMonthLabel() {
+    if (DOM.labelCurrentMonth)
+        DOM.labelCurrentMonth.textContent = `${STATE.monthNames[STATE.viewMonth]} ${STATE.viewYear}`;
+}
+
+function showUserSettingsMsg(el, text, success) {
+    el.textContent = text;
+    el.style.display = 'block';
+    el.style.color = success ? 'var(--c-success)' : 'var(--c-danger)';
+    el.style.fontWeight = '500';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.style.display = 'none'; }, 4000);
+}

@@ -1,0 +1,32 @@
+/* ==========================================================================
+   _charts.css
+   Área de gráficos Chart.js: container, título e wrapper responsivo.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Container do Gráfico
+   -------------------------------------------------------------------------- */
+.chart-container {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px dashed var(--c-border);
+}
+
+.chart-container h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--c-text-main);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   2. Wrapper do Canvas (altura fixa para o Chart.js)
+   -------------------------------------------------------------------------- */
+.chart-wrapper {
+    position: relative;
+    height: 250px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
