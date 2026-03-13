@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/styles.css?v=1.0.0">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Supabase JS v2 -->
@@ -525,7 +525,8 @@
                             <p class="subtitle" style="margin-bottom: 2rem;">Defina os dias de fechamento e vencimento
                                 para automatizar os ciclos das despesas.</p>
                             <div class="form-group">
-                                <label for="set-closing-day">Dia de Fechamento da Fatura (Vigência)</label>
+                                <label for="set-closing-day">Dia de Virada da Fatura</label>
+                                <small style="display: block; margin-top: 0.25rem; margin-bottom: 0.5rem; color: var(--c-text-muted); font-size: 0.8rem;">A partir deste dia, as compras já entram na fatura do mês seguinte.</small>
                                 <input type="number" id="set-closing-day" required min="1" max="31"
                                     placeholder="Ex: 11">
                             </div>
@@ -913,10 +914,10 @@
         </div>
     </div>
 
-    <script src="js/db.js"></script>
-    <script src="js/app-auth.js"></script>
-    <script src="js/app-crud.js"></script>
-    <script src="js/script.js"></script>
+    <script src="js/db.js?v=1.0.0"></script>
+    <script src="js/app-auth.js?v=1.0.0"></script>
+    <script src="js/app-crud.js?v=1.0.0"></script>
+    <script src="js/script.js?v=1.0.0"></script>
 </body>
 
 </html>
