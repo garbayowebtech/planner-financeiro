@@ -185,6 +185,8 @@ function setupEventListeners() {
     DOM.loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         DOM.loginErrorMsg.textContent = 'Entrando...';
+        DOM.loginErrorMsg.style.color = 'var(--c-text-muted)';
+        
         try {
             const user = await DB.signIn(
                 document.getElementById('login-email').value.trim(),
@@ -192,7 +194,15 @@ function setupEventListeners() {
             );
             await loadAndEnterApp(user);
         } catch (err) {
-            DOM.loginErrorMsg.textContent = 'E-mail ou senha incorretos.';
+            console.error("Login Form Error:", err);
+            // Red text for error
+            DOM.loginErrorMsg.style.color = 'var(--c-danger)';
+            // Distinguish between supabase auth error vs internal app init error
+            if (err.message && !err.message.includes('corretos') && !err.message.includes('Invalid login')) {
+                DOM.loginErrorMsg.textContent = 'Erro ao carregar app: ' + err.message;
+            } else {
+                DOM.loginErrorMsg.textContent = 'E-mail ou senha incorretos.';
+            }
         }
     });
 

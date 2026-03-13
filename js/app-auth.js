@@ -108,12 +108,28 @@ const DOM = {
 
 // ── AUTH HELPERS ────────────────────────────────────────────────
 function showAuthSection(section) {
+    if (section === 'login' || section === 'register') {
+        isAppLoading = false; // Reset lock when showing forms
+    }
     DOM.loginSection.classList.toggle('hidden', section !== 'login');
     DOM.registerSection.classList.toggle('hidden', section !== 'register');
+    const loadingSec = document.getElementById('loading-session');
+    if (loadingSec) loadingSec.classList.toggle('hidden', section !== 'loading');
 }
 
+let isAppLoading = false;
+
 async function loadAndEnterApp(user) {
-    STATE.currentUser = user;
+    console.log("loadAndEnterApp called. lock:", isAppLoading, "user:", user?.id);
+    if (isAppLoading) return;
+    
+    // Allow re-entry if state is cleared but we pass same user
+    if (STATE.currentUser?.id === user.id && DOM.appView.classList.contains('active')) return;
+    
+    isAppLoading = true;
+
+    try {
+        STATE.currentUser = user;
 
     // Retry profile load (trigger may need a moment after signup)
     let profile = null;
@@ -160,6 +176,13 @@ async function loadAndEnterApp(user) {
         setTimeout(window.startTutorial, 600);
     } else {
         setTimeout(checkGoalAlerts, 500);
+    }
+    } catch(err) {
+        console.error("Error during app-load:", err);
+        DOM.loginErrorMsg.textContent = "Erro processando login: " + err.message;
+        throw err;
+    } finally {
+        isAppLoading = false;
     }
 }
 
@@ -299,27 +322,52 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 1. Primeiramente, atrelamos todos os listeners para que os botões funcionem
     // imediatamente, mesmo enquanto checamos a sessão no Supabase.
-    setupEventListeners();
-    window.dispatchEvent(new Event('app-auth-ready'));
+    try {
+        setupEventListeners();
+    } catch (e) {
+        console.error("Erro ao configurar listeners:", e);
+        DOM.loginErrorMsg.textContent = "Erro em setupEventListeners: " + e.message;
+    }
+
+    try {
+        window.dispatchEvent(new Event('app-auth-ready'));
+    } catch (e) {
+        console.error("Erro auth ready:", e);
+    }
 
     // 2. Definimos o ouvinte de autenticação do Supabase
-    supabaseClient.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN' && session && !STATE.currentUser) {
-            await loadAndEnterApp(session.user);
+    try {
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' && session && (!STATE.currentUser || STATE.currentUser.id !== session.user.id)) {
+            try {
+                await loadAndEnterApp(session.user);
+            } catch (e) {
+                console.error("onAuthStateChange error:", e);
+                showAuthSection('login');
+            }
+        } else if (event === 'SIGNED_OUT') {
+            showAuthSection('login');
         }
     });
+    } catch (e) {
+        console.error("Erro onAuthStateChange init:", e);
+        DOM.loginErrorMsg.textContent = "Erro no ouvinte de Auth: " + e.message;
+    }
 
-    // 3. Checamos a sessão de forma assíncrona (com proteção contra erros de rede)
+    // 3. Checamos a sessão de forma assíncrona (com proteção contra erros de rede e timeout)
     try {
-        const session = await DB.getSession();
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout ao verificar sessão (5s)")), 5000));
+        const session = await Promise.race([ DB.getSession(), timeoutPromise ]);
+        
         if (session) {
             await loadAndEnterApp(session.user);
         } else {
             showAuthSection('login');
         }
     } catch (err) {
-        console.error("Erro ao checar sessão:", err);
+        console.error("Erro ao checar sessão inicial:", err);
         showAuthSection('login');
+        DOM.loginErrorMsg.textContent = err.message || "Falha ao conectar no banco.";
     }
 });
 

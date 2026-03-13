@@ -771,6 +771,7 @@ window.renderConsolidatedExtracts = function renderConsolidatedExtracts() {
 // ── TOP CALENDAR ────────────────────────────────────────────────
 function startCalendar() {
     const dateEl = document.getElementById('calendar-date');
+    const dateShortEl = document.getElementById('calendar-date-short');
     const timeEl = document.getElementById('calendar-time');
 
     if (!dateEl || !timeEl) return;
@@ -784,11 +785,15 @@ function startCalendar() {
         // Capitalize trailing words dynamically
         dateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
 
+        // Format Short Date: 15/10/2026
+        let dateShortStr = now.toLocaleDateString('pt-BR');
+
         // Format Time: 14:35:09
         const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
         let timeStr = now.toLocaleTimeString('pt-BR', timeOptions);
 
         dateEl.textContent = dateStr;
+        if (dateShortEl) dateShortEl.textContent = dateShortStr;
         timeEl.textContent = timeStr;
     }
 

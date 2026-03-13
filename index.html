@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/styles.css?v=1.0.3">
+    <link rel="stylesheet" href="css/styles.css?v=1.0.6">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Supabase JS v2 -->
@@ -26,8 +26,14 @@
                 <p>Bem-vindo(a). Entre com sua conta para continuar.</p>
             </div>
 
+            <!-- Loading session Section -->
+            <div id="loading-session" style="text-align: center; padding: 2rem;">
+                <i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: var(--c-primary); margin-bottom: 1rem;"></i>
+                <p style="color: var(--c-text-muted);">Verificando sessão...</p>
+            </div>
+
             <!-- Login Section -->
-            <div id="login-section">
+            <div id="login-section" class="hidden">
                 <form id="login-form">
                     <div class="form-group">
                         <label for="login-email">E-mail</label>
@@ -92,7 +98,8 @@
         <div id="top-calendar-bar" class="top-calendar-bar">
             <div class="calendar-content">
                 <i class="fa-regular fa-calendar-days"></i>
-                <span id="calendar-date">--/--/----</span>
+                <span id="calendar-date" class="calendar-date-full">--/--/----</span>
+                <span id="calendar-date-short" class="calendar-date-short">--/--/----</span>
                 <span class="separator">•</span>
                 <i class="fa-regular fa-clock"></i>
                 <span id="calendar-time">--:--</span>
@@ -916,10 +923,10 @@
         </div>
     </div>
 
-    <script src="js/db.js?v=1.0.3"></script>
-    <script src="js/app-auth.js?v=1.0.3"></script>
-    <script src="js/app-crud.js?v=1.0.3"></script>
-    <script src="js/script.js?v=1.0.3"></script>
+    <script src="js/db.js?v=1.0.6"></script>
+    <script src="js/app-auth.js?v=1.0.6"></script>
+    <script src="js/app-crud.js?v=1.0.6"></script>
+    <script src="js/script.js?v=1.0.6"></script>
 </body>
 
 </html>

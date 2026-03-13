@@ -65,7 +65,7 @@
         top: 0;
         bottom: 0;
         width: 280px;
-        z-index: 100;
+        z-index: 1002;
         transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: none;
     }
@@ -79,6 +79,7 @@
     .sidebar-overlay {
         display: block;
         pointer-events: none;
+        z-index: 1001;
     }
 
     .sidebar-overlay.active {
@@ -135,6 +136,13 @@
         min-width: 140px !important;
     }
 
+    .calendar-date-full {
+        display: none !important;
+    }
+    .calendar-date-short {
+        display: inline !important;
+    }
+
     /* --- App View --- */
     #app-view {
         flex-direction: column;
@@ -142,14 +150,12 @@
     }
 
     .main-content {
-        height: 100dvh;
-        overflow: hidden;
+        overflow-x: hidden;
+        overflow-y: auto;
     }
 
     .content-scroll {
         padding: 1rem;
-        padding-bottom: 5rem;
-        /* espaço para a nav inferior */
     }
 
     /* --- Dashboard Grid --- */
@@ -301,7 +307,6 @@
         margin-top: 1.5rem;
         margin-left: -1rem;
         margin-right: -1rem;
-        margin-bottom: -5rem;
         width: calc(100% + 2rem);
     }
 
