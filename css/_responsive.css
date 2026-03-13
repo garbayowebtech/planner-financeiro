@@ -364,6 +364,12 @@
     .modal-actions .btn {
         width: 100%;
     }
+
+    /* --- Top Calendar Bar em telas muito pequenas --- */
+    .top-calendar-bar {
+        padding: 0 0.75rem;
+        font-size: 0.81rem; /* ~10% menor que o padrão de 0.9rem */
+    }
 }
 
 /* ==========================================================================
