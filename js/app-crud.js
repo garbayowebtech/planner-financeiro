@@ -329,6 +329,9 @@ function setupEventListeners() {
                 if (cb && STATE.userData?.settings) cb.checked = STATE.userData.settings.calendarBar !== false;
                 const nameInput = document.getElementById('user-new-name');
                 if (nameInput && STATE.userData) nameInput.value = STATE.userData.name;
+                // Preenche campo oculto de username para o gerenciador de senhas
+                const pinUsername = document.getElementById('change-pin-username');
+                if (pinUsername && STATE.currentUser?.email) pinUsername.value = STATE.currentUser.email;
             } else {
                 DOM.categoriesGrid.classList.add('hidden');
                 DOM.settingsGrid.classList.add('hidden');

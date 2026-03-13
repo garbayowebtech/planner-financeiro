@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/styles.css?v=1.0.1">
+    <link rel="stylesheet" href="css/styles.css?v=1.0.2">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Supabase JS v2 -->
@@ -571,6 +571,8 @@
 
                         <!-- Change Password -->
                         <form id="change-pin-form" style="max-width: 400px;">
+                            <!-- Campo oculto de username: necessário para acessibilidade e gerenciadores de senha -->
+                            <input type="text" id="change-pin-username" autocomplete="username" aria-hidden="true" style="display:none;">
                             <p class="subtitle" style="margin-bottom: 1.5rem;">Para alterar sua senha, informe a nova
                                 senha de no mínimo 6 caracteres.</p>
                             <div class="form-group">
@@ -914,10 +916,10 @@
         </div>
     </div>
 
-    <script src="js/db.js?v=1.0.1"></script>
-    <script src="js/app-auth.js?v=1.0.1"></script>
-    <script src="js/app-crud.js?v=1.0.1"></script>
-    <script src="js/script.js?v=1.0.1"></script>
+    <script src="js/db.js?v=1.0.2"></script>
+    <script src="js/app-auth.js?v=1.0.2"></script>
+    <script src="js/app-crud.js?v=1.0.2"></script>
+    <script src="js/script.js?v=1.0.2"></script>
 </body>
 
 </html>
