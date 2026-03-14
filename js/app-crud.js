@@ -247,15 +247,9 @@ function setupEventListeners() {
 
     // --- AUTH: Logout ---
     DOM.btnLogout.addEventListener('click', async () => {
+        // Triggering signOut will fire the SIGNED_OUT event in app-auth.js,
+        // which handles all the cleanup globally via processLogout().
         await DB.signOut();
-        STATE.currentUser = null;
-        STATE.userData = null;
-        document.body.classList.remove('dark-theme');
-        DOM.appView.classList.replace('active', 'hidden');
-        DOM.authView.classList.replace('hidden', 'active');
-        DOM.loginErrorMsg.textContent = '';
-        DOM.loginForm.reset();
-        showAuthSection('login');
     });
 
     // --- EXPENSE MODAL ---

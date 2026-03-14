@@ -117,6 +117,29 @@ function showAuthSection(section) {
     if (loadingSec) loadingSec.classList.toggle('hidden', section !== 'loading');
 }
 
+// Global logout function to clear state, reset UI, and destroy chart instances
+window.processLogout = function() {
+    console.log("Processing logout cleanup...");
+    STATE.currentUser = null;
+    STATE.userData = null;
+    
+    // Destroy charts to avoid canvas overlap if another user logs in
+    if (creditChartInstance) creditChartInstance.destroy();
+    if (debitChartInstance) debitChartInstance.destroy();
+    if (goalsChartInstance) goalsChartInstance.destroy();
+    if (overallPieChartInstance) overallPieChartInstance.destroy();
+    if (installmentChartInstance) installmentChartInstance.destroy();
+    if (window.extractPieChartInstance) window.extractPieChartInstance.destroy();
+
+    document.body.classList.remove('dark-theme');
+    DOM.appView.classList.replace('active', 'hidden');
+    DOM.authView.classList.replace('hidden', 'active');
+    
+    DOM.loginErrorMsg.textContent = '';
+    DOM.loginForm.reset();
+    showAuthSection('login');
+};
+
 let isAppLoading = false;
 
 async function loadAndEnterApp(user) {
@@ -138,12 +161,19 @@ async function loadAndEnterApp(user) {
         catch (e) { if (i < 3) await new Promise(r => setTimeout(r, 600)); else throw e; }
     }
 
-    const [categories, creditExpenses, debitTransactions, installments] = await Promise.all([
+    // Wrap the heavy database fetch Promise.all with a timeout to prevent infinite loading on bad connections
+    const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Timeout: Os dados demoraram muito para carregar. O servidor pode estar indisponível ou há problemas na sua conexão.")), 15000)
+    );
+
+    const dataPromise = Promise.all([
         DB.getCategories(user.id),
         DB.getCreditExpenses(user.id),
         DB.getDebitTransactions(user.id),
         DB.getInstallments(user.id)
     ]);
+
+    const [categories, creditExpenses, debitTransactions, installments] = await Promise.race([dataPromise, timeoutPromise]);
 
     STATE.userData = {
         name: profile.name,
@@ -335,39 +365,45 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error("Erro auth ready:", e);
     }
 
-    // 2. Definimos o ouvinte de autenticação do Supabase
+    // 2. Definimos o ouvinte de autenticação do Supabase como única fonte da verdade
     try {
+        let isInitialLoad = true;
+        
         supabaseClient.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN' && session && (!STATE.currentUser || STATE.currentUser.id !== session.user.id)) {
-            try {
-                await loadAndEnterApp(session.user);
-            } catch (e) {
-                console.error("onAuthStateChange error:", e);
+            console.log("Auth Event:", event);
+            
+            if (event === 'INITIAL_SESSION') {
+                isInitialLoad = false;
+                if (session) {
+                    try { await loadAndEnterApp(session.user); } 
+                    catch (e) { showAuthSection('login'); }
+                } else {
+                    showAuthSection('login');
+                }
+            } else if (event === 'SIGNED_IN' && session && (!STATE.currentUser || STATE.currentUser.id !== session.user.id)) {
+                try {
+                    await loadAndEnterApp(session.user);
+                } catch (e) {
+                    console.error("onAuthStateChange error:", e);
+                    showAuthSection('login');
+                }
+            } else if (event === 'SIGNED_OUT') {
+                window.processLogout();
+            }
+        });
+        
+        // Failsafe timeout in case INITIAL_SESSION event never fires
+        setTimeout(() => {
+            if (isInitialLoad) {
+                console.warn("Auth event watcher timed out, forcing login screen.");
                 showAuthSection('login');
             }
-        } else if (event === 'SIGNED_OUT') {
-            showAuthSection('login');
-        }
-    });
+        }, 5000);
+        
     } catch (e) {
         console.error("Erro onAuthStateChange init:", e);
         DOM.loginErrorMsg.textContent = "Erro no ouvinte de Auth: " + e.message;
-    }
-
-    // 3. Checamos a sessão de forma assíncrona (com proteção contra erros de rede e timeout)
-    try {
-        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout ao verificar sessão (5s)")), 5000));
-        const session = await Promise.race([ DB.getSession(), timeoutPromise ]);
-        
-        if (session) {
-            await loadAndEnterApp(session.user);
-        } else {
-            showAuthSection('login');
-        }
-    } catch (err) {
-        console.error("Erro ao checar sessão inicial:", err);
         showAuthSection('login');
-        DOM.loginErrorMsg.textContent = err.message || "Falha ao conectar no banco.";
     }
 });
 
