@@ -205,8 +205,9 @@ function setupEventListeners() {
         } catch (err) {
             console.error("Login Form Error:", err);
             
-            // Tenta forçar logout silencioso para destravar a cache caso a sessão no localStorage esteja bugada (comum após aba fechada)
-            try { await DB.signOut(); } catch(e){}
+            // Tenta forçar logout silencioso sem await e apaga a chave de cache caso a sessão esteja corrompida!
+            localStorage.removeItem('sb-ctveuoeoyymzozzwqqln-auth-token');
+            DB.signOut().catch(() => {});
             
             // Red text for error
             DOM.loginErrorMsg.style.color = 'var(--c-danger)';

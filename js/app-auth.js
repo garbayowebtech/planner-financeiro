@@ -120,6 +120,7 @@ function showAuthSection(section) {
 // Global logout function to clear state, reset UI, and destroy chart instances
 window.processLogout = function() {
     console.log("Processing logout cleanup...");
+    localStorage.removeItem('sb-ctveuoeoyymzozzwqqln-auth-token');
     STATE.currentUser = null;
     STATE.userData = null;
     
@@ -141,83 +142,87 @@ window.processLogout = function() {
 };
 
 let isAppLoading = false;
+let appLoadPromise = null;
 
-async function loadAndEnterApp(user) {
+function loadAndEnterApp(user) {
     console.log("loadAndEnterApp called. lock:", isAppLoading, "user:", user?.id);
-    if (isAppLoading) return;
+    if (isAppLoading) return appLoadPromise;
     
     // Allow re-entry if state is cleared but we pass same user
-    if (STATE.currentUser?.id === user.id && DOM.appView.classList.contains('active')) return;
+    if (STATE.currentUser?.id === user.id && DOM.appView.classList.contains('active')) return Promise.resolve();
     
     isAppLoading = true;
+    appLoadPromise = (async () => {
+        try {
+            STATE.currentUser = user;
 
-    try {
-        STATE.currentUser = user;
+            // Retry profile load (trigger may need a moment after signup)
+            let profile = null;
+            for (let i = 0; i < 4; i++) {
+                try { 
+                    const pfTimeout = new Promise((_, rej) => setTimeout(() => rej(new Error("Profile timeout")), 8000));
+                    profile = await Promise.race([DB.getProfile(user.id), pfTimeout]); 
+                    break; 
+                }
+                catch (e) { if (i < 3) await new Promise(r => setTimeout(r, 600)); else throw e; }
+            }
 
-    // Retry profile load (trigger may need a moment after signup)
-    let profile = null;
-    for (let i = 0; i < 4; i++) {
-        try { 
-            const pfTimeout = new Promise((_, rej) => setTimeout(() => rej(new Error("Profile timeout")), 8000));
-            profile = await Promise.race([DB.getProfile(user.id), pfTimeout]); 
-            break; 
+            // Wrap the heavy database fetch Promise.all with a timeout to prevent infinite loading on bad connections
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error("Timeout: Os dados demoraram muito para carregar. O servidor pode estar indisponível ou há problemas na sua conexão.")), 15000)
+            );
+
+            const dataPromise = Promise.all([
+                DB.getCategories(user.id),
+                DB.getCreditExpenses(user.id),
+                DB.getDebitTransactions(user.id),
+                DB.getInstallments(user.id)
+            ]);
+
+            const [categories, creditExpenses, debitTransactions, installments] = await Promise.race([dataPromise, timeoutPromise]);
+
+            STATE.userData = {
+                name: profile.name,
+                settings: profile.settings || { cardClosingDay: 11, cardDueDay: 20, darkMode: false },
+                categories, creditExpenses, debitTransactions, installments
+            };
+
+            window.applyDarkMode(!!STATE.userData.settings.darkMode);
+            window.applyCalendarBar(STATE.userData.settings.calendarBar !== false);
+            DOM.appUserName.textContent = STATE.userData.name;
+
+            // Render profile photo or initials
+            if (profile.avatar_url) {
+                DOM.appUserAvatar.innerHTML = `<img src="${profile.avatar_url}" alt="Avatar" class="avatar-img">`;
+            } else {
+                DOM.appUserAvatar.textContent = STATE.userData.name.charAt(0).toUpperCase();
+            }
+
+            const now = new Date();
+            STATE.viewMonth = now.getMonth();
+            STATE.viewYear = now.getFullYear();
+            updateMonthLabel();
+
+            DOM.authView.classList.replace('active', 'hidden');
+            DOM.appView.classList.replace('hidden', 'active');
+
+            initDashboard();
+            // Auto-start tutorial on first login
+            if (!STATE.userData.settings.tutorialSeen) {
+                setTimeout(window.startTutorial, 600);
+            } else {
+                setTimeout(checkGoalAlerts, 500);
+            }
+        } catch(err) {
+            console.error("Error during app-load:", err);
+            DOM.loginErrorMsg.textContent = "Erro processando login: " + err.message;
+            throw err;
+        } finally {
+            isAppLoading = false;
+            appLoadPromise = null;
         }
-        catch (e) { if (i < 3) await new Promise(r => setTimeout(r, 600)); else throw e; }
-    }
-
-    // Wrap the heavy database fetch Promise.all with a timeout to prevent infinite loading on bad connections
-    const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("Timeout: Os dados demoraram muito para carregar. O servidor pode estar indisponível ou há problemas na sua conexão.")), 15000)
-    );
-
-    const dataPromise = Promise.all([
-        DB.getCategories(user.id),
-        DB.getCreditExpenses(user.id),
-        DB.getDebitTransactions(user.id),
-        DB.getInstallments(user.id)
-    ]);
-
-    const [categories, creditExpenses, debitTransactions, installments] = await Promise.race([dataPromise, timeoutPromise]);
-
-    STATE.userData = {
-        name: profile.name,
-        settings: profile.settings || { cardClosingDay: 11, cardDueDay: 20, darkMode: false },
-        categories, creditExpenses, debitTransactions, installments
-    };
-
-    window.applyDarkMode(!!STATE.userData.settings.darkMode);
-    window.applyCalendarBar(STATE.userData.settings.calendarBar !== false);
-    DOM.appUserName.textContent = STATE.userData.name;
-
-    // Render profile photo or initials
-    if (profile.avatar_url) {
-        DOM.appUserAvatar.innerHTML = `<img src="${profile.avatar_url}" alt="Avatar" class="avatar-img">`;
-    } else {
-        DOM.appUserAvatar.textContent = STATE.userData.name.charAt(0).toUpperCase();
-    }
-
-    const now = new Date();
-    STATE.viewMonth = now.getMonth();
-    STATE.viewYear = now.getFullYear();
-    updateMonthLabel();
-
-    DOM.authView.classList.replace('active', 'hidden');
-    DOM.appView.classList.replace('hidden', 'active');
-
-    initDashboard();
-    // Auto-start tutorial on first login
-    if (!STATE.userData.settings.tutorialSeen) {
-        setTimeout(window.startTutorial, 600);
-    } else {
-        setTimeout(checkGoalAlerts, 500);
-    }
-    } catch(err) {
-        console.error("Error during app-load:", err);
-        DOM.loginErrorMsg.textContent = "Erro processando login: " + err.message;
-        throw err;
-    } finally {
-        isAppLoading = false;
-    }
+    })();
+    return appLoadPromise;
 }
 
 // ── DARK MODE ──────────────────────────────────────────────────
@@ -380,7 +385,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 isInitialLoad = false;
                 if (session) {
                     try { await loadAndEnterApp(session.user); } 
-                    catch (e) { showAuthSection('login'); }
+                    catch (e) {
+                        console.error("INITIAL_SESSION carregamento bloqueado:", e);
+                        localStorage.removeItem('sb-ctveuoeoyymzozzwqqln-auth-token');
+                        DB.signOut().catch(() => {});
+                        showAuthSection('login'); 
+                    }
                 } else {
                     showAuthSection('login');
                 }
@@ -388,7 +398,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 try {
                     await loadAndEnterApp(session.user);
                 } catch (e) {
-                    console.error("onAuthStateChange error:", e);
+                    console.error("onAuthStateChange carregamento bloqueado:", e);
+                    localStorage.removeItem('sb-ctveuoeoyymzozzwqqln-auth-token');
+                    DB.signOut().catch(() => {});
                     showAuthSection('login');
                 }
             } else if (event === 'SIGNED_OUT') {
