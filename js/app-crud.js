@@ -188,18 +188,31 @@ function setupEventListeners() {
         DOM.loginErrorMsg.style.color = 'var(--c-text-muted)';
         
         try {
-            const user = await DB.signIn(
-                document.getElementById('login-email').value.trim(),
-                document.getElementById('login-password').value
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error("Timeout: O servidor demorou muito para responder. Tente novamente.")), 10000)
             );
+            
+            // 1. Faz o signIn com limite de 10s
+            const user = await Promise.race([DB.signIn(email, password), timeoutPromise]);
+            
+            // 2. Chama a rotina de carregar o app. Usamos promise.race duplo se necessário, mas 
+            // a loadAndEnterApp já possui os proprios timeouts (15s).
             await loadAndEnterApp(user);
+            
         } catch (err) {
             console.error("Login Form Error:", err);
+            
+            // Tenta forçar logout silencioso para destravar a cache caso a sessão no localStorage esteja bugada (comum após aba fechada)
+            try { await DB.signOut(); } catch(e){}
+            
             // Red text for error
             DOM.loginErrorMsg.style.color = 'var(--c-danger)';
             // Distinguish between supabase auth error vs internal app init error
-            if (err.message && !err.message.includes('corretos') && !err.message.includes('Invalid login')) {
-                DOM.loginErrorMsg.textContent = 'Erro ao carregar app: ' + err.message;
+            if (err.message && !err.message.includes('corretos') && !err.message.includes('Invalid login') && !err.message.includes('credentials')) {
+                DOM.loginErrorMsg.textContent = 'Erro: ' + (err.message || 'Falha ao conectar.');
             } else {
                 DOM.loginErrorMsg.textContent = 'E-mail ou senha incorretos.';
             }

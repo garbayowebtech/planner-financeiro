@@ -157,7 +157,11 @@ async function loadAndEnterApp(user) {
     // Retry profile load (trigger may need a moment after signup)
     let profile = null;
     for (let i = 0; i < 4; i++) {
-        try { profile = await DB.getProfile(user.id); break; }
+        try { 
+            const pfTimeout = new Promise((_, rej) => setTimeout(() => rej(new Error("Profile timeout")), 8000));
+            profile = await Promise.race([DB.getProfile(user.id), pfTimeout]); 
+            break; 
+        }
         catch (e) { if (i < 3) await new Promise(r => setTimeout(r, 600)); else throw e; }
     }
 
