@@ -227,7 +227,7 @@ function renderCreditTable() {
         const cat = STATE.userData.categories.find(c => c.id === exp.categoryId);
         const catHtml = cat ? `<span class="category-badge" style="background:${cat.color};color:${cat.textColor || '#fff'}">${cat.name}</span>` : '-';
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${formatDate(exp.date)}</td><td><strong>${exp.name}</strong></td><td>${catHtml}</td><td><small>${formatDate(exp.cycleStart)} a ${formatDate(exp.cycleEnd)}</small></td><td>${formatDate(exp.dueDate)}</td><td class="text-right text-danger">-${formatCurrency(exp.amount)}</td><td class="text-center"><div style="display:flex;justify-content:center;gap:.5rem"><button class="btn-icon" style="color:var(--c-primary)" onclick="editCreditExpense('${exp.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn-delete" onclick="deleteCreditExpense('${exp.id}')"><i class="fa-solid fa-trash"></i></button></div></td>`;
+        tr.innerHTML = `<td>${formatDate(exp.date)}</td><td><strong>${exp.name}</strong></td><td class="text-danger">-${formatCurrency(exp.amount)}</td><td>${catHtml}</td><td><small>${formatDate(exp.cycleStart)} a ${formatDate(exp.cycleEnd)}</small></td><td>${formatDate(exp.dueDate)}</td><td class="text-center"><div style="display:flex;justify-content:center;gap:.5rem"><button class="btn-icon" style="color:var(--c-primary)" onclick="editCreditExpense('${exp.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn-delete" onclick="deleteCreditExpense('${exp.id}')"><i class="fa-solid fa-trash"></i></button></div></td>`;
         DOM.creditTableBody.appendChild(tr);
     });
 
@@ -334,7 +334,7 @@ function renderDebitTable() {
         const op = txn.type === 'income' ? '+' : '-';
         const vc = txn.type === 'income' ? 'text-success' : 'text-danger';
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${formatDate(txn.date)}</td><td><strong>${txn.name}</strong></td><td>${catHtml}</td><td><small>${txn.type === 'income' ? 'Entrada' : 'Saída'}</small></td><td class="text-right ${vc}">${op}${formatCurrency(txn.amount)}</td><td class="text-center"><div style="display:flex;justify-content:center;gap:.5rem"><button class="btn-icon" style="color:var(--c-primary)" onclick="editDebitTransaction('${txn.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn-delete" onclick="deleteDebitTransaction('${txn.id}')"><i class="fa-solid fa-trash"></i></button></div></td>`;
+        tr.innerHTML = `<td>${formatDate(txn.date)}</td><td><strong>${txn.name}</strong></td><td class="${vc}">${op}${formatCurrency(txn.amount)}</td><td>${catHtml}</td><td><small>${txn.type === 'income' ? 'Entrada' : 'Saída'}</small></td><td class="text-center"><div style="display:flex;justify-content:center;gap:.5rem"><button class="btn-icon" style="color:var(--c-primary)" onclick="editDebitTransaction('${txn.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn-delete" onclick="deleteDebitTransaction('${txn.id}')"><i class="fa-solid fa-trash"></i></button></div></td>`;
         DOM.debitTableBody.appendChild(tr);
     });
 
@@ -612,7 +612,7 @@ function renderInstallmentsTable() {
     else paged.forEach(inst => {
         const cat = STATE.userData.categories.find(c => c.id === inst.categoryId) || { name: 'Sem Categ.', color: '#ccc', textColor: '#000' };
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${formatDate(inst.date)}</td><td>${inst.name}</td><td><span class="category-badge" style="background:${cat.color};color:${cat.textColor || '#fff'}">${cat.name}</span></td><td class="text-center">${inst.projectedInst}/${inst.totalInstallments}</td><td class="text-right">${formatCurrency(inst.installmentAmount)}</td><td class="text-right">${formatCurrency(inst.remainingTotal)}</td><td class="text-center"><div style="display:flex;justify-content:center;gap:.5rem"><button class="btn-icon" style="color:var(--c-primary)" onclick="editInstallment('${inst.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn-delete" onclick="deleteInstallment('${inst.id}')"><i class="fa-solid fa-trash"></i></button></div></td>`;
+        tr.innerHTML = `<td>${formatDate(inst.date)}</td><td>${inst.name}</td><td>${formatCurrency(inst.installmentAmount)}</td><td><span class="category-badge" style="background:${cat.color};color:${cat.textColor || '#fff'}">${cat.name}</span></td><td class="text-center">${inst.projectedInst}/${inst.totalInstallments}</td><td class="text-right">${formatCurrency(inst.remainingTotal)}</td><td class="text-center"><div style="display:flex;justify-content:center;gap:.5rem"><button class="btn-icon" style="color:var(--c-primary)" onclick="editInstallment('${inst.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn-delete" onclick="deleteInstallment('${inst.id}')"><i class="fa-solid fa-trash"></i></button></div></td>`;
         tbody.appendChild(tr);
     });
 

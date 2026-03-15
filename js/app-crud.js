@@ -374,6 +374,37 @@ function setupEventListeners() {
         showUserSettingsMsg(msg, '✔ Nome alterado com sucesso!', true);
     });
 
+    // --- CHANGE EMAIL ---
+    document.getElementById('change-email-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const emailInput = document.getElementById('user-new-email');
+        const msg = document.getElementById('email-change-msg');
+        const newEmail = emailInput.value.trim();
+        
+        if (!newEmail || !newEmail.includes('@')) { 
+            showUserSettingsMsg(msg, 'Por favor, insira um e-mail válido.', false); 
+            return; 
+        }
+        
+        try {
+            showUserSettingsMsg(msg, 'Enviando solicitação...', true);
+            msg.style.color = 'var(--c-text-muted)'; // Neutro durante o envio
+            
+            await DB.updateEmail(newEmail);
+            
+            emailInput.value = '';
+            showUserSettingsMsg(msg, `✔ Solicitação enviada! Acesse a caixa de entrada de <strong>${newEmail}</strong> para confirmar a alteração.`, true);
+        } catch (err) {
+            let errorText = 'Erro ao alterar e-mail.';
+            if (err.message.includes('already registered') || err.message.includes('already in use')) {
+                errorText = 'Este e-mail já está em uso por outra conta.';
+            } else if (err.message.includes('rate limit')) {
+                errorText = 'Muitas tentativas. Tente novamente mais tarde.';
+            }
+            showUserSettingsMsg(msg, errorText, false);
+        }
+    });
+
     // --- CHANGE PASSWORD ---
     document.getElementById('change-pin-form')?.addEventListener('submit', async (e) => {
         e.preventDefault();

@@ -37,6 +37,13 @@
     font-size: 0.95rem;
 }
 
+/* Coluna de valor: espaçamento lateral maior para separar de descrição e categoria */
+.data-table th.text-right,
+.data-table td.text-right {
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
 /* Hover de linha */
 .data-table tbody tr:hover {
     background: var(--c-bg);

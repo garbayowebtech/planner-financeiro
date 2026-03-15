@@ -53,6 +53,11 @@ const DB = {
         if (error) throw error;
     },
 
+    async updateEmail(newEmail) {
+        const { error } = await supabaseClient.auth.updateUser({ email: newEmail });
+        if (error) throw error;
+    },
+
     // ================================================================
     // PROFILE
     // ================================================================
