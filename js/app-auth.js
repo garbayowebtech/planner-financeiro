@@ -136,8 +136,6 @@ window.processLogout = function() {
     DOM.appView.classList.replace('active', 'hidden');
     DOM.authView.classList.replace('hidden', 'active');
     
-    DOM.loginErrorMsg.textContent = '';
-    DOM.loginForm.reset();
     showAuthSection('login');
 };
 

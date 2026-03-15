@@ -261,6 +261,10 @@ function setupEventListeners() {
 
     // --- AUTH: Logout ---
     DOM.btnLogout.addEventListener('click', async () => {
+        // Limpar login form manualmente apenas quando o usuario intencionalmente tenta sair
+        DOM.loginForm.reset();
+        DOM.loginErrorMsg.textContent = '';
+        
         // Triggering signOut will fire the SIGNED_OUT event in app-auth.js,
         // which handles all the cleanup globally via processLogout().
         await DB.signOut();
