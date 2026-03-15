@@ -357,6 +357,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    // Google Social Login Listeners
+    const btnGoogleLogin = document.getElementById('btn-google-login');
+    const btnGoogleRegister = document.getElementById('btn-google-register');
+    const handleGoogleLogin = async () => {
+        try {
+            if (DOM.loginErrorMsg) DOM.loginErrorMsg.textContent = "";
+            if (DOM.regErrorMsg) DOM.regErrorMsg.textContent = "";
+            if (btnGoogleLogin) btnGoogleLogin.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Conectando...';
+            if (btnGoogleRegister) btnGoogleRegister.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Conectando...';
+            // The method redirects to Google's oAuth consent screen
+            await DB.signInWithGoogle();
+        } catch (error) {
+            console.error(error);
+            if (DOM.loginErrorMsg) DOM.loginErrorMsg.textContent = "Erro ao iniciar login com Google.";
+            if (DOM.regErrorMsg) DOM.regErrorMsg.textContent = "Erro ao iniciar registro com Google.";
+            
+            // Restore button text on error
+            if (btnGoogleLogin) btnGoogleLogin.innerHTML = '<i class="fa-brands fa-google"></i> Entrar com o Google';
+            if (btnGoogleRegister) btnGoogleRegister.innerHTML = '<i class="fa-brands fa-google"></i> Criar com o Google';
+        }
+    };
+    if (btnGoogleLogin) btnGoogleLogin.addEventListener('click', handleGoogleLogin);
+    if (btnGoogleRegister) btnGoogleRegister.addEventListener('click', handleGoogleLogin);
+
     // 1. Primeiramente, atrelamos todos os listeners para que os botões funcionem
     // imediatamente, mesmo enquanto checamos a sessão no Supabase.
     try {
