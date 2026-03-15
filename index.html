@@ -9,13 +9,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Favicons -->
     <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon_io/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon_io/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon_io/favicon-16x16.png">
     <link rel="manifest" href="assets/favicon_io/site.webmanifest">
-    
+
     <link rel="stylesheet" href="css/styles.css?v=1.0.6">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Supabase JS v2 -->
@@ -27,14 +27,16 @@
     <div id="auth-view" class="view-container active">
         <div class="auth-card">
             <div class="auth-header">
-                <img src="assets/logo_main.png" alt="Logo" class="auth-logo" style="height: 60px; object-fit: contain; margin-bottom: 1rem;">
+                <img src="assets/logo_main.png" alt="Logo" class="auth-logo"
+                    style="height: 120px; object-fit: contain; margin-bottom: 0.6rem;">
                 <h1>Planner <span class="highlight">Financeiro</span></h1>
                 <p>Bem-vindo(a). Entre com sua conta para continuar.</p>
             </div>
 
             <!-- Loading session Section -->
             <div id="loading-session" style="text-align: center; padding: 2rem;">
-                <i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: var(--c-primary); margin-bottom: 1rem;"></i>
+                <i class="fa-solid fa-spinner fa-spin"
+                    style="font-size: 2rem; color: var(--c-primary); margin-bottom: 1rem;"></i>
                 <p style="color: var(--c-text-muted);">Verificando sessão...</p>
             </div>
 
@@ -126,7 +128,7 @@
 
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <img src="assets/logo_main.png" alt="Logo" class="logo-icon" style="height: 32px; object-fit: contain;">
+                <img src="assets/logo_main.png" alt="Logo" class="logo-icon" style="height: 80px; object-fit: contain;">
                 <h2>Planner</h2>
             </div>
             <div class="user-profile">
@@ -255,7 +257,8 @@
                             <div class="summary-card">
                                 <span class="label">Próxima Fatura</span>
                                 <span class="value text-warning" id="credit-next-value">R$ 0,00</span>
-                                <span class="label" style="font-size: 0.75rem; opacity: 0.7;">pagamentos à vista + parcelas</span>
+                                <span class="label" style="font-size: 0.75rem; opacity: 0.7;">pagamentos à vista +
+                                    parcelas</span>
                             </div>
                         </div>
 
@@ -333,12 +336,14 @@
                             <div class="summary-card">
                                 <span class="label">Total em Aberto</span>
                                 <span class="value text-danger" id="inst-total-open">R$ 0,00</span>
-                                <span class="label" style="font-size: 0.75rem; opacity: 0.7;">soma da totalidade das parcelas</span>
+                                <span class="label" style="font-size: 0.75rem; opacity: 0.7;">soma da totalidade das
+                                    parcelas</span>
                             </div>
                             <div class="summary-card">
                                 <span class="label">Parcelas este Mês</span>
                                 <span class="value text-warning" id="inst-this-month">R$ 0,00</span>
-                                <span class="label" style="font-size: 0.75rem; opacity: 0.7;">parcelas a serem pagas na vigência desta fatura</span>
+                                <span class="label" style="font-size: 0.75rem; opacity: 0.7;">parcelas a serem pagas na
+                                    vigência desta fatura</span>
                             </div>
                             <div class="summary-card">
                                 <span class="label">Nº de Compras Ativas</span>
@@ -551,7 +556,9 @@
                                 para automatizar os ciclos das despesas.</p>
                             <div class="form-group">
                                 <label for="set-closing-day">Dia de Virada da Fatura</label>
-                                <small style="display: block; margin-top: 0.25rem; margin-bottom: 0.5rem; color: var(--c-text-muted); font-size: 0.8rem;">A partir deste dia, as compras já entram na fatura do mês seguinte.</small>
+                                <small
+                                    style="display: block; margin-top: 0.25rem; margin-bottom: 0.5rem; color: var(--c-text-muted); font-size: 0.8rem;">A
+                                    partir deste dia, as compras já entram na fatura do mês seguinte.</small>
                                 <input type="number" id="set-closing-day" required min="1" max="31"
                                     placeholder="Ex: 11">
                             </div>
@@ -596,7 +603,8 @@
 
                         <!-- Change Email -->
                         <form id="change-email-form" style="max-width: 400px; margin-bottom: 2rem;">
-                            <p class="subtitle" style="margin-bottom: 1.5rem;">Altere o e-mail de acesso da sua conta.</p>
+                            <p class="subtitle" style="margin-bottom: 1.5rem;">Altere o e-mail de acesso da sua conta.
+                            </p>
                             <div class="form-group">
                                 <label for="user-new-email">Novo E-mail</label>
                                 <input type="email" id="user-new-email" required placeholder="seunovoemail@exemplo.com"
@@ -605,7 +613,8 @@
                             <button type="submit" id="btn-save-email" class="btn btn-primary" style="width: 100%;">
                                 <i class="fa-solid fa-envelope"></i> Alterar E-mail
                             </button>
-                            <p id="email-change-msg" style="margin-top: 0.75rem; font-size: 0.85rem; display: none; line-height: 1.4;"></p>
+                            <p id="email-change-msg"
+                                style="margin-top: 0.75rem; font-size: 0.85rem; display: none; line-height: 1.4;"></p>
                         </form>
 
                         <hr style="border: none; border-top: 1px solid var(--c-border); margin: 1.5rem 0;">
@@ -613,7 +622,8 @@
                         <!-- Change Password -->
                         <form id="change-pin-form" style="max-width: 400px;">
                             <!-- Campo oculto de username: necessário para acessibilidade e gerenciadores de senha -->
-                            <input type="text" id="change-pin-username" autocomplete="username" aria-hidden="true" style="display:none;">
+                            <input type="text" id="change-pin-username" autocomplete="username" aria-hidden="true"
+                                style="display:none;">
                             <p class="subtitle" style="margin-bottom: 1.5rem;">Para alterar sua senha, informe a nova
                                 senha de no mínimo 6 caracteres.</p>
                             <div class="form-group">
@@ -652,7 +662,8 @@
                                 <span style="font-weight: 500;">Barra de Calendário</span>
                                 <label class="switch"
                                     style="position: relative; display: inline-block; width: 50px; height: 28px;">
-                                    <input type="checkbox" id="user-calendar-bar" checked style="opacity: 0; width: 0; height: 0;">
+                                    <input type="checkbox" id="user-calendar-bar" checked
+                                        style="opacity: 0; width: 0; height: 0;">
                                     <span class="slider round"
                                         style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--c-border); transition: .4s; border-radius: 34px;"></span>
                                 </label>
@@ -891,7 +902,8 @@
         <div class="modal-card">
             <div class="modal-header">
                 <h3>Tutorial do App</h3>
-                <button class="btn-close" id="btn-close-tutorial" title="Pular Tutorial"><i class="fa-solid fa-xmark"></i></button>
+                <button class="btn-close" id="btn-close-tutorial" title="Pular Tutorial"><i
+                        class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body" style="padding: 0;">
                 <div class="tutorial-slider" id="tutorial-slider">
@@ -899,49 +911,65 @@
                     <div class="tutorial-slide">
                         <div class="tutorial-icon"><i class="fa-solid fa-hand-sparkles"></i></div>
                         <h4 class="tutorial-title">Bem-vindo(a)!</h4>
-                        <p class="tutorial-text">Obrigado por utilizar o nosso app! Preparamos esse passo-a-passo para te mostrar como aproveitar ao máximo cada funcionalidade do Planner Financeiro.</p>
+                        <p class="tutorial-text">Obrigado por utilizar o nosso app! Preparamos esse passo-a-passo para
+                            te mostrar como aproveitar ao máximo cada funcionalidade do Planner Financeiro.</p>
                     </div>
                     <!-- Slide 2 -->
                     <div class="tutorial-slide">
                         <div class="tutorial-icon"><i class="fa-solid fa-chart-pie"></i></div>
                         <h4 class="tutorial-title">Visão Geral</h4>
-                        <p class="tutorial-text">Aqui você encontra um panorama completo das suas finanças: o progresso das metas por categorias, gráficos de distribuição e o saldo dos diferentes meios de pagamento.</p>
+                        <p class="tutorial-text">Aqui você encontra um panorama completo das suas finanças: o progresso
+                            das metas por categorias, gráficos de distribuição e o saldo dos diferentes meios de
+                            pagamento.</p>
                     </div>
                     <!-- Slide 3 -->
                     <div class="tutorial-slide">
                         <div class="tutorial-icon"><i class="fa-solid fa-credit-card"></i></div>
                         <h4 class="tutorial-title">Cartão de Crédito</h4>
-                        <p class="tutorial-text">Cadastre as compras feitas no crédito, na modalidade <strong>à vista</strong>, sempre com uma categoria. Essas despesas entrarão automaticamente na fatura correspondente ao ciclo de fechamento configurado.</p>
+                        <p class="tutorial-text">Cadastre as compras feitas no crédito, na modalidade <strong>à
+                                vista</strong>, sempre com uma categoria. Essas despesas entrarão automaticamente na
+                            fatura correspondente ao ciclo de fechamento configurado.</p>
                     </div>
                     <!-- Slide 4 -->
                     <div class="tutorial-slide">
                         <div class="tutorial-icon"><i class="fa-solid fa-cart-shopping"></i></div>
                         <h4 class="tutorial-title">Compras Parceladas</h4>
-                        <p class="tutorial-text">Aqui estão as compras que você parcela na maquininha ou online. É importante inserir corretamente o valor de <strong>uma</strong> parcela, o número da parcela <strong>atual</strong> e o <strong>total</strong> de parcelas para cálculos precisos.</p>
+                        <p class="tutorial-text">Aqui estão as compras que você parcela na maquininha ou online. É
+                            importante inserir corretamente o valor de <strong>uma</strong> parcela, o número da parcela
+                            <strong>atual</strong> e o <strong>total</strong> de parcelas para cálculos precisos.
+                        </p>
                     </div>
                     <!-- Slide 5 -->
                     <div class="tutorial-slide">
                         <div class="tutorial-icon"><i class="fa-solid fa-building-columns"></i></div>
                         <h4 class="tutorial-title">Débito e Pix</h4>
-                        <p class="tutorial-text">Nesta área você deve cadastrar as compras à vista ou receitas que movimentam <strong>diretamente a sua conta corrente</strong> (saldo atual), seja via débito, Pix, transferências ou boletos.</p>
+                        <p class="tutorial-text">Nesta área você deve cadastrar as compras à vista ou receitas que
+                            movimentam <strong>diretamente a sua conta corrente</strong> (saldo atual), seja via débito,
+                            Pix, transferências ou boletos.</p>
                     </div>
                     <!-- Slide 6 -->
                     <div class="tutorial-slide">
                         <div class="tutorial-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
                         <h4 class="tutorial-title">Extratos Consolidados</h4>
-                        <p class="tutorial-text">Um resumo completo e fechado da sua atividade financeira naquele mês: total de receitas, total de despesas, gráficos específicos e o acompanhamento exato de cada meta de categoria.</p>
+                        <p class="tutorial-text">Um resumo completo e fechado da sua atividade financeira naquele mês:
+                            total de receitas, total de despesas, gráficos específicos e o acompanhamento exato de cada
+                            meta de categoria.</p>
                     </div>
                     <!-- Slide 7 -->
                     <div class="tutorial-slide">
                         <div class="tutorial-icon"><i class="fa-solid fa-tags"></i></div>
                         <h4 class="tutorial-title">Categorias</h4>
-                        <p class="tutorial-text"><strong>A chave da organização!</strong> Cadastre categorias que englobem todas as suas despesas (usuais ou não) e defina metas (limites de gastos). Quanto mais específico, melhor e mais visual será o seu controle.</p>
+                        <p class="tutorial-text"><strong>A chave da organização!</strong> Cadastre categorias que
+                            englobem todas as suas despesas (usuais ou não) e defina metas (limites de gastos). Quanto
+                            mais específico, melhor e mais visual será o seu controle.</p>
                     </div>
                     <!-- Slide 8 -->
                     <div class="tutorial-slide">
                         <div class="tutorial-icon"><i class="fa-solid fa-gear"></i></div>
                         <h4 class="tutorial-title">Configurações</h4>
-                        <p class="tutorial-text">Preste atenção às configurações do cartão: os <strong>dias de fechamento e vencimento da fatura</strong> influenciam diretamente nos balanços mensais. Aqui você também ajusta seu perfil e preferências de visual.</p>
+                        <p class="tutorial-text">Preste atenção às configurações do cartão: os <strong>dias de
+                                fechamento e vencimento da fatura</strong> influenciam diretamente nos balanços mensais.
+                            Aqui você também ajusta seu perfil e preferências de visual.</p>
                     </div>
                 </div>
             </div>
@@ -950,8 +978,10 @@
                     <!-- Gerados via JS -->
                 </div>
                 <div class="tutorial-nav">
-                    <button class="btn btn-text" id="btn-tut-prev" style="visibility: hidden;"><i class="fa-solid fa-arrow-left"></i> <span>Voltar</span></button>
-                    <button class="btn btn-primary" id="btn-tut-next">Próximo <i class="fa-solid fa-arrow-right"></i></button>
+                    <button class="btn btn-text" id="btn-tut-prev" style="visibility: hidden;"><i
+                            class="fa-solid fa-arrow-left"></i> <span>Voltar</span></button>
+                    <button class="btn btn-primary" id="btn-tut-next">Próximo <i
+                            class="fa-solid fa-arrow-right"></i></button>
                 </div>
             </div>
         </div>
