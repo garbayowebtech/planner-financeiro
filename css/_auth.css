@@ -11,7 +11,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--c-primary-light) 0%, var(--c-bg) 100%);
+    background-image: url('../assets/login_bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    /* Adicionando um fallback sutil antes da imagem carregar */
+    background-color: var(--c-primary-light);
 }
 
 /* --------------------------------------------------------------------------
