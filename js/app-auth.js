@@ -410,12 +410,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         setTimeout(() => {
             if (isInitialLoad) {
                 console.warn("Auth event watcher timed out, forcing login screen.");
+                localStorage.removeItem('sb-ctveuoeoyymzozzwqqln-auth-token');
                 showAuthSection('login');
             }
         }, 5000);
         
     } catch (e) {
         console.error("Erro onAuthStateChange init:", e);
+        localStorage.removeItem('sb-ctveuoeoyymzozzwqqln-auth-token');
         DOM.loginErrorMsg.textContent = "Erro no ouvinte de Auth: " + e.message;
         showAuthSection('login');
     }

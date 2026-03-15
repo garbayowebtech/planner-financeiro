@@ -5,6 +5,19 @@
 
 const SUPABASE_URL = 'https://ctveuoeoyymzozzwqqln.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_0eXOKvszzLOxPlP6cf7MbQ_DgHpF9gd';
+// Limpeza de emergência: Previne falha do Supabase ao tentar dar parse numa JWT quebrada no cache!
+const tokenKey = 'sb-ctveuoeoyymzozzwqqln-auth-token';
+try {
+    const rawToken = localStorage.getItem(tokenKey);
+    if (rawToken && !rawToken.startsWith('{')) {
+        localStorage.removeItem(tokenKey);
+    } else if (rawToken) {
+        JSON.parse(rawToken);
+    }
+} catch (err) {
+    localStorage.removeItem(tokenKey);
+    console.warn("Lixo do Supabase JWT limpo na inicializacao.");
+}
 
 // Initialize the Supabase client (requires @supabase/supabase-js CDN loaded first)
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
