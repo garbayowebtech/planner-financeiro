@@ -382,12 +382,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (event === 'INITIAL_SESSION') {
                 isInitialLoad = false;
                 if (session) {
-                    try { await loadAndEnterApp(session.user); } 
-                    catch (e) {
+                    // Verifica se a sessão ainda é válida no servidor antes de tentar carregar
+                    try {
+                        const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+                        if (userError || !user) {
+                            // Sessão expirada no servidor - limpa e vai para login
+                            localStorage.removeItem(tokenKey);
+                            DB.signOut().catch(() => {});
+                            showAuthSection('login');
+                            return;
+                        }
+                        await loadAndEnterApp(user);
+                    } catch (e) {
                         console.error("INITIAL_SESSION carregamento bloqueado:", e);
-                        localStorage.removeItem('sb-ctveuoeoyymzozzwqqln-auth-token');
+                        localStorage.removeItem(tokenKey);
                         DB.signOut().catch(() => {});
-                        showAuthSection('login'); 
+                        showAuthSection('login');
                     }
                 } else {
                     showAuthSection('login');

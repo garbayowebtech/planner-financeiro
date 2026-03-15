@@ -80,8 +80,10 @@ const DB = {
             .from('profiles')
             .select('*')
             .eq('id', userId)
-            .single();
+            .maybeSingle();
+        // maybeSingle() retorna null sem lançar exceção se não houver linha
         if (error) throw error;
+        if (!data) throw new Error('Perfil não encontrado para o usuário. Sessão pode estar expirada.');
         return data;
     },
 
