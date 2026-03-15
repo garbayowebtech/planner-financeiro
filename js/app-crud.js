@@ -411,12 +411,15 @@ function setupEventListeners() {
             await DB.updateEmail(newEmail);
             
             emailInput.value = '';
-            showUserSettingsMsg(msg, `✔ Solicitação enviada! Acesse a caixa de entrada de <strong>${newEmail}</strong> para confirmar a alteração.`, true);
+            showUserSettingsMsg(msg, `✔ Solicitação enviada! Verifique a caixa de entrada do <strong>e-mail atual</strong> e do <strong>${newEmail}</strong> para confirmar a alteração.`, true);
         } catch (err) {
             let errorText = 'Erro ao alterar e-mail.';
-            if (err.message.includes('already registered') || err.message.includes('already in use')) {
+            const msg422 = 'Para alterar o e-mail, confirme a solicitação que foi enviada ao seu e-mail atual. Se não recebeu, verifique o spam ou tente novamente mais tarde.';
+            if (err.status === 422 || err.message?.includes('422') || err.message?.includes('Unprocessable')) {
+                errorText = msg422;
+            } else if (err.message?.includes('already registered') || err.message?.includes('already in use') || err.message?.includes('email address is already')) {
                 errorText = 'Este e-mail já está em uso por outra conta.';
-            } else if (err.message.includes('rate limit')) {
+            } else if (err.message?.includes('rate limit') || err.message?.includes('too many')) {
                 errorText = 'Muitas tentativas. Tente novamente mais tarde.';
             }
             showUserSettingsMsg(msg, errorText, false);
