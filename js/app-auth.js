@@ -372,62 +372,72 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error("Erro auth ready:", e);
     }
 
-    // 2. Definimos o ouvinte de autenticação do Supabase como única fonte da verdade
+    // 2. Listener de autenticação do Supabase
+    // NOTA: SIGNED_IN pode disparar ANTES de INITIAL_SESSION (_recoverAndRefresh do Supabase).
+    // Por isso, auto-login é feito APENAS em INITIAL_SESSION. SIGNED_IN é ignorado até lá.
     try {
-        let isInitialLoad = true;
+        let initTimerId = null;
+        let initialSessionHandled = false;
         
         supabaseClient.auth.onAuthStateChange(async (event, session) => {
             console.log("Auth Event:", event);
             
+            // Cancela o failsafe assim que qualquer evento principal chegar
+            if (event === 'INITIAL_SESSION' || event === 'SIGNED_OUT') {
+                if (initTimerId) { clearTimeout(initTimerId); initTimerId = null; }
+            }
+
             if (event === 'INITIAL_SESSION') {
-                isInitialLoad = false;
+                initialSessionHandled = true;
                 if (session) {
-                    // Verifica se a sessão ainda é válida no servidor antes de tentar carregar
                     try {
+                        // Valida sessão no servidor antes de carregar dados
                         const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
                         if (userError || !user) {
-                            // Sessão expirada no servidor - limpa e vai para login
                             localStorage.removeItem(tokenKey);
-                            DB.signOut().catch(() => {});
                             showAuthSection('login');
                             return;
                         }
                         await loadAndEnterApp(user);
                     } catch (e) {
-                        console.error("INITIAL_SESSION carregamento bloqueado:", e);
-                        localStorage.removeItem(tokenKey);
-                        DB.signOut().catch(() => {});
+                        // Não faz signOut: o token pode ainda ser válido (ex: lentidão do banco).
+                        // Apenas mostra o login para o usuário tentar manualmente.
+                        console.error("INITIAL_SESSION: falha ao carregar app:", e);
                         showAuthSection('login');
                     }
                 } else {
                     showAuthSection('login');
                 }
-            } else if (event === 'SIGNED_IN' && session && (!STATE.currentUser || STATE.currentUser.id !== session.user.id)) {
+
+            } else if (event === 'SIGNED_IN' && session) {
+                // Ignora se INITIAL_SESSION ainda não foi tratado (evita corrida de eventos)
+                if (!initialSessionHandled) return;
+                // Ignora se o mesmo usuário já está ativo
+                if (STATE.currentUser?.id === session.user.id) return;
+                // Caso legítimo: login manual, ou troca de conta
                 try {
                     await loadAndEnterApp(session.user);
                 } catch (e) {
-                    console.error("onAuthStateChange carregamento bloqueado:", e);
-                    localStorage.removeItem('sb-ctveuoeoyymzozzwqqln-auth-token');
-                    DB.signOut().catch(() => {});
+                    console.error("SIGNED_IN: falha ao carregar app:", e);
                     showAuthSection('login');
                 }
+
             } else if (event === 'SIGNED_OUT') {
                 window.processLogout();
             }
         });
         
-        // Failsafe timeout in case INITIAL_SESSION event never fires
-        setTimeout(() => {
-            if (isInitialLoad) {
+        // Failsafe: se INITIAL_SESSION não disparar em 6s, exibe login
+        initTimerId = setTimeout(() => {
+            if (!initialSessionHandled) {
                 console.warn("Auth event watcher timed out, forcing login screen.");
-                localStorage.removeItem('sb-ctveuoeoyymzozzwqqln-auth-token');
                 showAuthSection('login');
             }
-        }, 5000);
+        }, 6000);
         
     } catch (e) {
         console.error("Erro onAuthStateChange init:", e);
-        localStorage.removeItem('sb-ctveuoeoyymzozzwqqln-auth-token');
+        localStorage.removeItem(tokenKey);
         DOM.loginErrorMsg.textContent = "Erro no ouvinte de Auth: " + e.message;
         showAuthSection('login');
     }
