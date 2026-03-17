@@ -246,16 +246,8 @@ function renderCreditTable() {
         if (projN >= 1 && projN <= inst.totalInstallments) instNextMonth += inst.installmentAmount;
     });
 
-    const closingDay = STATE.userData.settings?.cardClosingDay || 11;
-    let postClosing = 0;
-    STATE.userData.creditExpenses.forEach(exp => {
-        const p = exp.date.split('-');
-        if (parseInt(p[0]) === STATE.viewYear && parseInt(p[1]) - 1 === STATE.viewMonth && parseInt(p[2]) > closingDay)
-            postClosing += exp.amount;
-    });
-
     if (cv) cv.textContent = formatCurrency(currentTotal);
-    if (nv) nv.textContent = formatCurrency(nextTotal + instNextMonth + postClosing);
+    if (nv) nv.textContent = formatCurrency(nextTotal + instNextMonth);
     if (tv) tv.textContent = formatCurrency(currentTotal + instThisMonth);
 }
 
