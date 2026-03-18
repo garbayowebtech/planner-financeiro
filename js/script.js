@@ -151,6 +151,46 @@ function checkGoalAlerts() {
     };
 }
 
+// ── CARD TABS ───────────────────────────────────────────────────
+function renderCardTabs() {
+    const tabsContainer = document.getElementById('credit-card-tabs');
+    if (!tabsContainer) return;
+    tabsContainer.innerHTML = '';
+
+    const cards = STATE.userData?.settings?.cards || [];
+    cards.forEach(card => {
+        const btn = document.createElement('button');
+        const isActive = card.id === STATE.currentCardId;
+        btn.className = `btn ${isActive ? 'btn-primary' : 'btn-outline'}`;
+        btn.textContent = card.name;
+        btn.style.whiteSpace = 'nowrap';
+        btn.style.height = '40px';
+        btn.onclick = () => {
+            STATE.currentCardId = card.id;
+            STATE.creditPage = 1;
+            STATE.instPage = 1;
+            renderCardTabs();
+            renderCreditTable();
+            renderCreditChart();
+            renderInstallmentsTable();
+            renderInstallmentsChart();
+        };
+        tabsContainer.appendChild(btn);
+    });
+
+    if (cards.length < 3) {
+        const addBtn = document.createElement('button');
+        addBtn.className = 'btn btn-text';
+        addBtn.innerHTML = '<i class="fa-solid fa-plus"></i> Adicionar';
+        addBtn.style.whiteSpace = 'nowrap';
+        addBtn.style.height = '40px';
+        addBtn.onclick = () => {
+            document.getElementById('card-modal').classList.remove('hidden');
+        };
+        tabsContainer.appendChild(addBtn);
+    }
+}
+
 // ── DASHBOARD INIT ──────────────────────────────────────────────
 function initDashboard() {
     DOM.expCategorySelect.innerHTML = '<option value="">Selecione...</option>';
@@ -159,25 +199,48 @@ function initDashboard() {
     DOM.filterCatCredit.innerHTML = '<option value="all">Todas as Categorias</option>';
     DOM.filterCatInst.innerHTML = '<option value="all">Todas as Categorias</option>';
     DOM.filterCatDebit.innerHTML = '<option value="all">Todas as Categorias</option>';
+    
+    const incCategorySelect = document.getElementById('inc-category');
+    if (incCategorySelect) incCategorySelect.innerHTML = '<option value="">Nenhuma / Outros...</option>';
 
     (STATE.userData.categories || []).forEach(cat => {
+        const type = cat.type || 'expense';
         const opt = document.createElement('option');
         opt.value = cat.id; opt.textContent = cat.name;
-        DOM.expCategorySelect.appendChild(opt);
-        DOM.debCategorySelect.appendChild(opt.cloneNode(true));
-        DOM.instCategorySelect.appendChild(opt.cloneNode(true));
-        DOM.filterCatCredit.appendChild(opt.cloneNode(true));
-        DOM.filterCatInst.appendChild(opt.cloneNode(true));
-        DOM.filterCatDebit.appendChild(opt.cloneNode(true));
+
+        if (type === 'expense') {
+            DOM.expCategorySelect.appendChild(opt);
+            DOM.debCategorySelect.appendChild(opt.cloneNode(true));
+            DOM.instCategorySelect.appendChild(opt.cloneNode(true));
+            DOM.filterCatCredit.appendChild(opt.cloneNode(true));
+            DOM.filterCatInst.appendChild(opt.cloneNode(true));
+            DOM.filterCatDebit.appendChild(opt.cloneNode(true));
+        } else if (type === 'income') {
+            if (incCategorySelect) incCategorySelect.appendChild(opt);
+        }
     });
 
     if (!STATE.userData.installments) STATE.userData.installments = [];
     STATE.creditPage = 1; STATE.instPage = 1; STATE.debitPage = 1;
 
+    renderCardTabs();
     renderCreditTable(); renderCreditChart();
     renderDebitTable(); renderDebitChart();
     renderGoalsChart(); renderOverallPieChart();
     renderInstallmentsTable(); renderInstallmentsChart();
+
+    // Seed default income categories if none exist
+    const hasIncomeCats = (STATE.userData.categories || []).some(c => c.type === 'income');
+    if (!hasIncomeCats && STATE.currentUser) {
+        (async () => {
+            const c1 = await DB.createCategory(STATE.currentUser.id, { name: 'Salário', goal: 0, color: '#10B981', textColor: '#FFFFFF', type: 'income' });
+            const c2 = await DB.createCategory(STATE.currentUser.id, { name: 'Pensão', goal: 0, color: '#3B82F6', textColor: '#FFFFFF', type: 'income' });
+            STATE.userData.categories.push(c1, c2);
+            renderCategoriesTable();
+            initDashboard(); // Re-populate selects
+        })();
+    }
+
     const extractsGrid = document.getElementById('extracts-grid');
     if (extractsGrid && !extractsGrid.classList.contains('hidden')) {
         window.renderConsolidatedExtracts();
@@ -194,7 +257,7 @@ function renderCreditTable() {
 
     let filtered = STATE.userData.creditExpenses.filter(exp => {
         const p = exp.dueDate.split('-');
-        return parseInt(p[0]) === STATE.viewYear && parseInt(p[1]) - 1 === STATE.viewMonth;
+        return parseInt(p[0]) === STATE.viewYear && parseInt(p[1]) - 1 === STATE.viewMonth && (exp.cardId || 'card1') === STATE.currentCardId;
     });
 
     let currentTotal = 0;
@@ -202,6 +265,7 @@ function renderCreditTable() {
     const nextYear = STATE.viewMonth === 11 ? STATE.viewYear + 1 : STATE.viewYear;
     let nextTotal = 0;
     STATE.userData.creditExpenses.forEach(exp => {
+        if ((exp.cardId || 'card1') !== STATE.currentCardId) return;
         const p = exp.dueDate.split('-');
         const dy = parseInt(p[0]), dm = parseInt(p[1]) - 1;
         if (dy === STATE.viewYear && dm === STATE.viewMonth) currentTotal += exp.amount;
@@ -237,6 +301,7 @@ function renderCreditTable() {
 
     let instThisMonth = 0, instNextMonth = 0;
     (STATE.userData.installments || []).forEach(inst => {
+        if ((inst.cardId || 'card1') !== STATE.currentCardId) return;
         const p = inst.date.split('-'), py = parseInt(p[0]), pm = parseInt(p[1]) - 1;
         const diff = (STATE.viewYear - py) * 12 + (STATE.viewMonth - pm);
         const proj = inst.currentInstallment + diff;
@@ -271,7 +336,7 @@ function renderCreditChart() {
 
     const filtered = (STATE.userData.creditExpenses || []).filter(exp => {
         const p = exp.dueDate.split('-');
-        return parseInt(p[0]) === STATE.viewYear && parseInt(p[1]) - 1 === STATE.viewMonth;
+        return parseInt(p[0]) === STATE.viewYear && parseInt(p[1]) - 1 === STATE.viewMonth && (exp.cardId || 'card1') === STATE.currentCardId;
     });
     if (filtered.length === 0) return;
 
@@ -287,26 +352,64 @@ function renderCreditChart() {
     creditChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels, datasets: [{ data, backgroundColor: bgColors, borderWidth: 0, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: "'Inter', sans-serif" } } } } } });
 }
 
-// ── DEBIT TABLE ──────────────────────────────────────────────────
+// ── DEBIT / PIX & INCOMES TABLE ──────────────────────────────────
 function renderDebitTable() {
     DOM.debitTableBody.innerHTML = '';
+    const incBody = document.getElementById('income-table-body');
+    if (incBody) incBody.innerHTML = '';
+
     if (!STATE.userData.debitTransactions || STATE.userData.debitTransactions.length === 0) {
-        DOM.debitTableBody.innerHTML = '<tr class="empty-row"><td colspan="6">Nenhuma transação registrada.</td></tr>';
-        updatePaginationUI('debit', 0, 1); return;
+        DOM.debitTableBody.innerHTML = '<tr class="empty-row"><td colspan="6">Nenhuma despesa registrada.</td></tr>';
+        if (incBody) incBody.innerHTML = '<tr class="empty-row"><td colspan="5">Nenhum rendimento registrado.</td></tr>';
+        updatePaginationUI('debit', 0, 1);
+        
+        const bVal = document.getElementById('cc-balance-value');
+        const iVal = document.getElementById('cc-income-value');
+        const eVal = document.getElementById('cc-expense-value');
+        if (bVal) { bVal.textContent = 'R$ 0,00'; bVal.className = 'value text-success'; }
+        if (iVal) iVal.textContent = 'R$ 0,00';
+        if (eVal) eVal.textContent = 'R$ 0,00';
+        return;
     }
 
-    let balanceTotal = 0;
-    let filtered = [];
+    let totalIncome = 0;
+    let totalExpense = 0;
+    
+    let filteredDespesas = [];
+    let incomes = [];
+
     STATE.userData.debitTransactions.forEach(txn => {
         const p = txn.date.split('-');
         if (parseInt(p[0]) === STATE.viewYear && parseInt(p[1]) - 1 === STATE.viewMonth) {
-            filtered.push(txn);
-            balanceTotal += txn.type === 'income' ? txn.amount : -txn.amount;
+            if (txn.type === 'income') {
+                incomes.push(txn);
+                totalIncome += txn.amount;
+            } else {
+                filteredDespesas.push(txn);
+                totalExpense += txn.amount;
+            }
         }
     });
 
-    if (STATE.debitFilterCat !== 'all') filtered = filtered.filter(t => t.categoryId === STATE.debitFilterCat);
-    filtered.sort((a, b) => {
+    // Incomes render (all of them)
+    incomes.sort((a,b) => new Date(b.date) - new Date(a.date));
+    if (incomes.length === 0 && incBody) {
+        incBody.innerHTML = '<tr class="empty-row"><td colspan="5">Nenhum rendimento registrado.</td></tr>';
+    } else if (incBody) {
+        incomes.forEach(txn => {
+            const catHtml = txn.categoryId ? (() => {
+                const cat = STATE.userData.categories.find(c => c.id === txn.categoryId);
+                return cat ? `<span class="category-badge" style="background:${cat.color};color:${cat.textColor || '#fff'}">${cat.name}</span>` : '-';
+            })() : '-';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${formatDate(txn.date)}</td><td><strong>${txn.name}</strong></td><td class="text-success">+${formatCurrency(txn.amount)}</td><td>${catHtml}</td><td class="text-center"><div style="display:flex;justify-content:center;gap:.5rem"><button class="btn-icon" style="color:var(--c-primary)" onclick="editIncomeTransaction('${txn.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn-delete" onclick="deleteDebitTransaction('${txn.id}')"><i class="fa-solid fa-trash"></i></button></div></td>`;
+            incBody.appendChild(tr);
+        });
+    }
+
+    // Expenses render (paginated & filtered)
+    if (STATE.debitFilterCat !== 'all') filteredDespesas = filteredDespesas.filter(t => t.categoryId === STATE.debitFilterCat);
+    filteredDespesas.sort((a, b) => {
         if (STATE.debitSort === 'date_desc') return new Date(b.date) - new Date(a.date);
         if (STATE.debitSort === 'date_asc') return new Date(a.date) - new Date(b.date);
         if (STATE.debitSort === 'val_desc') return b.amount - a.amount;
@@ -314,37 +417,53 @@ function renderDebitTable() {
         return 0;
     });
 
-    const totalPages = Math.ceil(filtered.length / STATE.itemsPerPage) || 1;
+    const totalPages = Math.ceil(filteredDespesas.length / STATE.itemsPerPage) || 1;
     if (STATE.debitPage > totalPages) STATE.debitPage = totalPages;
-    const paged = filtered.slice((STATE.debitPage - 1) * STATE.itemsPerPage, STATE.debitPage * STATE.itemsPerPage);
+    const paged = filteredDespesas.slice((STATE.debitPage - 1) * STATE.itemsPerPage, STATE.debitPage * STATE.itemsPerPage);
     updatePaginationUI('debit', STATE.debitPage, totalPages);
 
-    if (paged.length === 0) { DOM.debitTableBody.innerHTML = '<tr class="empty-row"><td colspan="6">Nenhuma transação correspondente.</td></tr>'; }
+    if (paged.length === 0) { DOM.debitTableBody.innerHTML = '<tr class="empty-row"><td colspan="6">Nenhuma despesa correspondente.</td></tr>'; }
     else paged.forEach(txn => {
         const cat = STATE.userData.categories.find(c => c.id === txn.categoryId);
         const catHtml = cat ? `<span class="category-badge" style="background:${cat.color};color:${cat.textColor || '#fff'}">${cat.name}</span>` : '-';
-        const op = txn.type === 'income' ? '+' : '-';
-        const vc = txn.type === 'income' ? 'text-success' : 'text-danger';
+        const typeLabel = txn.type === 'debit' ? 'Débito' : (txn.type === 'pix' ? 'Pix' : (txn.type === 'expense' ? 'Saída' : txn.type));
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${formatDate(txn.date)}</td><td><strong>${txn.name}</strong></td><td class="${vc}">${op}${formatCurrency(txn.amount)}</td><td>${catHtml}</td><td><small>${txn.type === 'income' ? 'Entrada' : 'Saída'}</small></td><td class="text-center"><div style="display:flex;justify-content:center;gap:.5rem"><button class="btn-icon" style="color:var(--c-primary)" onclick="editDebitTransaction('${txn.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn-delete" onclick="deleteDebitTransaction('${txn.id}')"><i class="fa-solid fa-trash"></i></button></div></td>`;
+        tr.innerHTML = `<td>${formatDate(txn.date)}</td><td><strong>${txn.name}</strong></td><td class="text-danger">-${formatCurrency(txn.amount)}</td><td>${catHtml}</td><td><small>${typeLabel}</small></td><td class="text-center"><div style="display:flex;justify-content:center;gap:.5rem"><button class="btn-icon" style="color:var(--c-primary)" onclick="editDebitTransaction('${txn.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn-delete" onclick="deleteDebitTransaction('${txn.id}')"><i class="fa-solid fa-trash"></i></button></div></td>`;
         DOM.debitTableBody.appendChild(tr);
     });
 
-    const bv = document.querySelector('#section-debit .summary-cards .summary-card:nth-child(1) .value');
-    if (bv) { bv.textContent = formatCurrency(balanceTotal); bv.className = `value ${balanceTotal >= 0 ? 'text-success' : 'text-danger'}`; }
+    const balanceTotal = totalIncome - totalExpense;
+    const bVal = document.getElementById('cc-balance-value');
+    const iVal = document.getElementById('cc-income-value');
+    const eVal = document.getElementById('cc-expense-value');
+    if (bVal) { bVal.textContent = formatCurrency(balanceTotal); bVal.className = `value ${balanceTotal >= 0 ? 'text-success' : 'text-danger'}`; }
+    if (iVal) iVal.textContent = formatCurrency(totalIncome);
+    if (eVal) eVal.textContent = formatCurrency(totalExpense);
 }
 
 window.editDebitTransaction = function (id) {
     const txn = STATE.userData.debitTransactions.find(t => t.id === id);
     if (!txn) return;
     STATE.editingDebitId = id;
-    document.querySelector('#debit-modal .modal-header h3').textContent = 'Editar Transação Débito/Pix';
+    document.querySelector('#debit-modal .modal-header h3').textContent = 'Editar Despesa Conta-correnete';
     document.getElementById('deb-name').value = txn.name;
     document.getElementById('deb-amount').value = txn.amount;
     document.getElementById('deb-date').value = txn.date;
-    document.getElementById('deb-category').value = txn.categoryId;
-    document.getElementById('deb-type').value = txn.type;
-    DOM.debitModal.classList.remove('hidden');
+    document.getElementById('deb-category').value = txn.categoryId || '';
+    document.getElementById('deb-type').value = (txn.type === 'expense' ? 'debit' : txn.type);
+    document.getElementById('debit-modal').classList.remove('hidden');
+};
+
+window.editIncomeTransaction = function (id) {
+    const txn = STATE.userData.debitTransactions.find(t => t.id === id);
+    if (!txn) return;
+    STATE.editingDebitId = id;
+    document.querySelector('#income-modal .modal-header h3').textContent = 'Editar Rendimento';
+    document.getElementById('inc-name').value = txn.name;
+    document.getElementById('inc-amount').value = txn.amount;
+    document.getElementById('inc-date').value = txn.date;
+    document.getElementById('inc-category').value = txn.categoryId || '';
+    document.getElementById('income-modal').classList.remove('hidden');
 };
 
 // ── DEBIT CHART ──────────────────────────────────────────────────
@@ -352,7 +471,7 @@ function renderDebitChart() {
     const ctx = document.getElementById('debit-chart');
     if (!ctx) return;
     if (debitChartInstance) debitChartInstance.destroy();
-    let expenses = (STATE.userData.debitTransactions || []).filter(t => t.type === 'expense').filter(exp => {
+    let expenses = (STATE.userData.debitTransactions || []).filter(t => t.type !== 'income').filter(exp => {
         const p = exp.date.split('-');
         return parseInt(p[0]) === STATE.viewYear && parseInt(p[1]) - 1 === STATE.viewMonth;
     });
@@ -370,13 +489,18 @@ function renderDebitChart() {
 // ── CATEGORIES TABLE ─────────────────────────────────────────────
 function renderCategoriesTable() {
     DOM.categoriesTableBody.innerHTML = '';
-    if (!STATE.userData.categories || STATE.userData.categories.length === 0) {
-        DOM.categoriesTableBody.innerHTML = '<tr class="empty-row"><td colspan="3">Nenhuma categoria registrada.</td></tr>'; return;
+    const filtered = (STATE.userData.categories || []).filter(c => (c.type || 'expense') === STATE.currentCategoryTab);
+    
+    if (filtered.length === 0) {
+        DOM.categoriesTableBody.innerHTML = `<tr class="empty-row"><td colspan="4">Nenhuma categoria de ${STATE.currentCategoryTab === 'expense' ? 'despesa' : 'rendimento'} registrada.</td></tr>`; 
+        return;
     }
-    STATE.userData.categories.forEach(cat => {
+
+    filtered.forEach(cat => {
         const tc = cat.textColor || '#ffffff';
+        const goalHtml = STATE.currentCategoryTab === 'expense' ? `<td class="text-right">${formatCurrency(cat.goal || 0)}</td>` : '';
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td><span class="category-badge" style="background:${cat.color};color:${tc};padding:.5rem 1rem">${cat.name}</span></td><td><strong>${cat.name}</strong></td><td class="text-right">${formatCurrency(cat.goal || 0)}</td><td class="text-center" style="display:flex;gap:.5rem;justify-content:center"><button class="btn-icon" onclick="editCategory('${cat.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn-delete" onclick="deleteCategory('${cat.id}')"><i class="fa-solid fa-trash"></i></button></td>`;
+        tr.innerHTML = `<td><span class="category-badge" style="background:${cat.color};color:${tc};padding:.5rem 1rem">${cat.name}</span></td><td><strong>${cat.name}</strong></td>${goalHtml}<td class="text-center" style="display:flex;gap:.5rem;justify-content:center"><button class="btn-icon" onclick="editCategory('${cat.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn-delete" onclick="deleteCategory('${cat.id}')"><i class="fa-solid fa-trash"></i></button></td>`;
         DOM.categoriesTableBody.appendChild(tr);
     });
 }
@@ -384,6 +508,14 @@ function renderCategoriesTable() {
 function editCategory(id) {
     const cat = STATE.userData.categories.find(c => c.id === id);
     if (!cat) return;
+    
+    // Switch tab if editing a category of different type
+    const type = cat.type || 'expense';
+    if (STATE.currentCategoryTab !== type) {
+        const tabBtn = document.getElementById(type === 'expense' ? 'tab-cat-expense' : 'tab-cat-income');
+        tabBtn?.click();
+    }
+
     editingCategoryId = id;
     document.getElementById('cat-name').value = cat.name;
     document.getElementById('cat-goal').value = cat.goal || 0;
@@ -406,7 +538,8 @@ function cancelCategoryEdit() {
 // ── OVERALL PIE CHART ────────────────────────────────────────────
 function renderOverallPieChart() {
     const ctx = document.getElementById('overall-pie-chart');
-    if (!ctx || !STATE.userData?.categories?.length) return;
+    const expenseCategories = (STATE.userData?.categories || []).filter(c => (c.type || 'expense') === 'expense');
+    if (!ctx || !expenseCategories.length) return;
     if (overallPieChartInstance) overallPieChartInstance.destroy();
 
     const now = new Date(), cy = now.getFullYear(), cm = now.getMonth();
@@ -440,6 +573,7 @@ function renderGoalsBalanceWidget(containerId, catExpMap, categories) {
 
     let totalGoal = 0, totalSpent = 0;
     (categories || []).forEach(cat => {
+        if (cat.type === 'income') return; // Income categories don't have goals or count here
         const entry = catExpMap[cat.id];
         const goal = cat.goal || (entry ? entry.goal : 0) || 0;
         const spent = (entry ? entry.spent : catExpMap[cat.id]) || 0;
@@ -505,11 +639,12 @@ function renderGoalsBalanceWidget(containerId, catExpMap, categories) {
 // ── GOALS CHART ──────────────────────────────────────────────────
 function renderGoalsChart() {
     const ctx = document.getElementById('goals-chart');
-    if (!ctx || !STATE.userData?.categories?.length) return;
+    const expenseCategories = (STATE.userData?.categories || []).filter(c => (c.type || 'expense') === 'expense');
+    if (!ctx || !expenseCategories.length) return;
     if (goalsChartInstance) goalsChartInstance.destroy();
 
     const catExp = {};
-    STATE.userData.categories.forEach(cat => { catExp[cat.id] = 0; });
+    expenseCategories.forEach(cat => { catExp[cat.id] = 0; });
 
     (STATE.userData.creditExpenses || []).forEach(exp => {
         const p = exp.dueDate.split('-');
@@ -541,9 +676,26 @@ function renderGoalsChart() {
     const labels = [], spentData = [], goalData = [], spentColors = [], goalColors = [];
     const isDark = STATE.userData?.settings?.darkMode;
 
-    STATE.userData.categories.forEach(cat => {
-        const spent = catExp[cat.id] || 0, goal = cat.goal || 0;
-        if (spent === 0 && goal === 0) return;
+    const categoriesWithGoals = STATE.userData.categories
+        .map(cat => ({
+            cat,
+            spent: catExp[cat.id] || 0,
+            goal: cat.goal || 0
+        }))
+        .filter(item => item.spent > 0 || item.goal > 0);
+
+    categoriesWithGoals.sort((a, b) => {
+        const getStatus = (item) => {
+            if (item.goal > 0 && item.spent > item.goal) return 2; // red
+            if (item.goal > 0 && item.spent > item.goal * 0.8) return 1; // orange
+            return 0; // green
+        };
+        const statusDiff = getStatus(b) - getStatus(a);
+        if (statusDiff !== 0) return statusDiff;
+        return b.spent - a.spent;
+    });
+
+    categoriesWithGoals.forEach(({ cat, spent, goal }) => {
         labels.push(cat.name); spentData.push(spent); goalData.push(goal);
         goalColors.push(isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)');
         spentColors.push(cat.color);
@@ -576,6 +728,7 @@ function renderInstallmentsTable() {
     let totalOpen = 0, totalThisMonth = 0, activeCount = 0;
     let active = [];
     installments.forEach(inst => {
+        if ((inst.cardId || 'card1') !== STATE.currentCardId) return;
         const p = inst.date.split('-'), py = +p[0], pm = +p[1] - 1;
         const diff = (STATE.viewYear - py) * 12 + (STATE.viewMonth - pm);
         const proj = inst.currentInstallment + diff;
@@ -636,6 +789,7 @@ function renderInstallmentsChart() {
 
     const catTotals = {};
     (STATE.userData.installments || []).forEach(inst => {
+        if ((inst.cardId || 'card1') !== STATE.currentCardId) return;
         const p = inst.date.split('-'), py = +p[0], pm = +p[1] - 1;
         const diff = (STATE.viewYear - py) * 12 + (STATE.viewMonth - pm);
         const proj = inst.currentInstallment + diff;
@@ -728,31 +882,44 @@ window.renderConsolidatedExtracts = function renderConsolidatedExtracts() {
     const summaryEl = document.getElementById('extract-goals-summary');
     if (summaryEl) {
         summaryEl.innerHTML = '';
-        Object.values(catExp).forEach(c => {
-            if (c.goal > 0) {
-                const isOver = c.spent > c.goal;
-                const diff = Math.abs(c.spent - c.goal);
-                const pct = ((c.spent / c.goal) * 100).toFixed(0);
-                let text = '';
-                let icon = '';
-                if (isOver) {
-                    text = `Você excedeu a meta de ${formatCurrency(c.goal)} em <strong class="text-danger">${formatCurrency(diff)}</strong> (${pct}% consumido).`;
-                    icon = '<i class="fa-solid fa-circle-exclamation text-danger"></i>';
-                } else if (c.spent > 0) {
-                    text = `Você gastou ${formatCurrency(c.spent)} de sua meta de ${formatCurrency(c.goal)}. Ainda tem <strong class="text-success">${formatCurrency(diff)}</strong> disponível (${pct}% consumido).`;
-                    icon = '<i class="fa-solid fa-circle-check text-success"></i>';
-                } else {
-                    text = `Você ainda não registrou gastos. Sua meta inteira de <strong class="text-success">${formatCurrency(c.goal)}</strong> está disponível.`;
-                    icon = '<i class="fa-regular fa-circle-check" style="color:var(--c-text-muted)"></i>';
-                }
-                summaryEl.insertAdjacentHTML('beforeend', `<div style="margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--c-border); display:flex; gap:1rem; align-items:flex-start;">
-                    <span style="font-size:1.2rem; margin-top:0.2rem;">${icon}</span>
-                    <div>
-                        <strong style="display:block; margin-bottom:0.2rem;">${c.name}</strong>
-                        <span style="font-size:0.9rem; color:var(--c-text-muted); line-height:1.4;">${text}</span>
-                    </div>
-                </div>`);
+        
+        const catsWithGoals = Object.values(catExp).filter(c => c.goal > 0);
+        catsWithGoals.sort((a, b) => {
+            const getStatus = (item) => {
+                if (item.spent > item.goal) return 2; // red
+                if (item.spent > item.goal * 0.8) return 1; // orange
+                return 0; // green
+            };
+            const statusDiff = getStatus(b) - getStatus(a);
+            if (statusDiff !== 0) return statusDiff;
+            return b.spent - a.spent;
+        });
+
+        catsWithGoals.forEach(c => {
+            const isOver = c.spent > c.goal;
+            const diff = Math.abs(c.spent - c.goal);
+            const pct = ((c.spent / c.goal) * 100).toFixed(0);
+            let text = '';
+            let icon = '';
+            
+            // Note: keeping the original text/icon logic, just sorted differently
+            if (isOver) {
+                text = `Você excedeu a meta de ${formatCurrency(c.goal)} em <strong class="text-danger">${formatCurrency(diff)}</strong> (${pct}% consumido).`;
+                icon = '<i class="fa-solid fa-circle-exclamation text-danger"></i>';
+            } else if (c.spent > 0) {
+                text = `Você gastou ${formatCurrency(c.spent)} de sua meta de ${formatCurrency(c.goal)}. Ainda tem <strong class="text-success">${formatCurrency(diff)}</strong> disponível (${pct}% consumido).`;
+                icon = '<i class="fa-solid fa-circle-check text-success"></i>';
+            } else {
+                text = `Você ainda não registrou gastos. Sua meta inteira de <strong class="text-success">${formatCurrency(c.goal)}</strong> está disponível.`;
+                icon = '<i class="fa-regular fa-circle-check" style="color:var(--c-text-muted)"></i>';
             }
+            summaryEl.insertAdjacentHTML('beforeend', `<div style="margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--c-border); display:flex; gap:1rem; align-items:flex-start;">
+                <span style="font-size:1.2rem; margin-top:0.2rem;">${icon}</span>
+                <div>
+                    <strong style="display:block; margin-bottom:0.2rem;">${c.name}</strong>
+                    <span style="font-size:0.9rem; color:var(--c-text-muted); line-height:1.4;">${text}</span>
+                </div>
+            </div>`);
         });
         if (summaryEl.innerHTML === '') {
             summaryEl.innerHTML = '<p style="color:var(--c-text-muted); font-size: 0.9rem;">Nenhuma meta definida para as categorias.</p>';

@@ -14,7 +14,9 @@ const STATE = {
     instFilterCat: 'all', instSort: 'date_desc', instPage: 1,
     debitFilterCat: 'all', debitSort: 'date_desc', debitPage: 1,
     itemsPerPage: 7,
-    editingCreditId: null, editingDebitId: null, editingInstId: null
+    editingCreditId: null, editingDebitId: null, editingInstId: null,
+    currentCategoryTab: 'expense',
+    currentCardId: 'card1'
 };
 
 // ── CHART INSTANCES ────────────────────────────────────────────
@@ -181,9 +183,19 @@ function loadAndEnterApp(user) {
 
             STATE.userData = {
                 name: profile.name,
-                settings: profile.settings || { cardClosingDay: 11, cardDueDay: 20, darkMode: false },
+                settings: profile.settings || { darkMode: false },
                 categories, creditExpenses, debitTransactions, installments
             };
+
+            // Migrate or initialize cards
+            if (!STATE.userData.settings.cards) {
+                STATE.userData.settings.cards = [{
+                    id: 'card1',
+                    name: 'Cartão 1',
+                    closingDay: STATE.userData.settings.cardClosingDay || 11,
+                    dueDay: STATE.userData.settings.cardDueDay || 20
+                }];
+            }
 
             window.applyDarkMode(!!STATE.userData.settings.darkMode);
             window.applyCalendarBar(STATE.userData.settings.calendarBar !== false);

@@ -11,15 +11,17 @@ async function handleExpenseSubmit(e) {
     const amount = parseFloat(document.getElementById('exp-amount').value);
     const date = document.getElementById('exp-date').value;
     const catId = document.getElementById('exp-category').value;
-    const closing = STATE.userData.settings.cardClosingDay || 11;
-    const dueDay = STATE.userData.settings.cardDueDay || 20;
+    const currentCard = (STATE.userData.settings.cards || []).find(c => c.id === STATE.currentCardId) || { closingDay: 11, dueDay: 20 };
+    const closing = currentCard.closingDay || 11;
+    const dueDay = currentCard.dueDay || 20;
     const cycle = calculateCycle(date, closing);
     const dueDate = new Date(cycle.end.getFullYear(), cycle.end.getMonth(), dueDay);
     const expData = {
         name, amount, date, categoryId: catId,
         cycleStart: cycle.start.toISOString().split('T')[0],
         cycleEnd: cycle.end.toISOString().split('T')[0],
-        dueDate: dueDate.toISOString().split('T')[0]
+        dueDate: dueDate.toISOString().split('T')[0],
+        cardId: STATE.currentCardId
     };
 
     if (STATE.editingCreditId) {
@@ -64,7 +66,36 @@ async function handleDebitSubmit(e) {
 
     STATE.editingDebitId = null;
     DOM.debitModal.classList.add('hidden');
-    renderDebitTable(); renderDebitChart(); renderGoalsChart(); renderOverallPieChart();
+    if (typeof renderDebitTable === 'function') renderDebitTable();
+    if (typeof renderDebitChart === 'function') renderDebitChart();
+    if (typeof renderGoalsChart === 'function') renderGoalsChart();
+    if (typeof renderOverallPieChart === 'function') renderOverallPieChart();
+}
+
+async function handleIncomeSubmit(e) {
+    e.preventDefault();
+    const name = document.getElementById('inc-name').value.trim();
+    const amount = parseFloat(document.getElementById('inc-amount').value);
+    const date = document.getElementById('inc-date').value;
+    const catId = document.getElementById('inc-category').value;
+    const type = 'income';
+    const txnData = { name, amount, date, categoryId: catId || null, type };
+
+    if (STATE.editingDebitId) {
+        await DB.updateDebitTransaction(STATE.editingDebitId, txnData);
+        const idx = STATE.userData.debitTransactions.findIndex(t => t.id === STATE.editingDebitId);
+        if (idx > -1) STATE.userData.debitTransactions[idx] = { ...STATE.userData.debitTransactions[idx], ...txnData };
+    } else {
+        const created = await DB.createDebitTransaction(STATE.currentUser.id, txnData);
+        STATE.userData.debitTransactions.push(created);
+    }
+
+    STATE.editingDebitId = null;
+    document.getElementById('income-modal').classList.add('hidden');
+    if (typeof renderDebitTable === 'function') renderDebitTable();
+    if (typeof renderDebitChart === 'function') renderDebitChart();
+    if (typeof renderGoalsChart === 'function') renderGoalsChart();
+    if (typeof renderOverallPieChart === 'function') renderOverallPieChart();
 }
 
 window.deleteDebitTransaction = async function (id) {
@@ -85,7 +116,7 @@ async function handleInstallmentSubmit(e) {
     const catId = document.getElementById('inst-category').value;
     if (!name || isNaN(amount) || isNaN(total) || isNaN(current) || !date || !catId) return;
 
-    const instData = { name, installmentAmount: amount, totalInstallments: total, currentInstallment: current, date, categoryId: catId };
+    const instData = { name, installmentAmount: amount, totalInstallments: total, currentInstallment: current, date, categoryId: catId, cardId: STATE.currentCardId };
 
     if (STATE.editingInstId) {
         await DB.updateInstallment(STATE.editingInstId, instData);
@@ -118,7 +149,13 @@ async function handleCategorySubmit(e) {
     const goal = parseFloat(document.getElementById('cat-goal').value);
     const bg = document.getElementById('cat-bg').value;
     const txt = document.getElementById('cat-text').value;
-    const catData = { name, goal, color: bg, textColor: txt };
+    const catData = { 
+        name, 
+        goal: STATE.currentCategoryTab === 'expense' ? goal : 0, 
+        color: bg, 
+        textColor: txt,
+        type: STATE.currentCategoryTab
+    };
 
     if (editingCategoryId) {
         await DB.updateCategory(editingCategoryId, catData);
@@ -150,21 +187,32 @@ window.deleteCategory = async function (id) {
 // ── SETTINGS ────────────────────────────────────────────────────
 async function handleSettingsSubmit(e) {
     e.preventDefault();
-    const closing = parseInt(DOM.setClosingDay.value);
-    const due = parseInt(DOM.setDueDay.value);
+    const cardId = document.getElementById('settings-card-select')?.value;
+    const cards = STATE.userData.settings.cards || [];
+    const cardIndex = cards.findIndex(c => c.id === cardId);
+    
+    if (cardIndex === -1) return;
 
-    STATE.userData.settings.cardClosingDay = closing;
-    STATE.userData.settings.cardDueDay = due;
+    const newName = document.getElementById('set-card-name').value.trim();
+    const closing = parseInt(document.getElementById('set-closing-day').value);
+    const due = parseInt(document.getElementById('set-due-day').value);
 
-    // Recalculate credit expense cycles and bulk update
+    cards[cardIndex].name = newName;
+    cards[cardIndex].closingDay = closing;
+    cards[cardIndex].dueDay = due;
+    STATE.userData.settings.cards = cards;
+
+    // Recalculate credit expense cycles for this specific card
     const updates = [];
     STATE.userData.creditExpenses.forEach(exp => {
-        const cycle = calculateCycle(exp.date, closing);
-        const dueDate = new Date(cycle.end.getFullYear(), cycle.end.getMonth(), due);
-        exp.cycleStart = cycle.start.toISOString().split('T')[0];
-        exp.cycleEnd = cycle.end.toISOString().split('T')[0];
-        exp.dueDate = dueDate.toISOString().split('T')[0];
-        updates.push(DB.updateCreditExpense(exp.id, exp));
+        if ((exp.cardId || 'card1') === cardId) {
+            const cycle = calculateCycle(exp.date, closing);
+            const dueDate = new Date(cycle.end.getFullYear(), cycle.end.getMonth(), due);
+            exp.cycleStart = cycle.start.toISOString().split('T')[0];
+            exp.cycleEnd = cycle.end.toISOString().split('T')[0];
+            exp.dueDate = dueDate.toISOString().split('T')[0];
+            updates.push(DB.updateCreditExpense(exp.id, exp));
+        }
     });
 
     await Promise.all([
@@ -172,14 +220,92 @@ async function handleSettingsSubmit(e) {
         ...updates
     ]);
 
-    renderCreditTable();
-    initDashboard();
-    DOM.settingsMsg.style.display = 'block';
-    setTimeout(() => { DOM.settingsMsg.style.display = 'none'; }, 3000);
+    if (window.renderCardTabs) window.renderCardTabs();
+    if (window.renderCreditTable) renderCreditTable();
+    if (window.initDashboard) initDashboard();
+    
+    const msg = document.getElementById('settings-msg');
+    if (msg) {
+        msg.style.display = 'block';
+        setTimeout(() => { msg.style.display = 'none'; }, 3000);
+    }
+}
+
+// ── DELETE CARD LOGIC ───────────────────────────────────────────
+function setupDeleteCardLogic() {
+    const btnDeleteCard = document.getElementById('btn-delete-card');
+    const deleteCardModal = document.getElementById('delete-card-modal');
+    const deleteCardNameDisplay = document.getElementById('delete-card-name-display');
+    const btnCancelDeleteCard = document.getElementById('btn-cancel-delete-card');
+    const btnCloseDeleteCard = document.getElementById('btn-close-delete-card');
+    const btnConfirmDeleteCard = document.getElementById('btn-confirm-delete-card');
+
+    if (btnDeleteCard && deleteCardModal) {
+        let cardToDeleteId = null;
+
+        btnDeleteCard.addEventListener('click', () => {
+            const cardId = document.getElementById('settings-card-select')?.value;
+            if (!cardId) return;
+
+            const cards = STATE.userData?.settings?.cards || [];
+            if (cards.length <= 1) {
+                alert('Você precisa ter pelo menos um cartão cadastrado.');
+                return;
+            }
+
+            const card = cards.find(c => c.id === cardId);
+            if (card) {
+                cardToDeleteId = card.id;
+                deleteCardNameDisplay.textContent = card.name;
+                deleteCardModal.classList.remove('hidden');
+            }
+        });
+
+        const closeDeleteModal = () => {
+            cardToDeleteId = null;
+            deleteCardModal.classList.add('hidden');
+        };
+
+        btnCancelDeleteCard?.addEventListener('click', closeDeleteModal);
+        btnCloseDeleteCard?.addEventListener('click', closeDeleteModal);
+
+        btnConfirmDeleteCard?.addEventListener('click', async () => {
+            if (!cardToDeleteId) return;
+
+            try {
+                let cards = STATE.userData.settings.cards || [];
+                cards = cards.filter(c => c.id !== cardToDeleteId);
+                STATE.userData.settings.cards = cards;
+
+                // Adjust current active card if we deleted it
+                if (STATE.currentCardId === cardToDeleteId) {
+                    STATE.currentCardId = cards.length > 0 ? cards[0].id : null;
+                }
+
+                await DB.updateProfileSettings(STATE.currentUser.id, STATE.userData.settings);
+
+                closeDeleteModal();
+
+                if (window.renderCardTabs) window.renderCardTabs();
+                if (window.renderCreditTable) renderCreditTable();
+                
+                // Re-trigger navigation to refresh settings view
+                const settingsLink = Array.from(DOM.mainNavLinks || []).find(l => l.getAttribute('href') === '#settings');
+                if (settingsLink) settingsLink.click();
+                
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao excluir cartão: ' + err.message);
+            }
+        });
+    }
 }
 
 // ── SETUP: EVENT LISTENERS ──────────────────────────────────────
 function setupEventListeners() {
+
+    // --- SETUP CARD DELETION ---
+    setupDeleteCardLogic();
 
     // --- AUTH: Login ---
     DOM.loginForm.addEventListener('submit', async (e) => {
@@ -287,14 +413,33 @@ function setupEventListeners() {
     DOM.btnNewDebit.addEventListener('click', () => {
         STATE.editingDebitId = null;
         DOM.debitForm.reset();
-        document.querySelector('#debit-modal .modal-header h3').textContent = 'Nova Transação Débito/Pix';
+        document.querySelector('#debit-modal .modal-header h3').textContent = 'Nova Despesa Conta-corrente';
         document.getElementById('deb-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('deb-type').value = 'debit';
         DOM.debitModal.classList.remove('hidden');
     });
     const closeDebit = () => { STATE.editingDebitId = null; DOM.debitModal.classList.add('hidden'); };
     DOM.btnCloseDebit.addEventListener('click', closeDebit);
     DOM.btnCancelDebit.addEventListener('click', closeDebit);
     DOM.debitForm.addEventListener('submit', handleDebitSubmit);
+
+    // --- INCOME MODAL ---
+    const btnNewIncome = document.getElementById('btn-new-income');
+    const incomeModal = document.getElementById('income-modal');
+    const incomeForm = document.getElementById('income-form');
+    if (btnNewIncome && incomeModal && incomeForm) {
+        btnNewIncome.addEventListener('click', () => {
+            STATE.editingDebitId = null;
+            incomeForm.reset();
+            document.querySelector('#income-modal .modal-header h3').textContent = 'Novo Rendimento (Apenas Receitas)';
+            document.getElementById('inc-date').value = new Date().toISOString().split('T')[0];
+            incomeModal.classList.remove('hidden');
+        });
+        const closeIncome = () => { STATE.editingDebitId = null; incomeModal.classList.add('hidden'); };
+        document.getElementById('btn-close-income').addEventListener('click', closeIncome);
+        document.getElementById('btn-cancel-income').addEventListener('click', closeIncome);
+        incomeForm.addEventListener('submit', handleIncomeSubmit);
+    }
 
     // --- INSTALLMENT MODAL ---
     DOM.btnNewInstallment = document.getElementById('btn-new-installment');
@@ -309,6 +454,43 @@ function setupEventListeners() {
     document.getElementById('btn-close-installment').addEventListener('click', closeInst);
     document.getElementById('btn-cancel-installment').addEventListener('click', closeInst);
     DOM.installmentForm.addEventListener('submit', handleInstallmentSubmit);
+
+    // --- ADD CARD MODAL ---
+    const addCardForm = document.getElementById('card-form');
+    if (addCardForm) {
+        addCardForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const cards = STATE.userData?.settings?.cards || [];
+            if (cards.length >= 3) {
+                alert('Você já atingiu o limite de 3 cartões de crédito.');
+                return;
+            }
+            const name = document.getElementById('card-name').value.trim();
+            const closing = parseInt(document.getElementById('card-closing').value);
+            const due = parseInt(document.getElementById('card-due').value);
+            
+            const newCardId = 'card' + (cards.length > 0 ? Math.max(...cards.map(c => parseInt(c.id.replace('card', '')))) + 1 : 1);
+            cards.push({ id: newCardId, name, closingDay: closing, dueDay: due });
+            
+            try {
+                if (!STATE.userData.settings) STATE.userData.settings = {};
+                STATE.userData.settings.cards = cards;
+                await DB.updateProfileSettings(STATE.currentUser.id, STATE.userData.settings);
+                STATE.currentCardId = newCardId;
+                document.getElementById('card-modal').classList.add('hidden');
+                addCardForm.reset();
+                if (window.renderCardTabs) window.renderCardTabs();
+                if (window.renderCreditTable) window.renderCreditTable();
+                if (window.renderInstallmentsTable) window.renderInstallmentsTable();
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao salvar cartão: ' + err.message);
+            }
+        });
+        const closeCard = () => { document.getElementById('card-modal').classList.add('hidden'); };
+        document.getElementById('btn-close-card')?.addEventListener('click', closeCard);
+        document.getElementById('btn-cancel-card')?.addEventListener('click', closeCard);
+    }
 
     // --- NAVIGATION ---
     DOM.mainNavLinks.forEach(link => {
@@ -343,9 +525,33 @@ function setupEventListeners() {
                 document.getElementById('extracts-grid').classList.add('hidden');
                 DOM.settingsGrid.classList.remove('hidden');
                 DOM.monthNavContainer.classList.add('hidden');
-                if (STATE.userData?.settings) {
-                    DOM.setClosingDay.value = STATE.userData.settings.cardClosingDay || 11;
-                    DOM.setDueDay.value = STATE.userData.settings.cardDueDay || 20;
+                const cardSelect = document.getElementById('settings-card-select');
+                const cardName = document.getElementById('set-card-name');
+                const closingDay = document.getElementById('set-closing-day');
+                const dueDay = document.getElementById('set-due-day');
+
+                if (STATE.userData?.settings?.cards && cardSelect) {
+                    cardSelect.innerHTML = '';
+                    STATE.userData.settings.cards.forEach(card => {
+                        const opt = document.createElement('option');
+                        opt.value = card.id;
+                        opt.textContent = card.name;
+                        cardSelect.appendChild(opt);
+                    });
+                    
+                    const populateCardForm = (id) => {
+                        const card = STATE.userData.settings.cards.find(c => c.id === id);
+                        if (card) {
+                            cardName.value = card.name;
+                            closingDay.value = card.closingDay;
+                            dueDay.value = card.dueDay;
+                        }
+                    };
+                    
+                    cardSelect.value = STATE.currentCardId || STATE.userData.settings.cards[0].id;
+                    populateCardForm(cardSelect.value);
+                    
+                    cardSelect.onchange = (e) => populateCardForm(e.target.value);
                 }
                 const dm = document.getElementById('user-dark-mode');
                 if (dm && STATE.userData?.settings) dm.checked = !!STATE.userData.settings.darkMode;
@@ -370,7 +576,39 @@ function setupEventListeners() {
         });
     });
 
-    // --- CATEGORY FORM ---
+    // --- CATEGORY TABS & FORM ---
+    const tabExp = document.getElementById('tab-cat-expense');
+    const tabInc = document.getElementById('tab-cat-income');
+    const catSubtitle = document.getElementById('cat-subtitle');
+    const catGoalGroup = document.getElementById('cat-goal-group');
+    const catGoalTh = document.getElementById('cat-goal-th');
+
+    const switchTab = (tab) => {
+        STATE.currentCategoryTab = tab;
+        
+        if (tab === 'expense') {
+            tabExp.className = 'btn btn-primary';
+            tabInc.className = 'btn btn-outline';
+            tabExp.style.height = '44px';
+            tabInc.style.height = '44px';
+            catSubtitle.textContent = 'Gerencie as categorias de despesas e suas respectivas metas mensais.';
+            if (catGoalGroup) catGoalGroup.style.display = 'block';
+            if (catGoalTh) catGoalTh.style.display = 'table-cell';
+        } else {
+            tabExp.className = 'btn btn-outline';
+            tabInc.className = 'btn btn-primary';
+            tabExp.style.height = '44px';
+            tabInc.style.height = '44px';
+            catSubtitle.textContent = 'Gerencie suas fontes de renda e rendimentos.';
+            if (catGoalGroup) catGoalGroup.style.display = 'none';
+            if (catGoalTh) catGoalTh.style.display = 'none';
+        }
+        renderCategoriesTable();
+    };
+
+    tabExp?.addEventListener('click', () => switchTab('expense'));
+    tabInc?.addEventListener('click', () => switchTab('income'));
+
     DOM.categoryForm.addEventListener('submit', handleCategorySubmit);
     DOM.btnCancelCategoryEdit.addEventListener('click', cancelCategoryEdit);
 

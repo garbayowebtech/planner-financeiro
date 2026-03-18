@@ -158,7 +158,7 @@ const DB = {
         if (error) throw error;
         return (data || []).map(c => ({
             id: c.id, name: c.name, color: c.color,
-            textColor: c.text_color, goal: parseFloat(c.goal)
+            textColor: c.text_color, goal: parseFloat(c.goal), type: c.type || 'expense'
         }));
     },
 
@@ -167,18 +167,23 @@ const DB = {
             .from('categories')
             .insert([{
                 user_id: userId, name: cat.name, color: cat.color,
-                text_color: cat.textColor || '#ffffff', goal: cat.goal || 0
+                text_color: cat.textColor || '#ffffff', goal: cat.goal || 0,
+                type: cat.type || 'expense'
             }])
             .select('*')
             .single();
         if (error) throw error;
-        return { id: data.id, name: data.name, color: data.color, textColor: data.text_color, goal: parseFloat(data.goal) };
+        return { id: data.id, name: data.name, color: data.color, textColor: data.text_color, goal: parseFloat(data.goal), type: data.type };
     },
 
     async updateCategory(catId, cat) {
         const { error } = await supabaseClient
             .from('categories')
-            .update({ name: cat.name, color: cat.color, text_color: cat.textColor || '#ffffff', goal: cat.goal || 0 })
+            .update({ 
+                name: cat.name, color: cat.color, 
+                text_color: cat.textColor || '#ffffff', goal: cat.goal || 0,
+                type: cat.type || 'expense'
+            })
             .eq('id', catId);
         if (error) throw error;
     },
@@ -202,7 +207,8 @@ const DB = {
         return (data || []).map(e => ({
             id: e.id, name: e.name, amount: parseFloat(e.amount),
             date: e.date, categoryId: e.category_id,
-            cycleStart: e.cycle_start, cycleEnd: e.cycle_end, dueDate: e.due_date
+            cycleStart: e.cycle_start, cycleEnd: e.cycle_end, dueDate: e.due_date,
+            cardId: e.card_id || 'card1'
         }));
     },
 
@@ -212,7 +218,7 @@ const DB = {
             .insert([{
                 user_id: userId, name: exp.name, amount: exp.amount, date: exp.date,
                 category_id: exp.categoryId, cycle_start: exp.cycleStart,
-                cycle_end: exp.cycleEnd, due_date: exp.dueDate
+                cycle_end: exp.cycleEnd, due_date: exp.dueDate, card_id: exp.cardId || 'card1'
             }])
             .select('*')
             .single();
@@ -220,7 +226,7 @@ const DB = {
         return {
             id: data.id, name: data.name, amount: parseFloat(data.amount),
             date: data.date, categoryId: data.category_id,
-            cycleStart: data.cycle_start, cycleEnd: data.cycle_end, dueDate: data.due_date
+            cycleStart: data.cycle_start, cycleEnd: data.cycle_end, dueDate: data.due_date, cardId: data.card_id
         };
     },
 
@@ -230,7 +236,7 @@ const DB = {
             .update({
                 name: exp.name, amount: exp.amount, date: exp.date,
                 category_id: exp.categoryId, cycle_start: exp.cycleStart,
-                cycle_end: exp.cycleEnd, due_date: exp.dueDate
+                cycle_end: exp.cycleEnd, due_date: exp.dueDate, card_id: exp.cardId || 'card1'
             })
             .eq('id', expId);
         if (error) throw error;
@@ -298,7 +304,7 @@ const DB = {
         return (data || []).map(i => ({
             id: i.id, name: i.name, installmentAmount: parseFloat(i.installment_amount),
             totalInstallments: i.total_installments, currentInstallment: i.current_installment,
-            date: i.date, categoryId: i.category_id
+            date: i.date, categoryId: i.category_id, cardId: i.card_id || 'card1'
         }));
     },
 
@@ -308,7 +314,7 @@ const DB = {
             .insert([{
                 user_id: userId, name: inst.name, installment_amount: inst.installmentAmount,
                 total_installments: inst.totalInstallments, current_installment: inst.currentInstallment,
-                date: inst.date, category_id: inst.categoryId
+                date: inst.date, category_id: inst.categoryId, card_id: inst.cardId || 'card1'
             }])
             .select('*')
             .single();
@@ -316,7 +322,7 @@ const DB = {
         return {
             id: data.id, name: data.name, installmentAmount: parseFloat(data.installment_amount),
             totalInstallments: data.total_installments, currentInstallment: data.current_installment,
-            date: data.date, categoryId: data.category_id
+            date: data.date, categoryId: data.category_id, cardId: data.card_id
         };
     },
 
@@ -326,7 +332,7 @@ const DB = {
             .update({
                 name: inst.name, installment_amount: inst.installmentAmount,
                 total_installments: inst.totalInstallments, current_installment: inst.currentInstallment,
-                date: inst.date, category_id: inst.categoryId
+                date: inst.date, category_id: inst.categoryId, card_id: inst.cardId || 'card1'
             })
             .eq('id', instId);
         if (error) throw error;

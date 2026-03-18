@@ -117,6 +117,16 @@
     background: var(--c-primary-dark);
 }
 
+/* Sucesso */
+.btn-success {
+    background: var(--c-success);
+    color: white;
+}
+
+.btn-success:hover {
+    background: #059669; /* var(--c-success-dark) or slightly darker green */
+}
+
 /* Contorno */
 .btn-outline {
     background: transparent;

@@ -147,8 +147,7 @@
             <nav class="main-nav">
                 <a href="#dashboard" class="active"><i class="fa-solid fa-chart-pie"></i> Visão Geral</a>
                 <a href="#credit"><i class="fa-regular fa-credit-card"></i> Cartão de Crédito</a>
-                <a href="#installments"><i class="fa-solid fa-cart-shopping"></i> Compras Parceladas</a>
-                <a href="#debit"><i class="fa-solid fa-building-columns"></i> Débito / Pix</a>
+                <a href="#debit"><i class="fa-solid fa-building-columns"></i> Conta-corrente</a>
                 <a href="#consolidated-extracts" id="nav-consolidated-extracts"><i
                         class="fa-solid fa-file-invoice-dollar"></i> Extratos Consolidados</a>
                 <a href="#categories"><i class="fa-solid fa-tags"></i> Categorias</a>
@@ -230,17 +229,25 @@
                     </section>
 
                     <!-- Credit Card Section -->
-                    <section id="section-credit" class="card-section">
+                    <section id="section-credit" class="card-section" style="grid-column: 1 / -1;">
                         <div class="section-header">
                             <div class="header-title">
                                 <i class="fa-regular fa-credit-card icon-credit"></i>
-                                <h3>Cartão de Crédito</h3>
+                                <h3>Cartões de Crédito</h3>
                             </div>
                             <div class="header-actions" style="display:flex; gap:0.5rem; align-items: center;">
                                 <button id="btn-new-transaction" class="btn btn-primary btn-shadow">
-                                    <i class="fa-solid fa-plus"></i> Nova Transação
+                                    <i class="fa-solid fa-plus"></i> Nova Despesa à Vista
+                                </button>
+                                <button id="btn-new-installment" class="btn btn-outline btn-shadow">
+                                    <i class="fa-solid fa-cart-shopping"></i> Nova Compra Parcelada
                                 </button>
                             </div>
+                        </div>
+
+                        <!-- Card Tabs (Dynamically rendered) -->
+                        <div id="credit-card-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--c-border); padding-bottom: 0.75rem; overflow-x: auto;">
+                            <!-- Injected by JS -->
                         </div>
                         <div class="summary-cards">
                             <div class="summary-card">
@@ -311,26 +318,18 @@
                         </div>
 
                         <div class="chart-container">
-                            <h4>Despesas por Categoria</h4>
+                            <h4>Despesas à Vista por Categoria</h4>
                             <div class="chart-wrapper">
                                 <canvas id="credit-chart"></canvas>
                             </div>
                         </div>
-                    </section>
 
-                    <!-- Installments Section -->
-                    <section id="section-installments" class="card-section" style="grid-column: 1 / -1;">
-                        <div class="section-header">
-                            <div class="header-title">
-                                <i class="fa-solid fa-cart-shopping" style="color: var(--c-primary)"></i>
-                                <h3>Compras Parceladas</h3>
+                        <!-- Installments Sub-Section (Now merged visually) -->
+                        <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px dashed var(--c-border);">
+                            <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1.5rem;">
+                                <i class="fa-solid fa-cart-shopping" style="color: var(--c-primary); font-size: 1.25rem;"></i>
+                                <h3 style="font-size: 1.25rem;">Compras Parceladas</h3>
                             </div>
-                            <div class="header-actions" style="display:flex; gap:0.5rem; align-items: center;">
-                                <button id="btn-new-installment" class="btn btn-primary btn-shadow">
-                                    <i class="fa-solid fa-plus"></i> Nova Transação
-                                </button>
-                            </div>
-                        </div>
                         <div class="summary-cards">
                             <div class="summary-card">
                                 <span class="label">Total em Aberto</span>
@@ -405,6 +404,7 @@
                                 <canvas id="installments-chart"></canvas>
                             </div>
                         </div>
+                        </div>
                     </section>
 
                     <!-- Debit / Pix Section -->
@@ -412,21 +412,60 @@
                         <div class="section-header">
                             <div class="header-title">
                                 <i class="fa-solid fa-building-columns icon-debit"></i>
-                                <h3>Débito / Pix</h3>
+                                <h3>Conta-corrente</h3>
                             </div>
-                            <button id="btn-new-debit" class="btn btn-primary btn-shadow">
-                                <i class="fa-solid fa-plus"></i> Nova Transação
-                            </button>
+                            <div class="header-actions" style="display:flex; gap:0.5rem; align-items: center;">
+                                <button id="btn-new-income" class="btn btn-success btn-shadow">
+                                    <i class="fa-solid fa-plus"></i> Nova Receita
+                                </button>
+                                <button id="btn-new-debit" class="btn btn-primary btn-shadow">
+                                    <i class="fa-solid fa-plus"></i> Nova Despesa
+                                </button>
+                            </div>
                         </div>
                         <div class="summary-cards">
                             <div class="summary-card">
-                                <span class="label">Saldo Mensal</span>
-                                <span class="value text-success">R$ 0,00</span>
+                                <span class="label">Saldo Mensal (Receitas - Despesas)</span>
+                                <span class="value text-success" id="cc-balance-value">R$ 0,00</span>
+                            </div>
+                            <div class="summary-card">
+                                <span class="label">Total Receitas</span>
+                                <span class="value text-success" id="cc-income-value">R$ 0,00</span>
+                            </div>
+                            <div class="summary-card">
+                                <span class="label">Total Despesas</span>
+                                <span class="value text-danger" id="cc-expense-value">R$ 0,00</span>
                             </div>
                         </div>
 
-                        <div class="list-controls"
-                            style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                        <!-- Incomes Table Area -->
+                        <div style="margin-top: 2rem;">
+                            <h4 style="margin-bottom: 1rem; color: var(--c-success);"><i class="fa-solid fa-arrow-trend-up"></i> Rendimentos (Receitas)</h4>
+                            <div class="table-container" style="margin-bottom: 2rem;">
+                                <table class="data-table" id="income-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Data</th>
+                                            <th>Descrição</th>
+                                            <th>Valor</th>
+                                            <th>Categoria</th>
+                                            <th class="text-center" style="width: 50px;">Ação</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="income-table-body">
+                                        <tr class="empty-row">
+                                            <td colspan="5">Nenhum rendimento registrado.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Expenses Table Area -->
+                        <div>
+                            <h4 style="margin-bottom: 1rem; color: var(--c-danger);"><i class="fa-solid fa-arrow-trend-down"></i> Despesas (Débito e Pix)</h4>
+                            <div class="list-controls"
+                                style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
                             <div class="filter-group">
                                 <span class="filter-label">Filtrar pesquisa:</span>
                                 <div class="filter-selects">
@@ -479,8 +518,7 @@
                                 <canvas id="debit-chart"></canvas>
                             </div>
                         </div>
-                    </section>
-
+                        </div>
                     </section>
                 </div>
 
@@ -494,6 +532,14 @@
                             </div>
                         </div>
 
+                        <!-- Category Tabs -->
+                        <div class="category-tabs" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 0.5rem;">
+                            <button id="tab-cat-expense" class="btn btn-primary" style="height: 44px;">Despesas</button>
+                            <button id="tab-cat-income" class="btn btn-outline" style="height: 44px;">Rendimentos</button>
+                        </div>
+
+                        <p class="subtitle" id="cat-subtitle" style="margin-bottom: 1.5rem;">Gerencie as categorias de despesas e suas respectivas metas mensais.</p>
+
                         <!-- Form to add category -->
                         <form id="category-form" class="category-form"
                             style="display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap;">
@@ -501,9 +547,9 @@
                                 <label for="cat-name">Nome da Categoria</label>
                                 <input type="text" id="cat-name" required placeholder="Ex: Lazer">
                             </div>
-                            <div class="form-group" style="margin: 0; width: 150px;">
-                                <label for="cat-goal">Meta de Gasto (R$)</label>
-                                <input type="number" id="cat-goal" required step="0.01" min="0" placeholder="0.00">
+                            <div class="form-group" id="cat-goal-group" style="margin: 0; width: 150px;">
+                                <label for="cat-goal">Meta Mensal (R$)</label>
+                                <input type="number" id="cat-goal" step="0.01" min="0" placeholder="0.00">
                             </div>
                             <div class="form-group" style="margin: 0;">
                                 <label for="cat-bg">Cor de Fundo</label>
@@ -528,7 +574,7 @@
                                     <tr>
                                         <th>Pré-visualização</th>
                                         <th>Nome</th>
-                                        <th class="text-right">Meta (R$)</th>
+                                        <th class="text-right" id="cat-goal-th">Meta (R$)</th>
                                         <th class="text-center" style="width: 50px;">Ação</th>
                                     </tr>
                                 </thead>
@@ -551,8 +597,15 @@
                         </div>
 
                         <form id="settings-form" style="max-width: 400px;">
-                            <p class="subtitle" style="margin-bottom: 2rem;">Defina os dias de fechamento e vencimento
-                                para automatizar os ciclos das despesas.</p>
+                            <p class="subtitle" style="margin-bottom: 2rem;">Renomeie seus cartões e defina os dias de fechamento e vencimento para automatizar os ciclos das despesas.</p>
+                            <div class="form-group">
+                                <label for="settings-card-select">Selecione o Cartão</label>
+                                <select id="settings-card-select" class="form-select"></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="set-card-name">Nome do Cartão</label>
+                                <input type="text" id="set-card-name" required placeholder="Ex: Nubank">
+                            </div>
                             <div class="form-group">
                                 <label for="set-closing-day">Dia de Virada da Fatura</label>
                                 <small
@@ -565,9 +618,9 @@
                                 <label for="set-due-day">Dia de Vencimento da Fatura</label>
                                 <input type="number" id="set-due-day" required min="1" max="31" placeholder="Ex: 20">
                             </div>
-                            <div style="margin-top: 1.5rem;">
-                                <button type="submit" class="btn btn-primary" style="width: 100%;">Salvar
-                                    Configurações</button>
+                            <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem;">
+                                <button type="submit" class="btn btn-primary" style="flex: 1;">Salvar Configurações</button>
+                                <button type="button" id="btn-delete-card" class="btn btn-danger" style="flex: 1;">Excluir Cartão</button>
                             </div>
                             <p id="settings-msg" class="text-success"
                                 style="margin-top: 1rem; font-size: 0.85rem; display: none;">Configurações salvas com
@@ -840,7 +893,7 @@
     <div id="debit-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <div class="modal-header">
-                <h3>Nova Transação Débito/Pix</h3>
+                <h3>Nova Despesa Conta-corrente</h3>
                 <button class="btn-close" id="btn-close-debit"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="debit-form" class="modal-body">
@@ -853,10 +906,10 @@
                     <input type="number" id="deb-amount" required step="0.01" min="0.01" placeholder="0.00">
                 </div>
                 <div class="form-group">
-                    <label for="deb-type">Tipo de Transação</label>
+                    <label for="deb-type">Forma de Pagamento</label>
                     <select id="deb-type" required class="form-select">
-                        <option value="expense">Saída (Despesa)</option>
-                        <option value="income">Entrada (Receita)</option>
+                        <option value="debit">Débito</option>
+                        <option value="pix">Pix</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -878,6 +931,99 @@
         </div>
     </div>
 
+    <!-- Income Modal -->
+    <div id="income-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Novo Rendimento (Apenas Receitas)</h3>
+                <button class="btn-close" id="btn-close-income"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="income-form" class="modal-body">
+                <div class="form-group">
+                    <label for="inc-name">Descrição</label>
+                    <input type="text" id="inc-name" required placeholder="Ex: Salário, Aluguel">
+                </div>
+                <div class="form-group">
+                    <label for="inc-amount">Valor (R$)</label>
+                    <input type="number" id="inc-amount" required step="0.01" min="0.01" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label for="inc-date">Data do Rendimento</label>
+                    <input type="date" id="inc-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="inc-category">Categoria (Opcional para acompanhamento)</label>
+                    <select id="inc-category" class="form-select">
+                        <option value="">Nenhuma / Outros...</option>
+                        <!-- Injected by JS -->
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-text" id="btn-cancel-income">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" style="background: var(--c-success);">Salvar Rendimento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Card Modal -->
+    <div id="card-modal" class="modal hidden">
+        <div class="modal-overlay">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3>Adicionar Novo Cartão</h3>
+                    <button class="btn-close" id="btn-close-card" title="Fechar"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="modal-body">
+                    <form id="card-form">
+                        <div class="form-group">
+                            <label for="card-name">Nome do Cartão</label>
+                            <input type="text" id="card-name" placeholder="Ex: Nubank, Itaú..." required>
+                        </div>
+                        <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label for="card-closing">Dia de Fechamento</label>
+                                <input type="number" id="card-closing" min="1" max="31" value="11" required>
+                                <small style="font-size: 0.75rem; color: var(--c-text-muted);">Melhor dia para compra</small>
+                            </div>
+                            <div>
+                                <label for="card-due">Dia de Vencimento</label>
+                                <input type="number" id="card-due" min="1" max="31" value="20" required>
+                                <small style="font-size: 0.75rem; color: var(--c-text-muted);">Dia do pagamento</small>
+                            </div>
+                        </div>
+                        <div class="modal-actions" style="margin-top: 1.5rem;">
+                            <button type="button" class="btn btn-text" id="btn-cancel-card">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Adicionar Cartão</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Card Modal -->
+    <div id="delete-card-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Excluir Cartão</h3>
+                <button type="button" id="btn-close-delete-card" class="btn-icon">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o cartão <strong><span id="delete-card-name-display"></span></strong>?</p>
+                <p class="text-danger" style="margin-top: 0.5rem; font-size: 0.9rem;">
+                    Atenção: Apenas o cartão será excluído das configurações (ficando invisível). O histórico de despesas e os lançamentos no banco de dados ainda estarão vinculados a ele.
+                </p>
+                <div class="form-actions mt-4">
+                    <button type="button" id="btn-cancel-delete-card" class="btn btn-outline">Cancelar</button>
+                    <button type="button" id="btn-confirm-delete-card" class="btn btn-danger">Excluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Goal Alert Popup -->
     <div id="goal-alert-popup" class="goal-alert-popup hidden">
         <div class="goal-alert-header">
