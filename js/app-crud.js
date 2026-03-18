@@ -11,9 +11,13 @@ async function handleExpenseSubmit(e) {
     const amount = parseFloat(document.getElementById('exp-amount').value);
     const date = document.getElementById('exp-date').value;
     const catId = document.getElementById('exp-category').value;
-    const currentCard = (STATE.userData.settings.cards || []).find(c => c.id === STATE.currentCardId) || { closingDay: 11, dueDay: 20 };
-    const closing = currentCard.closingDay || 11;
-    const dueDay = currentCard.dueDay || 20;
+    const currentCard = (STATE.userData.settings.cards || []).find(c => c.id === STATE.currentCardId);
+    if (!currentCard || !currentCard.closingDay || !currentCard.dueDay) {
+        alert("antes de registrar uma operação de crédito, entre no menu de configurações e informe os dias de virada e de vencimento da fatura!");
+        return;
+    }
+    const closing = currentCard.closingDay;
+    const dueDay = currentCard.dueDay;
     const cycle = calculateCycle(date, closing);
     const dueDate = new Date(cycle.end.getFullYear(), cycle.end.getMonth(), dueDay);
     const expData = {
@@ -113,6 +117,12 @@ async function handleInstallmentSubmit(e) {
     const total = parseInt(document.getElementById('inst-total').value);
     const current = parseInt(document.getElementById('inst-current').value);
     const date = document.getElementById('inst-date').value;
+    const currentCard = (STATE.userData.settings.cards || []).find(c => c.id === STATE.currentCardId);
+    if (!currentCard || !currentCard.closingDay || !currentCard.dueDay) {
+        alert("antes de registrar uma operação de crédito, entre no menu de configurações e informe os dias de virada e de vencimento da fatura!");
+        return;
+    }
+
     const catId = document.getElementById('inst-category').value;
     if (!name || isNaN(amount) || isNaN(total) || isNaN(current) || !date || !catId) return;
 
@@ -200,6 +210,7 @@ async function handleSettingsSubmit(e) {
     cards[cardIndex].name = newName;
     cards[cardIndex].closingDay = closing;
     cards[cardIndex].dueDay = due;
+    cards[cardIndex].isConfigured = true;
     STATE.userData.settings.cards = cards;
 
     // Recalculate credit expense cycles for this specific card
@@ -470,7 +481,7 @@ function setupEventListeners() {
             const due = parseInt(document.getElementById('card-due').value);
             
             const newCardId = 'card' + (cards.length > 0 ? Math.max(...cards.map(c => parseInt(c.id.replace('card', '')))) + 1 : 1);
-            cards.push({ id: newCardId, name, closingDay: closing, dueDay: due });
+            cards.push({ id: newCardId, name, closingDay: closing, dueDay: due, isConfigured: true });
             
             try {
                 if (!STATE.userData.settings) STATE.userData.settings = {};

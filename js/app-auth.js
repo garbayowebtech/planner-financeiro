@@ -192,9 +192,20 @@ function loadAndEnterApp(user) {
                 STATE.userData.settings.cards = [{
                     id: 'card1',
                     name: 'Cartão 1',
-                    closingDay: STATE.userData.settings.cardClosingDay || 11,
-                    dueDay: STATE.userData.settings.cardDueDay || 20
+                    closingDay: '',
+                    dueDay: ''
                 }];
+            } else {
+                STATE.userData.settings.cards.forEach(c => {
+                    if (!c.isConfigured && c.closingDay === 11 && c.dueDay === 20) {
+                        const hasTx = STATE.userData.creditExpenses.some(e => (e.cardId || 'card1') === c.id) ||
+                                      STATE.userData.installments.some(i => (i.cardId || 'card1') === c.id);
+                        if (!hasTx) {
+                            c.closingDay = '';
+                            c.dueDay = '';
+                        }
+                    }
+                });
             }
 
             window.applyDarkMode(!!STATE.userData.settings.darkMode);

@@ -81,6 +81,13 @@ function calculateCycle(dateStr, closingDay) {
     return { start, end };
 }
 
+// Returns 1 if the purchase date falls AFTER the closing day (so the first
+// installment is charged in the NEXT billing cycle), otherwise 0.
+function instCycleOffset(dateStr, closingDay) {
+    const day = parseInt(dateStr.split('-')[2]);
+    return day >= closingDay ? 1 : 0;
+}
+
 // ── GOAL ALERTS ─────────────────────────────────────────────────
 function checkGoalAlerts() {
     const popup = document.getElementById('goal-alert-popup');
@@ -113,7 +120,9 @@ function checkGoalAlerts() {
     (STATE.userData.installments || []).forEach(inst => {
         const p = inst.date.split('-');
         const py = parseInt(p[0]), pm = parseInt(p[1]) - 1;
-        const diff = (curYear - py) * 12 + (curMonth - pm);
+        const card = (STATE.userData.settings?.cards || []).find(c => c.id === (inst.cardId || 'card1'));
+        const closing = card?.closingDay || 11;
+        const diff = (curYear - py) * 12 + (curMonth - pm) - instCycleOffset(inst.date, closing);
         const proj = inst.currentInstallment + diff;
         if (proj >= 1 && proj <= inst.totalInstallments && catSpent[inst.categoryId] !== undefined)
             catSpent[inst.categoryId] += inst.installmentAmount;
@@ -303,10 +312,13 @@ function renderCreditTable() {
     (STATE.userData.installments || []).forEach(inst => {
         if ((inst.cardId || 'card1') !== STATE.currentCardId) return;
         const p = inst.date.split('-'), py = parseInt(p[0]), pm = parseInt(p[1]) - 1;
-        const diff = (STATE.viewYear - py) * 12 + (STATE.viewMonth - pm);
+        const card = (STATE.userData.settings?.cards || []).find(c => c.id === STATE.currentCardId);
+        const closing = card?.closingDay || 11;
+        const offset = instCycleOffset(inst.date, closing);
+        const diff = (STATE.viewYear - py) * 12 + (STATE.viewMonth - pm) - offset;
         const proj = inst.currentInstallment + diff;
         if (proj >= 1 && proj <= inst.totalInstallments) instThisMonth += inst.installmentAmount;
-        const diffN = (nextYear - py) * 12 + (nextMonth - pm);
+        const diffN = (nextYear - py) * 12 + (nextMonth - pm) - offset;
         const projN = inst.currentInstallment + diffN;
         if (projN >= 1 && projN <= inst.totalInstallments) instNextMonth += inst.installmentAmount;
     });
@@ -557,7 +569,9 @@ function renderOverallPieChart() {
     });
     (STATE.userData.installments || []).forEach(inst => {
         const p = inst.date.split('-');
-        const diff = (STATE.viewYear - +p[0]) * 12 + (STATE.viewMonth - (+p[1] - 1));
+        const card = (STATE.userData.settings?.cards || []).find(c => c.id === (inst.cardId || 'card1'));
+        const closing = card?.closingDay || 11;
+        const diff = (STATE.viewYear - +p[0]) * 12 + (STATE.viewMonth - (+p[1] - 1)) - instCycleOffset(inst.date, closing);
         const proj = inst.currentInstallment + diff;
         if (proj >= 1 && proj <= inst.totalInstallments) totalInst += inst.installmentAmount;
     });
@@ -617,7 +631,7 @@ function renderGoalsBalanceWidget(containerId, catExpMap, categories) {
         </div>
         <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
             <div style="text-align:center;">
-                <span style="display:block; font-size:0.75rem; color:var(--c-text-muted); margin-bottom:0.2rem;">Orçamento Total</span>
+                <span style="display:block; font-size:0.75rem; color:var(--c-text-muted); margin-bottom:0.2rem;">Somatório de Todas as Metas</span>
                 <span style="font-size:1.1rem; font-weight:700;">${formatCurrency(totalGoal)}</span>
             </div>
             <div style="text-align:center;">
@@ -659,7 +673,9 @@ function renderGoalsChart() {
     });
     (STATE.userData.installments || []).forEach(inst => {
         const p = inst.date.split('-');
-        const diff = (STATE.viewYear - +p[0]) * 12 + (STATE.viewMonth - (+p[1] - 1));
+        const card = (STATE.userData.settings?.cards || []).find(c => c.id === (inst.cardId || 'card1'));
+        const closing = card?.closingDay || 11;
+        const diff = (STATE.viewYear - +p[0]) * 12 + (STATE.viewMonth - (+p[1] - 1)) - instCycleOffset(inst.date, closing);
         const proj = inst.currentInstallment + diff;
         if (proj >= 1 && proj <= inst.totalInstallments && catExp[inst.categoryId] !== undefined)
             catExp[inst.categoryId] += inst.installmentAmount;
@@ -730,7 +746,9 @@ function renderInstallmentsTable() {
     installments.forEach(inst => {
         if ((inst.cardId || 'card1') !== STATE.currentCardId) return;
         const p = inst.date.split('-'), py = +p[0], pm = +p[1] - 1;
-        const diff = (STATE.viewYear - py) * 12 + (STATE.viewMonth - pm);
+        const card = (STATE.userData.settings?.cards || []).find(c => c.id === STATE.currentCardId);
+        const closing = card?.closingDay || 11;
+        const diff = (STATE.viewYear - py) * 12 + (STATE.viewMonth - pm) - instCycleOffset(inst.date, closing);
         const proj = inst.currentInstallment + diff;
         if (proj >= 1 && proj <= inst.totalInstallments) {
             const rem = (inst.totalInstallments - proj + 1) * inst.installmentAmount;
@@ -791,7 +809,9 @@ function renderInstallmentsChart() {
     (STATE.userData.installments || []).forEach(inst => {
         if ((inst.cardId || 'card1') !== STATE.currentCardId) return;
         const p = inst.date.split('-'), py = +p[0], pm = +p[1] - 1;
-        const diff = (STATE.viewYear - py) * 12 + (STATE.viewMonth - pm);
+        const card = (STATE.userData.settings?.cards || []).find(c => c.id === STATE.currentCardId);
+        const closing = card?.closingDay || 11;
+        const diff = (STATE.viewYear - py) * 12 + (STATE.viewMonth - pm) - instCycleOffset(inst.date, closing);
         const proj = inst.currentInstallment + diff;
         if (proj >= 1 && proj <= inst.totalInstallments) {
             const cat = STATE.userData.categories.find(c => c.id === inst.categoryId);
@@ -842,7 +862,9 @@ window.renderConsolidatedExtracts = function renderConsolidatedExtracts() {
     // Installments
     (STATE.userData.installments || []).forEach(inst => {
         const p = inst.date.split('-'), py = parseInt(p[0]), pm = parseInt(p[1]) - 1;
-        const diff = (STATE.viewYear - py) * 12 + (STATE.viewMonth - pm);
+        const card = (STATE.userData.settings?.cards || []).find(c => c.id === (inst.cardId || 'card1'));
+        const closing = card?.closingDay || 11;
+        const diff = (STATE.viewYear - py) * 12 + (STATE.viewMonth - pm) - instCycleOffset(inst.date, closing);
         const proj = inst.currentInstallment + diff;
         if (proj >= 1 && proj <= inst.totalInstallments) {
             totalExpense += inst.installmentAmount;
