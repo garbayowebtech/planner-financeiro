@@ -770,7 +770,6 @@ function renderInstallmentsTable() {
     if (STATE.instPage > totalPages) STATE.instPage = totalPages;
     const paged = active.slice((STATE.instPage - 1) * STATE.itemsPerPage, STATE.instPage * STATE.itemsPerPage);
     updatePaginationUI('inst', STATE.instPage, totalPages);
-
     if (paged.length === 0) { tbody.innerHTML = '<tr class="empty-row"><td colspan="7">Nenhuma parcela correspondente.</td></tr>'; }
     else paged.forEach(inst => {
         const cat = STATE.userData.categories.find(c => c.id === inst.categoryId) || { name: 'Sem Categ.', color: '#ccc', textColor: '#000' };
@@ -796,6 +795,10 @@ window.editInstallment = function (id) {
     document.getElementById('inst-current').value = inst.currentInstallment;
     document.getElementById('inst-date').value = inst.date;
     document.getElementById('inst-category').value = inst.categoryId;
+    const valueRadioInstallment = document.querySelector('input[name="inst-value-type"][value="installment"]');
+    if (valueRadioInstallment) valueRadioInstallment.checked = true;
+    const labelInstAmount = document.getElementById('label-inst-amount');
+    if (labelInstAmount) labelInstAmount.textContent = 'Valor da Parcela (R$)';
     DOM.installmentModal.classList.remove('hidden');
 };
 

@@ -7,39 +7,65 @@
 // ── CREDIT EXPENSES ─────────────────────────────────────────────
 async function handleExpenseSubmit(e) {
     e.preventDefault();
+    const btnSubmit = e.target.querySelector('button[type="submit"]');
+    const originalText = btnSubmit.innerHTML;
+    
     const name = document.getElementById('exp-name').value.trim();
     const amount = parseFloat(document.getElementById('exp-amount').value);
     const date = document.getElementById('exp-date').value;
     const catId = document.getElementById('exp-category').value;
-    const currentCard = (STATE.userData.settings.cards || []).find(c => c.id === STATE.currentCardId);
-    if (!currentCard || !currentCard.closingDay || !currentCard.dueDay) {
-        alert("antes de registrar uma operação de crédito, entre no menu de configurações e informe os dias de virada e de vencimento da fatura!");
+    
+    if (!name || isNaN(amount) || amount <= 0 || !date) {
+        alert("Por favor, preencha todos os campos corretamente.");
         return;
     }
-    const closing = currentCard.closingDay;
-    const dueDay = currentCard.dueDay;
-    const cycle = calculateCycle(date, closing);
-    const dueDate = new Date(cycle.end.getFullYear(), cycle.end.getMonth(), dueDay);
-    const expData = {
-        name, amount, date, categoryId: catId,
-        cycleStart: cycle.start.toISOString().split('T')[0],
-        cycleEnd: cycle.end.toISOString().split('T')[0],
-        dueDate: dueDate.toISOString().split('T')[0],
-        cardId: STATE.currentCardId
-    };
-
-    if (STATE.editingCreditId) {
-        await DB.updateCreditExpense(STATE.editingCreditId, expData);
-        const idx = STATE.userData.creditExpenses.findIndex(e => e.id === STATE.editingCreditId);
-        if (idx > -1) STATE.userData.creditExpenses[idx] = { ...STATE.userData.creditExpenses[idx], ...expData };
-    } else {
-        const created = await DB.createCreditExpense(STATE.currentUser.id, expData);
-        STATE.userData.creditExpenses.push(created);
+    if (!catId) {
+        alert("Por favor, selecione uma categoria. Se não houver, crie uma na aba Categorias.");
+        return;
     }
 
-    STATE.editingCreditId = null;
-    DOM.expenseModal.classList.add('hidden');
-    renderCreditTable(); renderCreditChart(); renderGoalsChart(); renderOverallPieChart();
+    try {
+        btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+        btnSubmit.disabled = true;
+
+        const currentCard = (STATE.userData.settings.cards || []).find(c => c.id === STATE.currentCardId);
+        if (!currentCard || !currentCard.closingDay || !currentCard.dueDay) {
+            alert("antes de registrar uma operação de crédito, entre no menu de configurações e informe os dias de virada e de vencimento da fatura!");
+            return;
+        }
+        const closing = currentCard.closingDay;
+        const dueDay = currentCard.dueDay;
+        const cycle = calculateCycle(date, closing);
+        const dueDate = new Date(cycle.end.getFullYear(), cycle.end.getMonth(), dueDay);
+        const expData = {
+            name, amount, date, categoryId: catId,
+            cycleStart: cycle.start.toISOString().split('T')[0],
+            cycleEnd: cycle.end.toISOString().split('T')[0],
+            dueDate: dueDate.toISOString().split('T')[0],
+            cardId: STATE.currentCardId
+        };
+
+        if (STATE.editingCreditId) {
+            await DB.updateCreditExpense(STATE.editingCreditId, expData);
+            const idx = STATE.userData.creditExpenses.findIndex(e => e.id === STATE.editingCreditId);
+            if (idx > -1) STATE.userData.creditExpenses[idx] = { ...STATE.userData.creditExpenses[idx], ...expData };
+        } else {
+            const created = await DB.createCreditExpense(STATE.currentUser.id, expData);
+            STATE.userData.creditExpenses.push(created);
+        }
+
+        STATE.editingCreditId = null;
+        DOM.expenseModal.classList.add('hidden');
+        renderCreditTable(); renderCreditChart(); renderGoalsChart(); renderOverallPieChart();
+    } catch (err) {
+        console.error("Erro ao salvar despesa de crédito:", err);
+        alert("Erro ao salvar: " + (err.message || "Erro desconhecido."));
+    } finally {
+        if(btnSubmit) {
+           btnSubmit.innerHTML = originalText;
+           btnSubmit.disabled = false;
+        }
+    }
 }
 
 window.deleteCreditExpense = async function (id) {
@@ -52,95 +78,170 @@ window.deleteCreditExpense = async function (id) {
 // ── DEBIT TRANSACTIONS ──────────────────────────────────────────
 async function handleDebitSubmit(e) {
     e.preventDefault();
+    const btnSubmit = e.target.querySelector('button[type="submit"]');
+    const originalText = btnSubmit.innerHTML;
+    
     const name = document.getElementById('deb-name').value.trim();
     const amount = parseFloat(document.getElementById('deb-amount').value);
     const date = document.getElementById('deb-date').value;
     const catId = document.getElementById('deb-category').value;
     const type = document.getElementById('deb-type').value;
-    const txnData = { name, amount, date, categoryId: catId, type };
 
-    if (STATE.editingDebitId) {
-        await DB.updateDebitTransaction(STATE.editingDebitId, txnData);
-        const idx = STATE.userData.debitTransactions.findIndex(t => t.id === STATE.editingDebitId);
-        if (idx > -1) STATE.userData.debitTransactions[idx] = { ...STATE.userData.debitTransactions[idx], ...txnData };
-    } else {
-        const created = await DB.createDebitTransaction(STATE.currentUser.id, txnData);
-        STATE.userData.debitTransactions.push(created);
+    if (!name || isNaN(amount) || amount <= 0 || !date) {
+        alert("Por favor, preencha todos os campos corretamente.");
+        return;
+    }
+    if (!catId) {
+        alert("Por favor, selecione uma categoria. Se não houver, crie uma na aba Categorias.");
+        return;
     }
 
-    STATE.editingDebitId = null;
-    DOM.debitModal.classList.add('hidden');
-    if (typeof renderDebitTable === 'function') renderDebitTable();
-    if (typeof renderDebitChart === 'function') renderDebitChart();
-    if (typeof renderGoalsChart === 'function') renderGoalsChart();
-    if (typeof renderOverallPieChart === 'function') renderOverallPieChart();
+    try {
+        btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+        btnSubmit.disabled = true;
+
+        const txnData = { name, amount, date, categoryId: catId, type };
+
+        if (STATE.editingDebitId) {
+            await DB.updateDebitTransaction(STATE.editingDebitId, txnData);
+            const idx = STATE.userData.debitTransactions.findIndex(t => t.id === STATE.editingDebitId);
+            if (idx > -1) STATE.userData.debitTransactions[idx] = { ...STATE.userData.debitTransactions[idx], ...txnData };
+        } else {
+            const created = await DB.createDebitTransaction(STATE.currentUser.id, txnData);
+            STATE.userData.debitTransactions.push(created);
+        }
+
+        STATE.editingDebitId = null;
+        DOM.debitModal.classList.add('hidden');
+        if (typeof renderDebitTable === 'function') renderDebitTable();
+        if (typeof renderDebitChart === 'function') renderDebitChart();
+        if (typeof renderGoalsChart === 'function') renderGoalsChart();
+        if (typeof renderOverallPieChart === 'function') renderOverallPieChart();
+    } catch (err) {
+        console.error("Erro ao salvar despesa de débito:", err);
+        alert("Erro ao salvar: " + (err.message || "Erro desconhecido."));
+    } finally {
+        if(btnSubmit) {
+           btnSubmit.innerHTML = originalText;
+           btnSubmit.disabled = false;
+        }
+    }
 }
 
 async function handleIncomeSubmit(e) {
     e.preventDefault();
-    const name = document.getElementById('inc-name').value.trim();
-    const amount = parseFloat(document.getElementById('inc-amount').value);
-    const date = document.getElementById('inc-date').value;
-    const catId = document.getElementById('inc-category').value;
-    const type = 'income';
-    const txnData = { name, amount, date, categoryId: catId || null, type };
+    const btnSubmit = e.target.querySelector('button[type="submit"]');
+    const originalText = btnSubmit.innerHTML;
+    try {
+        btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+        btnSubmit.disabled = true;
 
-    if (STATE.editingDebitId) {
-        await DB.updateDebitTransaction(STATE.editingDebitId, txnData);
-        const idx = STATE.userData.debitTransactions.findIndex(t => t.id === STATE.editingDebitId);
-        if (idx > -1) STATE.userData.debitTransactions[idx] = { ...STATE.userData.debitTransactions[idx], ...txnData };
-    } else {
-        const created = await DB.createDebitTransaction(STATE.currentUser.id, txnData);
-        STATE.userData.debitTransactions.push(created);
+        const name = document.getElementById('inc-name').value.trim();
+        const amount = parseFloat(document.getElementById('inc-amount').value);
+        const date = document.getElementById('inc-date').value;
+        const catId = document.getElementById('inc-category').value;
+        const type = 'income';
+        const txnData = { name, amount, date, categoryId: catId || null, type };
+
+        if (STATE.editingDebitId) {
+            await DB.updateDebitTransaction(STATE.editingDebitId, txnData);
+            const idx = STATE.userData.debitTransactions.findIndex(t => t.id === STATE.editingDebitId);
+            if (idx > -1) STATE.userData.debitTransactions[idx] = { ...STATE.userData.debitTransactions[idx], ...txnData };
+        } else {
+            const created = await DB.createDebitTransaction(STATE.currentUser.id, txnData);
+            STATE.userData.debitTransactions.push(created);
+        }
+
+        STATE.editingDebitId = null;
+        document.getElementById('income-modal').classList.add('hidden');
+        if (typeof renderDebitTable === 'function') renderDebitTable();
+        if (typeof renderDebitChart === 'function') renderDebitChart();
+        if (typeof renderGoalsChart === 'function') renderGoalsChart();
+        if (typeof renderOverallPieChart === 'function') renderOverallPieChart();
+    } catch (err) {
+        console.error("Erro ao salvar rendimento:", err);
+        alert("Erro ao salvar: " + (err.message || "Erro desconhecido."));
+    } finally {
+        btnSubmit.innerHTML = originalText;
+        btnSubmit.disabled = false;
     }
-
-    STATE.editingDebitId = null;
-    document.getElementById('income-modal').classList.add('hidden');
-    if (typeof renderDebitTable === 'function') renderDebitTable();
-    if (typeof renderDebitChart === 'function') renderDebitChart();
-    if (typeof renderGoalsChart === 'function') renderGoalsChart();
-    if (typeof renderOverallPieChart === 'function') renderOverallPieChart();
 }
 
 window.deleteDebitTransaction = async function (id) {
     if (!confirm('Tem certeza que deseja excluir esta transação?')) return;
-    await DB.deleteDebitTransaction(id);
-    STATE.userData.debitTransactions = STATE.userData.debitTransactions.filter(t => t.id !== id);
-    renderDebitTable(); renderDebitChart(); renderGoalsChart(); renderOverallPieChart();
+    try {
+        await DB.deleteDebitTransaction(id);
+        STATE.userData.debitTransactions = STATE.userData.debitTransactions.filter(t => t.id !== id);
+        renderDebitTable(); renderDebitChart(); renderGoalsChart(); renderOverallPieChart();
+    } catch (err) {
+        console.error(err);
+        alert("Erro ao remover: " + err.message);
+    }
 };
 
 // ── INSTALLMENTS ────────────────────────────────────────────────
 async function handleInstallmentSubmit(e) {
     e.preventDefault();
+    const btnSubmit = e.target.querySelector('button[type="submit"]');
+    const originalText = btnSubmit.innerHTML;
+
     const name = document.getElementById('inst-name').value.trim();
-    const amount = parseFloat(document.getElementById('inst-amount').value);
+    let amount = parseFloat(document.getElementById('inst-amount').value);
     const total = parseInt(document.getElementById('inst-total').value);
-    const current = parseInt(document.getElementById('inst-current').value);
+    let current = parseInt(document.getElementById('inst-current').value);
     const date = document.getElementById('inst-date').value;
-    const currentCard = (STATE.userData.settings.cards || []).find(c => c.id === STATE.currentCardId);
-    if (!currentCard || !currentCard.closingDay || !currentCard.dueDay) {
-        alert("antes de registrar uma operação de crédito, entre no menu de configurações e informe os dias de virada e de vencimento da fatura!");
+    const catId = document.getElementById('inst-category').value;
+    const valueType = document.querySelector('input[name="inst-value-type"]:checked')?.value || 'installment';
+
+    if (isNaN(current)) current = 1;
+
+    if (valueType === 'total' && !isNaN(total) && total > 0 && !isNaN(amount) && amount > 0) {
+        amount = parseFloat((amount / total).toFixed(2));
+    }
+    
+    if (!name || isNaN(amount) || amount <= 0 || isNaN(total) || isNaN(current) || !date) {
+        alert("Por favor, preencha todos os campos corretamente.");
+        return;
+    }
+    if (!catId) {
+        alert("Por favor, selecione uma categoria. Se não houver, crie uma na aba Categorias.");
         return;
     }
 
-    const catId = document.getElementById('inst-category').value;
-    if (!name || isNaN(amount) || isNaN(total) || isNaN(current) || !date || !catId) return;
+    try {
+        btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+        btnSubmit.disabled = true;
 
-    const instData = { name, installmentAmount: amount, totalInstallments: total, currentInstallment: current, date, categoryId: catId, cardId: STATE.currentCardId };
+        const currentCard = (STATE.userData.settings.cards || []).find(c => c.id === STATE.currentCardId);
+        if (!currentCard || !currentCard.closingDay || !currentCard.dueDay) {
+            alert("antes de registrar uma operação de crédito, entre no menu de configurações e informe os dias de virada e de vencimento da fatura!");
+            return;
+        }
 
-    if (STATE.editingInstId) {
-        await DB.updateInstallment(STATE.editingInstId, instData);
-        const idx = STATE.userData.installments.findIndex(i => i.id === STATE.editingInstId);
-        if (idx > -1) STATE.userData.installments[idx] = { ...STATE.userData.installments[idx], ...instData };
-    } else {
-        const created = await DB.createInstallment(STATE.currentUser.id, instData);
-        if (!STATE.userData.installments) STATE.userData.installments = [];
-        STATE.userData.installments.push(created);
+        const instData = { name, installmentAmount: amount, totalInstallments: total, currentInstallment: current, date, categoryId: catId, cardId: STATE.currentCardId };
+
+        if (STATE.editingInstId) {
+            await DB.updateInstallment(STATE.editingInstId, instData);
+            const idx = STATE.userData.installments.findIndex(i => i.id === STATE.editingInstId);
+            if (idx > -1) STATE.userData.installments[idx] = { ...STATE.userData.installments[idx], ...instData };
+        } else {
+            const created = await DB.createInstallment(STATE.currentUser.id, instData);
+            if (!STATE.userData.installments) STATE.userData.installments = [];
+            STATE.userData.installments.push(created);
+        }
+
+        STATE.editingInstId = null;
+        DOM.installmentModal.classList.add('hidden');
+        renderInstallmentsTable(); renderInstallmentsChart(); renderOverallPieChart(); renderGoalsChart();
+    } catch (err) {
+        console.error("Erro ao salvar parcelamento:", err);
+        alert("Erro ao salvar: " + (err.message || "Erro desconhecido."));
+    } finally {
+        if(btnSubmit) {
+           btnSubmit.innerHTML = originalText;
+           btnSubmit.disabled = false;
+        }
     }
-
-    STATE.editingInstId = null;
-    DOM.installmentModal.classList.add('hidden');
-    renderInstallmentsTable(); renderInstallmentsChart(); renderOverallPieChart(); renderGoalsChart();
 }
 
 window.deleteInstallment = async function (id) {
@@ -454,11 +555,21 @@ function setupEventListeners() {
 
     // --- INSTALLMENT MODAL ---
     DOM.btnNewInstallment = document.getElementById('btn-new-installment');
+    const labelInstAmount = document.getElementById('label-inst-amount');
+    const instValueRadios = document.querySelectorAll('input[name="inst-value-type"]');
+    instValueRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            if (labelInstAmount) labelInstAmount.textContent = e.target.value === 'total' ? 'Valor Total (R$)' : 'Valor da Parcela (R$)';
+        });
+    });
     DOM.btnNewInstallment.addEventListener('click', () => {
         STATE.editingInstId = null;
         DOM.installmentForm.reset();
         document.querySelector('#installment-modal .modal-header h3').textContent = 'Nova Compra Parcelada';
         document.getElementById('inst-date').value = new Date().toISOString().split('T')[0];
+        const defaultRadio = document.querySelector('input[name="inst-value-type"][value="installment"]');
+        if (defaultRadio) defaultRadio.checked = true;
+        if (labelInstAmount) labelInstAmount.textContent = 'Valor da Parcela (R$)';
         DOM.installmentModal.classList.remove('hidden');
     });
     const closeInst = () => { STATE.editingInstId = null; DOM.installmentModal.classList.add('hidden'); };

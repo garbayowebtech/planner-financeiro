@@ -834,9 +834,22 @@
                     <label for="inst-name">Descrição</label>
                     <input type="text" id="inst-name" required placeholder="Ex: TV Samsung">
                 </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="margin-bottom: 0.5rem; display: block; font-weight: 500;">Tipo de Valor</label>
+                    <div style="display: flex; gap: 10px; margin-bottom: 1rem;">
+                        <label
+                            style="font-weight: normal; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 0.25rem;">
+                            <input type="radio" name="inst-value-type" value="total"> Valor Total da Compra
+                        </label>
+                        <label
+                            style="font-weight: normal; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 0.25rem;">
+                            <input type="radio" name="inst-value-type" value="installment" checked> Valor da Parcela
+                        </label>
+                    </div>
+                </div>
                 <div class="form-grid-3">
                     <div class="form-group">
-                        <label for="inst-amount">Valor da Parcela (R$)</label>
+                        <label for="inst-amount" id="label-inst-amount">Valor da Parcela (R$)</label>
                         <input type="number" id="inst-amount" required step="0.01" min="0.01" placeholder="0.00">
                     </div>
                     <div class="form-group">
@@ -844,8 +857,13 @@
                         <input type="number" id="inst-total" required min="1" max="99" placeholder="Ex: 12">
                     </div>
                     <div class="form-group">
-                        <label for="inst-current">Parcela Atual</label>
-                        <input type="number" id="inst-current" required min="1" max="99" placeholder="Ex: 1">
+                        <label for="inst-current" style="display: flex; align-items: center; gap: 0.25rem;">
+                            Parcela Atual
+                            <i class="fa-solid fa-circle-question"
+                                title="Se já pagou alguma parcela (ex: 1ª, 2ª) antes de registrar aqui, informe qual é a parcela atual (ex: 2). Se esta é a primeira parcela, pode deixar em branco."
+                                style="color: var(--c-primary); cursor: help;"></i>
+                        </label>
+                        <input type="number" id="inst-current" min="1" max="99" placeholder="1 (Opcional)">
                     </div>
                 </div>
                 <div class="form-group">
