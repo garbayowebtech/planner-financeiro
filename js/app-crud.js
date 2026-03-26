@@ -628,6 +628,7 @@ function setupEventListeners() {
                 DOM.dashboardGrid.classList.add('hidden');
                 DOM.categoriesGrid.classList.add('hidden');
                 DOM.settingsGrid.classList.add('hidden');
+                document.getElementById('ai-assistant-grid').classList.add('hidden');
                 document.getElementById('extracts-grid').classList.remove('hidden');
                 DOM.monthNavContainer.classList.remove('hidden');
                 if (window.renderConsolidatedExtracts) window.renderConsolidatedExtracts();
@@ -637,16 +638,20 @@ function setupEventListeners() {
                 DOM.dashboardGrid.classList.add('hidden');
                 DOM.settingsGrid.classList.add('hidden');
                 document.getElementById('extracts-grid').classList.add('hidden');
+                document.getElementById('ai-assistant-grid').classList.add('hidden');
                 DOM.categoriesGrid.classList.remove('hidden');
                 DOM.monthNavContainer.classList.add('hidden');
                 renderCategoriesTable();
+                document.querySelector('.content-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
             } else if (target === '#settings') {
                 DOM.pageTitle.textContent = 'Configurações';
                 DOM.dashboardGrid.classList.add('hidden');
                 DOM.categoriesGrid.classList.add('hidden');
                 document.getElementById('extracts-grid').classList.add('hidden');
+                document.getElementById('ai-assistant-grid').classList.add('hidden');
                 DOM.settingsGrid.classList.remove('hidden');
                 DOM.monthNavContainer.classList.add('hidden');
+                document.querySelector('.content-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
                 const cardSelect = document.getElementById('settings-card-select');
                 const cardName = document.getElementById('set-card-name');
                 const closingDay = document.getElementById('set-closing-day');
@@ -684,10 +689,21 @@ function setupEventListeners() {
                 // Preenche campo oculto de username para o gerenciador de senhas
                 const pinUsername = document.getElementById('change-pin-username');
                 if (pinUsername && STATE.currentUser?.email) pinUsername.value = STATE.currentUser.email;
+            } else if (target === '#ai-assistant') {
+                DOM.pageTitle.textContent = 'Assistente Financeiro IA';
+                DOM.dashboardGrid.classList.add('hidden');
+                DOM.categoriesGrid.classList.add('hidden');
+                DOM.settingsGrid.classList.add('hidden');
+                document.getElementById('extracts-grid').classList.add('hidden');
+                document.getElementById('ai-assistant-grid').classList.remove('hidden');
+                DOM.monthNavContainer.classList.add('hidden');
+                document.querySelector('.content-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
+                if (typeof initAIAssistant === 'function') initAIAssistant();
             } else {
                 DOM.categoriesGrid.classList.add('hidden');
                 DOM.settingsGrid.classList.add('hidden');
                 document.getElementById('extracts-grid').classList.add('hidden');
+                document.getElementById('ai-assistant-grid').classList.add('hidden');
                 DOM.dashboardGrid.classList.remove('hidden');
                 DOM.monthNavContainer.classList.remove('hidden');
                 if (target === '#dashboard') { DOM.pageTitle.textContent = 'Visão Geral'; document.querySelector('.content-scroll')?.scrollTo({ top: 0, behavior: 'smooth' }); }

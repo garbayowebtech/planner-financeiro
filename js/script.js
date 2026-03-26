@@ -992,3 +992,277 @@ window.addEventListener('app-auth-ready', () => {
     setupMobileNav();
 });
 
+// ── AI ASSISTANT ─────────────────────────────────────────────────
+
+/**
+ * Builds a text summary of the current month's financial data to send to the AI.
+ * Does NOT send raw IDs or sensitive data — only aggregated numbers and labels.
+ */
+function buildAIPrompt() {
+    const y = STATE.viewYear;
+    const m = STATE.viewMonth;
+    const monthName = STATE.monthNames[m];
+
+    // ── Incomes ───────────────────────────────────────────────────
+    let totalIncome = 0;
+    (STATE.userData.debitTransactions || []).forEach(txn => {
+        const p = txn.date.split('-');
+        if (parseInt(p[0]) === y && parseInt(p[1]) - 1 === m && txn.type === 'income') {
+            totalIncome += txn.amount;
+        }
+    });
+
+    // ── Debit expenses ────────────────────────────────────────────
+    let totalDebit = 0;
+    (STATE.userData.debitTransactions || []).forEach(txn => {
+        const p = txn.date.split('-');
+        if (parseInt(p[0]) === y && parseInt(p[1]) - 1 === m && txn.type !== 'income') {
+            totalDebit += txn.amount;
+        }
+    });
+
+    // ── Credit expenses ───────────────────────────────────────────
+    let totalCredit = 0;
+    (STATE.userData.creditExpenses || []).forEach(exp => {
+        const p = exp.dueDate.split('-');
+        if (parseInt(p[0]) === y && parseInt(p[1]) - 1 === m) {
+            totalCredit += exp.amount;
+        }
+    });
+
+    // ── Installments (projected for this month) ───────────────────
+    let totalInst = 0, activeInstCount = 0;
+    (STATE.userData.installments || []).forEach(inst => {
+        const p = inst.date.split('-'), py = parseInt(p[0]), pm = parseInt(p[1]) - 1;
+        const card = (STATE.userData.settings?.cards || []).find(c => c.id === (inst.cardId || 'card1'));
+        const closing = card?.closingDay || 11;
+        const diff = (y - py) * 12 + (m - pm) - instCycleOffset(inst.date, closing);
+        const proj = inst.currentInstallment + diff;
+        if (proj >= 1 && proj <= inst.totalInstallments) {
+            totalInst += inst.installmentAmount;
+            activeInstCount++;
+        }
+    });
+
+    // ── Goals by category ─────────────────────────────────────────
+    const catSpent = {};
+    (STATE.userData.categories || []).filter(c => (c.type || 'expense') === 'expense').forEach(cat => {
+        catSpent[cat.id] = { name: cat.name, goal: cat.goal || 0, spent: 0 };
+    });
+
+    (STATE.userData.creditExpenses || []).forEach(exp => {
+        const p = exp.dueDate.split('-');
+        if (parseInt(p[0]) === y && parseInt(p[1]) - 1 === m && catSpent[exp.categoryId])
+            catSpent[exp.categoryId].spent += exp.amount;
+    });
+    (STATE.userData.debitTransactions || []).forEach(txn => {
+        if (txn.type === 'income') return;
+        const p = txn.date.split('-');
+        if (parseInt(p[0]) === y && parseInt(p[1]) - 1 === m && catSpent[txn.categoryId])
+            catSpent[txn.categoryId].spent += txn.amount;
+    });
+    (STATE.userData.installments || []).forEach(inst => {
+        const p = inst.date.split('-'), py = parseInt(p[0]), pm = parseInt(p[1]) - 1;
+        const card = (STATE.userData.settings?.cards || []).find(c => c.id === (inst.cardId || 'card1'));
+        const closing = card?.closingDay || 11;
+        const diff = (y - py) * 12 + (m - pm) - instCycleOffset(inst.date, closing);
+        const proj = inst.currentInstallment + diff;
+        if (proj >= 1 && proj <= inst.totalInstallments && catSpent[inst.categoryId])
+            catSpent[inst.categoryId].spent += inst.installmentAmount;
+    });
+
+    const goalsLines = Object.values(catSpent)
+        .filter(c => c.goal > 0 || c.spent > 0)
+        .map(c => {
+            const pct = c.goal > 0 ? ((c.spent / c.goal) * 100).toFixed(0) : '-';
+            const status = c.goal > 0 && c.spent > c.goal ? '⚠️ META EXCEDIDA' : (c.goal > 0 && c.spent > c.goal * 0.8 ? '⚠️ Quase no limite' : '✅ OK');
+            return `  - ${c.name}: Gasto ${formatCurrency(c.spent)} / Meta ${formatCurrency(c.goal)} (${pct}%) ${status}`;
+        }).join('\n');
+
+    const totalExpenses = totalDebit + totalCredit + totalInst;
+    const balance = totalIncome - totalExpenses;
+
+    return `## Dados Financeiros — ${monthName} ${y}
+
+**Receitas:**
+- Total de Rendimentos: ${formatCurrency(totalIncome)}
+
+**Despesas:**
+- Débito / Pix: ${formatCurrency(totalDebit)}
+- Cartão de Crédito (à vista): ${formatCurrency(totalCredit)}
+- Compras Parceladas (${activeInstCount} parcelas ativas): ${formatCurrency(totalInst)}
+- Total de Despesas: ${formatCurrency(totalExpenses)}
+
+**Saldo do Mês:** ${formatCurrency(balance)} ${balance >= 0 ? '✅ Positivo' : '❌ Negativo'}
+
+**Metas por Categoria:**
+${goalsLines || '  Nenhuma categoria com meta definida.'}
+
+Por favor, analise esses dados, destaque pontos de atenção, celebre conquistas e dê dicas práticas e personalizadas em português do Brasil.`;
+}
+
+/**
+ * Initialises the AI section: checks if report was already used this month and updates UI.
+ */
+async function initAIAssistant() {
+    const btn = document.getElementById('btn-generate-ai-report');
+    const statusMsg = document.getElementById('ai-status-msg');
+    const monthLabel = document.getElementById('ai-month-label');
+    const reportArea = document.getElementById('ai-report-area');
+
+    if (!btn || !STATE.currentUser) return;
+
+    const monthYear = `${STATE.viewYear}-${String(STATE.viewMonth + 1).padStart(2, '0')}`;
+    const monthDisplayName = `${STATE.monthNames[STATE.viewMonth]} ${STATE.viewYear}`;
+
+    if (monthLabel) monthLabel.textContent = monthDisplayName;
+    if (reportArea) reportArea.classList.add('hidden');
+
+    // Check if user already used the report this month
+    try {
+        const { data: existing } = await supabaseClient
+            .from('ai_reports')
+            .select('id, created_at, report_text')
+            .eq('user_id', STATE.currentUser.id)
+            .eq('month_year', monthYear)
+            .maybeSingle();
+
+        if (existing) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-lock"></i> Relatório já gerado este mês';
+            if (statusMsg) statusMsg.textContent = `Você já utilizou o relatório de IA em ${monthDisplayName}. O próximo estará disponível no mês que vem! 📅`;
+            
+            // Se o texto já existir no banco, exibe-o diretamente
+            if (existing.report_text) {
+                const reportContent = document.getElementById('ai-report-content');
+                const reportBadge = document.getElementById('ai-report-month-badge');
+                if (reportBadge) reportBadge.textContent = monthDisplayName;
+                if (reportContent) reportContent.innerHTML = parseAIMarkdown(existing.report_text);
+                if (reportArea) reportArea.classList.remove('hidden');
+            }
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Gerar Relatório do Mês';
+            if (statusMsg) statusMsg.innerHTML = `Clique no botão abaixo para gerar seu relatório financeiro personalizado com inteligência artificial para <strong>${monthDisplayName}</strong>.`;
+            
+            // Ocultar área de relatório se não houver
+            const reportContent = document.getElementById('ai-report-content');
+            if (reportArea) reportArea.classList.add('hidden');
+            if (reportContent) reportContent.innerHTML = '';
+        }
+    } catch (err) {
+        console.error('Erro ao verificar limite da IA:', err);
+    }
+
+    // Attach button listener (once)
+    if (!btn._aiListenerAttached) {
+        btn._aiListenerAttached = true;
+        btn.addEventListener('click', handleAIReport);
+    }
+}
+
+/**
+ * Simple Markdown parser for AI responses
+ */
+function parseAIMarkdown(text) {
+    if (!text) return '';
+    
+    // 1. First escape HTML to prevent "<" and ">" from hiding text
+    let html = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+    // 2. Parse Markdown
+    html = html
+        .replace(/^### (.*$)/gim, '<h5 style="margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--c-text-main); font-size: 1.1rem; font-weight: 600;">$1</h5>')
+        .replace(/^## (.*$)/gim, '<h4 style="margin-top: 1.5rem; margin-bottom: 0.75rem; color: var(--c-primary); font-size: 1.25rem; font-weight: 700;">$1</h4>')
+        .replace(/^# (.*$)/gim, '<h3 style="margin-top: 1.5rem; margin-bottom: 1rem; color: var(--c-primary); font-size: 1.5rem; font-weight: 800;">$1</h3>')
+        .replace(/\*\*(.*?)\*\*/gim, '<strong style="color: var(--c-text-main); font-weight: 600;">$1</strong>')
+        .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+        // Wrap lists properly by converting literal newlines of list items
+        .replace(/^\s*[-*]\s+(.*$)/gim, '<li style="margin-bottom: 0.4rem; margin-left: 1.5rem; list-style-type: disc;">$1</li>');
+        
+    // 3. Convert remaining newlines to line breaks, ignoring those already inside blocks
+    html = html.replace(/\n/g, '<br>');
+        
+    return html;
+}
+
+/**
+ * Calls the Edge Function to generate the AI report.
+ */
+async function handleAIReport() {
+    const btn = document.getElementById('btn-generate-ai-report');
+    const loadingEl = document.getElementById('ai-loading');
+    const reportArea = document.getElementById('ai-report-area');
+    const reportContent = document.getElementById('ai-report-content');
+    const reportBadge = document.getElementById('ai-report-month-badge');
+    const statusMsg = document.getElementById('ai-status-msg');
+
+    if (!btn || btn.disabled) return;
+
+    const monthYear = `${STATE.viewYear}-${String(STATE.viewMonth + 1).padStart(2, '0')}`;
+    const monthDisplayName = `${STATE.monthNames[STATE.viewMonth]} ${STATE.viewYear}`;
+    const promptData = buildAIPrompt();
+
+    // Show loading state
+    btn.disabled = true;
+    btn.classList.add('hidden');
+    if (loadingEl) loadingEl.classList.remove('hidden');
+    if (reportArea) reportArea.classList.add('hidden');
+
+    try {
+        const { data, error } = await supabaseClient.functions.invoke('generate-ai-report', {
+            body: { promptData, monthYear },
+        });
+
+        if (loadingEl) loadingEl.classList.add('hidden');
+        btn.classList.remove('hidden');
+
+        if (error) throw error;
+
+        if (data?.error === 'limite_mensal') {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-lock"></i> Relatório já gerado este mês';
+            if (statusMsg) statusMsg.textContent = data.message;
+            return;
+        }
+
+        if (data?.error === 'cota_gemini' || data?.error === 'gemini_error' || data?.error === 'resposta_vazia') {
+            let errorDetailsHtml = '';
+            if (data?.details) {
+                try {
+                    const parsed = JSON.parse(data.details);
+                    errorDetailsHtml = `<div style="margin-top:0.5rem; font-size:0.8rem; background:rgba(0,0,0,0.1); padding:0.5rem; border-radius:4px; text-align:left; word-break:break-all;"><strong>Detalhes do Google:</strong> ${parsed?.error?.message || data.details}</div>`;
+                } catch(e) {
+                    errorDetailsHtml = `<div style="margin-top:0.5rem; font-size:0.8rem; background:rgba(0,0,0,0.1); padding:0.5rem; border-radius:4px; text-align:left; word-break:break-all;"><strong>Detalhes do Google:</strong> ${data.details}</div>`;
+                }
+            }
+            if (statusMsg) statusMsg.innerHTML = `<span style="color: var(--c-warning)"><i class="fa-solid fa-triangle-exclamation"></i> ${data.message}</span>${errorDetailsHtml}`;
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Tentar Novamente';
+            return;
+        }
+
+        if (data?.success && data?.report) {
+            // Success! Show report
+            if (reportBadge) reportBadge.textContent = monthDisplayName;
+            if (reportContent) reportContent.innerHTML = parseAIMarkdown(data.report);
+            if (reportArea) reportArea.classList.remove('hidden');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-lock"></i> Relatório já gerado este mês';
+            if (statusMsg) statusMsg.textContent = `Relatório gerado com sucesso para ${monthDisplayName}! ✨`;
+            document.querySelector('.content-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+    } catch (err) {
+        if (loadingEl) loadingEl.classList.add('hidden');
+        btn.classList.remove('hidden');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Tentar Novamente';
+        console.error('Erro ao gerar relatório IA:', err);
+        if (statusMsg) statusMsg.innerHTML = `<span style="color: var(--c-danger)"><i class="fa-solid fa-circle-xmark"></i> Erro ao conectar com o serviço. Tente novamente.</span>`;
+    }
+}

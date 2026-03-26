@@ -135,3 +135,25 @@ create policy "Users can upload their own avatars."
 create policy "Users can update their own avatars."
   on storage.objects for update
   using ( bucket_id = 'avatars' and auth.role() = 'authenticated' );
+
+-- ============================================================
+-- 6. AI Reports (controle de uso mensal da IA)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.ai_reports (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+    month_year TEXT NOT NULL,
+    report_text TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Garante apenas 1 relatório por mês por usuário
+alter table public.ai_reports
+  add constraint unique_user_month unique (user_id, month_year);
+
+alter table public.ai_reports enable row level security;
+
+-- Usuários só enxergam e gerenciam os próprios registros
+create policy "owner_all_ai_reports"
+  on public.ai_reports for all
+  using (auth.uid() = user_id);
