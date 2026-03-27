@@ -1,9 +1,9 @@
 /**
- * script.js — Render Functions, Charts & Utilities
+ * script.js â€” Render Functions, Charts & Utilities
  * Depends on: STATE, DOM, DB (all from app-auth.js / app-crud.js / db.js)
  */
 
-// ── PAGINATION UI ───────────────────────────────────────────────
+// â”€â”€ PAGINATION UI â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function updatePaginationUI(type, page, totalPages) {
     let btnPrev, btnNext, pageInfo;
     if (type === 'credit') { btnPrev = DOM.btnPrevCredit; btnNext = DOM.btnNextCredit; pageInfo = DOM.pageInfoCredit; }
@@ -15,7 +15,7 @@ function updatePaginationUI(type, page, totalPages) {
     if (btnNext) btnNext.disabled = page >= totalPages;
 }
 
-// ── FILTER EVENT LISTENERS ─────────────────────────────────────
+// â”€â”€ FILTER EVENT LISTENERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function setupFilterEventListeners() {
     ['credit', 'inst', 'debit'].forEach(type => {
         let filterCat, sortSelect, btnPrev, btnNext;
@@ -48,7 +48,7 @@ function setupFilterEventListeners() {
     });
 }
 
-// ── MOBILE NAV ──────────────────────────────────────────────────
+// â”€â”€ MOBILE NAV â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function setupMobileNav() {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebar-overlay');
@@ -62,7 +62,7 @@ function setupMobileNav() {
     });
 }
 
-// ── UTILITIES ───────────────────────────────────────────────────
+// â”€â”€ UTILITIES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function formatDate(dateStr) {
     const p = dateStr.split('-');
     return `${p[2]}/${p[1]}/${p[0]}`;
@@ -88,7 +88,7 @@ function instCycleOffset(dateStr, closingDay) {
     return day >= closingDay ? 1 : 0;
 }
 
-// ── GOAL ALERTS ─────────────────────────────────────────────────
+// â”€â”€ GOAL ALERTS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function checkGoalAlerts() {
     const popup = document.getElementById('goal-alert-popup');
     const list = document.getElementById('goal-alert-list');
@@ -160,7 +160,7 @@ function checkGoalAlerts() {
     };
 }
 
-// ── CARD TABS ───────────────────────────────────────────────────
+// â”€â”€ CARD TABS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderCardTabs() {
     const tabsContainer = document.getElementById('credit-card-tabs');
     if (!tabsContainer) return;
@@ -200,7 +200,7 @@ function renderCardTabs() {
     }
 }
 
-// ── DASHBOARD INIT ──────────────────────────────────────────────
+// â”€â”€ DASHBOARD INIT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function initDashboard() {
     DOM.expCategorySelect.innerHTML = '<option value="">Selecione...</option>';
     DOM.debCategorySelect.innerHTML = '<option value="">Selecione...</option>';
@@ -242,8 +242,8 @@ function initDashboard() {
     const hasIncomeCats = (STATE.userData.categories || []).some(c => c.type === 'income');
     if (!hasIncomeCats && STATE.currentUser) {
         (async () => {
-            const c1 = await DB.createCategory(STATE.currentUser.id, { name: 'Salário', goal: 0, color: '#10B981', textColor: '#FFFFFF', type: 'income' });
-            const c2 = await DB.createCategory(STATE.currentUser.id, { name: 'Pensão', goal: 0, color: '#3B82F6', textColor: '#FFFFFF', type: 'income' });
+            const c1 = await DB.createCategory(STATE.currentUser.id, { name: 'SalÃ¡rio', goal: 0, color: '#10B981', textColor: '#FFFFFF', type: 'income' });
+            const c2 = await DB.createCategory(STATE.currentUser.id, { name: 'PensÃ£o', goal: 0, color: '#3B82F6', textColor: '#FFFFFF', type: 'income' });
             STATE.userData.categories.push(c1, c2);
             renderCategoriesTable();
             initDashboard(); // Re-populate selects
@@ -256,7 +256,7 @@ function initDashboard() {
     }
 }
 
-// ── CREDIT TABLE ─────────────────────────────────────────────────
+// â”€â”€ CREDIT TABLE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderCreditTable() {
     DOM.creditTableBody.innerHTML = '';
     if (!STATE.userData.creditExpenses || STATE.userData.creditExpenses.length === 0) {
@@ -332,7 +332,7 @@ window.editCreditExpense = function (id) {
     const exp = STATE.userData.creditExpenses.find(e => e.id === id);
     if (!exp) return;
     STATE.editingCreditId = id;
-    document.querySelector('#expense-modal .modal-header h3').textContent = 'Editar Despesa de Crédito';
+    document.querySelector('#expense-modal .modal-header h3').textContent = 'Editar Despesa de CrÃ©dito';
     document.getElementById('exp-name').value = exp.name;
     document.getElementById('exp-amount').value = exp.amount;
     document.getElementById('exp-date').value = exp.date;
@@ -340,7 +340,7 @@ window.editCreditExpense = function (id) {
     DOM.expenseModal.classList.remove('hidden');
 };
 
-// ── CREDIT CHART ─────────────────────────────────────────────────
+// â”€â”€ CREDIT CHART â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderCreditChart() {
     const ctx = document.getElementById('credit-chart');
     if (!ctx) return;
@@ -364,7 +364,7 @@ function renderCreditChart() {
     creditChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels, datasets: [{ data, backgroundColor: bgColors, borderWidth: 0, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: "'Inter', sans-serif" } } } } } });
 }
 
-// ── DEBIT / PIX & INCOMES TABLE ──────────────────────────────────
+// â”€â”€ DEBIT / PIX & INCOMES TABLE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderDebitTable() {
     DOM.debitTableBody.innerHTML = '';
     const incBody = document.getElementById('income-table-body');
@@ -438,7 +438,7 @@ function renderDebitTable() {
     else paged.forEach(txn => {
         const cat = STATE.userData.categories.find(c => c.id === txn.categoryId);
         const catHtml = cat ? `<span class="category-badge" style="background:${cat.color};color:${cat.textColor || '#fff'}">${cat.name}</span>` : '-';
-        const typeLabel = txn.type === 'debit' ? 'Débito' : (txn.type === 'pix' ? 'Pix' : (txn.type === 'expense' ? 'Saída' : txn.type));
+        const typeLabel = txn.type === 'debit' ? 'DÃ©bito' : (txn.type === 'pix' ? 'Pix' : (txn.type === 'expense' ? 'SaÃ­da' : txn.type));
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${formatDate(txn.date)}</td><td><strong>${txn.name}</strong></td><td class="text-danger">-${formatCurrency(txn.amount)}</td><td>${catHtml}</td><td><small>${typeLabel}</small></td><td class="text-center"><div style="display:flex;justify-content:center;gap:.5rem"><button class="btn-icon" style="color:var(--c-primary)" onclick="editDebitTransaction('${txn.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn-delete" onclick="deleteDebitTransaction('${txn.id}')"><i class="fa-solid fa-trash"></i></button></div></td>`;
         DOM.debitTableBody.appendChild(tr);
@@ -478,7 +478,7 @@ window.editIncomeTransaction = function (id) {
     document.getElementById('income-modal').classList.remove('hidden');
 };
 
-// ── DEBIT CHART ──────────────────────────────────────────────────
+// â”€â”€ DEBIT CHART â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderDebitChart() {
     const ctx = document.getElementById('debit-chart');
     if (!ctx) return;
@@ -495,10 +495,10 @@ function renderDebitChart() {
         const cat = STATE.userData.categories.find(c => c.id === catId);
         if (cat) { labels.push(cat.name); bgColors.push(cat.color); data.push(catTotals[catId]); }
     });
-    debitChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels, datasets: [{ data, backgroundColor: bgColors, borderWidth: 0, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: "'Inter',sans-serif" } } }, title: { display: true, text: 'Somente Saídas (Despesas)' } } } });
+    debitChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels, datasets: [{ data, backgroundColor: bgColors, borderWidth: 0, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: "'Inter',sans-serif" } } }, title: { display: true, text: 'Somente SaÃ­das (Despesas)' } } } });
 }
 
-// ── CATEGORIES TABLE ─────────────────────────────────────────────
+// â”€â”€ CATEGORIES TABLE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderCategoriesTable() {
     DOM.categoriesTableBody.innerHTML = '';
     const filtered = (STATE.userData.categories || []).filter(c => (c.type || 'expense') === STATE.currentCategoryTab);
@@ -533,7 +533,7 @@ function editCategory(id) {
     document.getElementById('cat-goal').value = cat.goal || 0;
     document.getElementById('cat-bg').value = cat.color;
     document.getElementById('cat-text').value = cat.textColor || '#ffffff';
-    DOM.btnSaveCategory.textContent = 'Salvar Alterações';
+    DOM.btnSaveCategory.textContent = 'Salvar AlteraÃ§Ãµes';
     DOM.btnCancelCategoryEdit.classList.remove('hidden');
     document.querySelector('.content-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -547,7 +547,7 @@ function cancelCategoryEdit() {
     DOM.btnCancelCategoryEdit.classList.add('hidden');
 }
 
-// ── OVERALL PIE CHART ────────────────────────────────────────────
+// â”€â”€ OVERALL PIE CHART â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderOverallPieChart() {
     const ctx = document.getElementById('overall-pie-chart');
     const expenseCategories = (STATE.userData?.categories || []).filter(c => (c.type || 'expense') === 'expense');
@@ -577,10 +577,10 @@ function renderOverallPieChart() {
     });
 
     if (!totalCredit && !totalDebit && !totalInst) return;
-    overallPieChartInstance = new Chart(ctx, { type: 'pie', data: { labels: ['Cartão de Crédito', 'Débito / Pix', 'Compras Parceladas'], datasets: [{ data: [totalCredit, totalDebit, totalInst], backgroundColor: ['#4F46E5', '#10B981', '#F59E0B'], borderWidth: 0, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: "'Inter',sans-serif" } } }, tooltip: { callbacks: { label: ctx => (ctx.label || '') + ': ' + formatCurrency(ctx.parsed) } } } } });
+    overallPieChartInstance = new Chart(ctx, { type: 'pie', data: { labels: ['CartÃ£o de CrÃ©dito', 'DÃ©bito / Pix', 'Compras Parceladas'], datasets: [{ data: [totalCredit, totalDebit, totalInst], backgroundColor: ['#4F46E5', '#10B981', '#F59E0B'], borderWidth: 0, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: "'Inter',sans-serif" } } }, tooltip: { callbacks: { label: ctx => (ctx.label || '') + ': ' + formatCurrency(ctx.parsed) } } } } });
 }
 
-// ── GOALS BALANCE WIDGET ────────────────────────────────────────
+// â”€â”€ GOALS BALANCE WIDGET â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderGoalsBalanceWidget(containerId, catExpMap, categories) {
     const el = document.getElementById(containerId);
     if (!el) return;
@@ -610,8 +610,8 @@ function renderGoalsBalanceWidget(containerId, catExpMap, categories) {
         ? '<i class="fa-solid fa-triangle-exclamation" style="color:#EF4444"></i>'
         : '<i class="fa-solid fa-scale-balanced" style="color:#10B981"></i>';
     const statusMsg = isOver
-        ? 'O total de gastos excedeu o orçamento global das metas neste mês.'
-        : 'Mesmo excedendo alguns limites, o total geral ainda está dentro do orçamento.';
+        ? 'O total de gastos excedeu o orÃ§amento global das metas neste mÃªs.'
+        : 'Mesmo excedendo alguns limites, o total geral ainda estÃ¡ dentro do orÃ§amento.';
 
     el.innerHTML = `
     <div style="
@@ -631,7 +631,7 @@ function renderGoalsBalanceWidget(containerId, catExpMap, categories) {
         </div>
         <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
             <div style="text-align:center;">
-                <span style="display:block; font-size:0.75rem; color:var(--c-text-muted); margin-bottom:0.2rem;">Somatório de Todas as Metas</span>
+                <span style="display:block; font-size:0.75rem; color:var(--c-text-muted); margin-bottom:0.2rem;">SomatÃ³rio de Todas as Metas</span>
                 <span style="font-size:1.1rem; font-weight:700;">${formatCurrency(totalGoal)}</span>
             </div>
             <div style="text-align:center;">
@@ -639,18 +639,18 @@ function renderGoalsBalanceWidget(containerId, catExpMap, categories) {
                 <span style="font-size:1.1rem; font-weight:700; color:${isOver ? '#EF4444' : 'var(--c-text-main)'}">${formatCurrency(totalSpent)}</span>
             </div>
             <div style="text-align:center;">
-                <span style="display:block; font-size:0.75rem; color:var(--c-text-muted); margin-bottom:0.2rem;">${isOver ? 'Estouro' : 'Saldo Disponível'}</span>
+                <span style="display:block; font-size:0.75rem; color:var(--c-text-muted); margin-bottom:0.2rem;">${isOver ? 'Estouro' : 'Saldo DisponÃ­vel'}</span>
                 <span style="font-size:1.1rem;">${diffLabel}</span>
             </div>
         </div>
         <div style="width:100%; background: var(--c-border); border-radius: 99px; height: 8px; margin-top:0.25rem;">
             <div style="width:${pct}%; background:${barColor}; height:8px; border-radius:99px; transition: width .4s;"></div>
         </div>
-        <p style="width:100%; text-align:right; font-size:0.75rem; color:var(--c-text-muted); margin:0;">${pct}% do orçamento utilizado</p>
+        <p style="width:100%; text-align:right; font-size:0.75rem; color:var(--c-text-muted); margin:0;">${pct}% do orÃ§amento utilizado</p>
     </div>`;
 }
 
-// ── GOALS CHART ──────────────────────────────────────────────────
+// â”€â”€ GOALS CHART â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderGoalsChart() {
     const ctx = document.getElementById('goals-chart');
     const expenseCategories = (STATE.userData?.categories || []).filter(c => (c.type || 'expense') === 'expense');
@@ -684,7 +684,7 @@ function renderGoalsChart() {
     const tsEl = document.getElementById('goals-text-summary');
     if (tsEl) tsEl.innerHTML = '';
 
-    // ── Balance Widget on Visão Geral ─────────────────────────────
+    // â”€â”€ Balance Widget on VisÃ£o Geral â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const balWidgetCats = {};
     STATE.userData.categories.forEach(cat => { balWidgetCats[cat.id] = { spent: catExp[cat.id] || 0, goal: cat.goal || 0 }; });
     renderGoalsBalanceWidget('goals-balance-widget', balWidgetCats, STATE.userData.categories);
@@ -732,7 +732,7 @@ function renderGoalsChart() {
     goalsChartInstance = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ label: 'Gasto Atual', data: spentData, backgroundColor: spentColors, borderRadius: 4 }, { label: 'Meta', data: goalData, backgroundColor: goalColors, borderRadius: 4 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { beginAtZero: true, ticks: { font: { family: "'Inter',sans-serif" } } }, y: { ticks: { font: { family: "'Inter',sans-serif" } } } }, plugins: { legend: { position: 'top', labels: { font: { family: "'Inter',sans-serif" } } }, tooltip: { callbacks: { label: ctx => { const l = (ctx.dataset.label || '') + ': '; return l + new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(ctx.parsed.x); } } } } } });
 }
 
-// ── INSTALLMENTS TABLE ───────────────────────────────────────────
+// â”€â”€ INSTALLMENTS TABLE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderInstallmentsTable() {
     const tbody = DOM.installmentsTableBody;
     if (!tbody) return;
@@ -802,7 +802,7 @@ window.editInstallment = function (id) {
     DOM.installmentModal.classList.remove('hidden');
 };
 
-// ── INSTALLMENTS CHART ───────────────────────────────────────────
+// â”€â”€ INSTALLMENTS CHART â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderInstallmentsChart() {
     const ctx = document.getElementById('installments-chart');
     if (!ctx) return;
@@ -829,11 +829,11 @@ function renderInstallmentsChart() {
     installmentChartInstance = new Chart(ctx, { type: 'pie', data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: "'Inter',sans-serif" } } }, tooltip: { callbacks: { label: ctx => ' ' + ctx.label + ': ' + formatCurrency(ctx.raw) } } } } });
 }
 
-// ── CONSOLIDATED EXTRACTS ────────────────────────────────────────
+// â”€â”€ CONSOLIDATED EXTRACTS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let extractPieChartInstance = null;
 let extractTypeChartInstance = null;
 window.renderConsolidatedExtracts = function renderConsolidatedExtracts() {
-    const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    const months = ['Janeiro', 'Fevereiro', 'MarÃ§o', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
     document.getElementById('extract-month-label').textContent = `${months[STATE.viewMonth]} ${STATE.viewYear}`;
 
     let totalIncome = 0;
@@ -933,7 +933,7 @@ window.renderConsolidatedExtracts = function renderConsolidatedExtracts() {
     const ctxType = document.getElementById('extract-type-chart');
     if (ctxType) {
         if (extractTypeChartInstance) extractTypeChartInstance.destroy();
-        const tLabels = ['Cartão de Crédito', 'Débito / Pix', 'Compras Parceladas'];
+        const tLabels = ['CartÃ£o de CrÃ©dito', 'DÃ©bito / Pix', 'Compras Parceladas'];
         const tData = [totalTypeCredit, totalTypeDebit, totalTypeInst];
         const tColors = ['#4F46E5', '#10B981', '#F59E0B'];
         if (tData.some(v => v > 0)) {
@@ -955,7 +955,7 @@ window.renderConsolidatedExtracts = function renderConsolidatedExtracts() {
                 const maxMFormat = (maxInstMonth < 12 && maxInstMonth >= 0) ? months[maxInstMonth] : 'N/A';
                 lastMonthStr = `${maxMFormat}/${maxInstYear}`;
             }
-            insightInst.innerHTML = `Este mês você teve <strong>${activeInstCount}</strong> compras ativas parceladas, num valor total de: <strong>${formatCurrency(activeInstTotal)}</strong>.<br>A última parcela a ser paga está prevista para o mês: <strong>${lastMonthStr}</strong>.`;
+            insightInst.innerHTML = `Este mÃªs vocÃª teve <strong>${activeInstCount}</strong> compras ativas parceladas, num valor total de: <strong>${formatCurrency(activeInstTotal)}</strong>.<br>A Ãºltima parcela a ser paga estÃ¡ prevista para o mÃªs: <strong>${lastMonthStr}</strong>.`;
             insightInst.style.display = 'block';
             hasInsights = true;
         } else {
@@ -973,8 +973,8 @@ window.renderConsolidatedExtracts = function renderConsolidatedExtracts() {
 
         if (bestCardId && bestCardVal > 0) {
             const cardDef = (STATE.userData.settings?.cards || []).find(c => c.id === bestCardId);
-            const cardName = cardDef ? cardDef.name : 'Cartão Principal';
-            insightCard.innerHTML = `O cartão de crédito mais usado foi: <strong>${cardName}</strong> (Movimentação no mês: ${formatCurrency(bestCardVal)}).`;
+            const cardName = cardDef ? cardDef.name : 'CartÃ£o Principal';
+            insightCard.innerHTML = `O cartÃ£o de crÃ©dito mais usado foi: <strong>${cardName}</strong> (MovimentaÃ§Ã£o no mÃªs: ${formatCurrency(bestCardVal)}).`;
             insightCard.style.display = 'block';
             hasInsights = true;
         } else {
@@ -984,7 +984,7 @@ window.renderConsolidatedExtracts = function renderConsolidatedExtracts() {
         insightsContainer.style.display = hasInsights ? 'block' : 'none';
     }
 
-    // ── Balance Widget on Extratos ────────────────────────────────
+    // â”€â”€ Balance Widget on Extratos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     renderGoalsBalanceWidget('extract-balance-widget', catExp, STATE.userData.categories || []);
 
     // Goals Text Summary
@@ -1013,13 +1013,13 @@ window.renderConsolidatedExtracts = function renderConsolidatedExtracts() {
             
             // Note: keeping the original text/icon logic, just sorted differently
             if (isOver) {
-                text = `Você excedeu a meta de ${formatCurrency(c.goal)} em <strong class="text-danger">${formatCurrency(diff)}</strong> (${pct}% consumido).`;
+                text = `VocÃª excedeu a meta de ${formatCurrency(c.goal)} em <strong class="text-danger">${formatCurrency(diff)}</strong> (${pct}% consumido).`;
                 icon = '<i class="fa-solid fa-circle-exclamation text-danger"></i>';
             } else if (c.spent > 0) {
-                text = `Você gastou ${formatCurrency(c.spent)} de sua meta de ${formatCurrency(c.goal)}. Ainda tem <strong class="text-success">${formatCurrency(diff)}</strong> disponível (${pct}% consumido).`;
+                text = `VocÃª gastou ${formatCurrency(c.spent)} de sua meta de ${formatCurrency(c.goal)}. Ainda tem <strong class="text-success">${formatCurrency(diff)}</strong> disponÃ­vel (${pct}% consumido).`;
                 icon = '<i class="fa-solid fa-circle-check text-success"></i>';
             } else {
-                text = `Você ainda não registrou gastos. Sua meta inteira de <strong class="text-success">${formatCurrency(c.goal)}</strong> está disponível.`;
+                text = `VocÃª ainda nÃ£o registrou gastos. Sua meta inteira de <strong class="text-success">${formatCurrency(c.goal)}</strong> estÃ¡ disponÃ­vel.`;
                 icon = '<i class="fa-regular fa-circle-check" style="color:var(--c-text-muted)"></i>';
             }
             summaryEl.insertAdjacentHTML('beforeend', `<div style="margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--c-border); display:flex; gap:1rem; align-items:flex-start;">
@@ -1036,7 +1036,7 @@ window.renderConsolidatedExtracts = function renderConsolidatedExtracts() {
     }
 }
 
-// ── TOP CALENDAR ────────────────────────────────────────────────
+// â”€â”€ TOP CALENDAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function startCalendar() {
     const dateEl = document.getElementById('calendar-date');
     const dateShortEl = document.getElementById('calendar-date-short');
@@ -1076,18 +1076,57 @@ window.addEventListener('app-auth-ready', () => {
     setupMobileNav();
 });
 
-// ── AI ASSISTANT ─────────────────────────────────────────────────
+// â”€â”€ AI ASSISTANT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+// Standalone AI month/year state (independent of the global month selector)
+let aiViewMonth = null;
+let aiViewYear = null;
 
 /**
- * Builds a text summary of the current month's financial data to send to the AI.
- * Does NOT send raw IDs or sensitive data — only aggregated numbers and labels.
+ * Returns the month/year that is allowed for AI report generation.
+ * That is always: the month immediately before the current real month.
  */
-function buildAIPrompt() {
-    const y = STATE.viewYear;
-    const m = STATE.viewMonth;
+function getAllowedAIMonth() {
+    const now = new Date();
+    let m = now.getMonth() - 1;
+    let y = now.getFullYear();
+    if (m < 0) { m = 11; y--; }
+    return { month: m, year: y };
+}
+
+/**
+ * Updates the AI month navigation label and disables/enables arrows.
+ */
+function updateAIMonthNav() {
+    const label = document.getElementById('ai-month-nav-label');
+    if (label) {
+        label.textContent = `${STATE.monthNames[aiViewMonth]} ${aiViewYear}`;
+    }
+
+    // Disable prev if we're at the minimum (Jan 2026 or first available month)
+    const prevBtn = document.getElementById('btn-ai-prev-month');
+    if (prevBtn) {
+        prevBtn.disabled = (aiViewYear === 2026 && aiViewMonth === 0);
+    }
+
+    // Disable next if we're at or past the allowed month
+    // (don't let user go into current or future months â€” no report possible)
+    const nextBtn = document.getElementById('btn-ai-next-month');
+    if (nextBtn) {
+        const allowed = getAllowedAIMonth();
+        const isAtOrPastAllowed = (aiViewYear > allowed.year)
+            || (aiViewYear === allowed.year && aiViewMonth >= allowed.month);
+        nextBtn.disabled = isAtOrPastAllowed;
+    }
+}
+
+/**
+ * Builds a text summary of a given month/year's financial data to send to the AI.
+ */
+function buildAIPrompt(y, m) {
     const monthName = STATE.monthNames[m];
 
-    // ── Incomes ───────────────────────────────────────────────────
+    // â”€â”€ Incomes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     let totalIncome = 0;
     (STATE.userData.debitTransactions || []).forEach(txn => {
         const p = txn.date.split('-');
@@ -1096,7 +1135,7 @@ function buildAIPrompt() {
         }
     });
 
-    // ── Debit expenses ────────────────────────────────────────────
+    // â”€â”€ Debit expenses â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     let totalDebit = 0;
     (STATE.userData.debitTransactions || []).forEach(txn => {
         const p = txn.date.split('-');
@@ -1105,7 +1144,7 @@ function buildAIPrompt() {
         }
     });
 
-    // ── Credit expenses ───────────────────────────────────────────
+    // â”€â”€ Credit expenses â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     let totalCredit = 0;
     (STATE.userData.creditExpenses || []).forEach(exp => {
         const p = exp.dueDate.split('-');
@@ -1114,7 +1153,7 @@ function buildAIPrompt() {
         }
     });
 
-    // ── Installments (projected for this month) ───────────────────
+    // â”€â”€ Installments (projected for this month) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     let totalInst = 0, activeInstCount = 0;
     (STATE.userData.installments || []).forEach(inst => {
         const p = inst.date.split('-'), py = parseInt(p[0]), pm = parseInt(p[1]) - 1;
@@ -1128,7 +1167,7 @@ function buildAIPrompt() {
         }
     });
 
-    // ── Goals by category ─────────────────────────────────────────
+    // â”€â”€ Goals by category â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const catSpent = {};
     (STATE.userData.categories || []).filter(c => (c.type || 'expense') === 'expense').forEach(cat => {
         catSpent[cat.id] = { name: cat.name, goal: cat.goal || 0, spent: 0 };
@@ -1159,50 +1198,91 @@ function buildAIPrompt() {
         .filter(c => c.goal > 0 || c.spent > 0)
         .map(c => {
             const pct = c.goal > 0 ? ((c.spent / c.goal) * 100).toFixed(0) : '-';
-            const status = c.goal > 0 && c.spent > c.goal ? '⚠️ META EXCEDIDA' : (c.goal > 0 && c.spent > c.goal * 0.8 ? '⚠️ Quase no limite' : '✅ OK');
+            const status = c.goal > 0 && c.spent > c.goal ? 'âš ï¸ META EXCEDIDA' : (c.goal > 0 && c.spent > c.goal * 0.8 ? 'âš ï¸ Quase no limite' : 'âœ… OK');
             return `  - ${c.name}: Gasto ${formatCurrency(c.spent)} / Meta ${formatCurrency(c.goal)} (${pct}%) ${status}`;
         }).join('\n');
 
     const totalExpenses = totalDebit + totalCredit + totalInst;
     const balance = totalIncome - totalExpenses;
 
-    return `## Dados Financeiros — ${monthName} ${y}
+    return `## Dados Financeiros â€” ${monthName} ${y}
 
 **Receitas:**
 - Total de Rendimentos: ${formatCurrency(totalIncome)}
 
 **Despesas:**
-- Débito / Pix: ${formatCurrency(totalDebit)}
-- Cartão de Crédito (à vista): ${formatCurrency(totalCredit)}
+- DÃ©bito / Pix: ${formatCurrency(totalDebit)}
+- CartÃ£o de CrÃ©dito (Ã  vista): ${formatCurrency(totalCredit)}
 - Compras Parceladas (${activeInstCount} parcelas ativas): ${formatCurrency(totalInst)}
 - Total de Despesas: ${formatCurrency(totalExpenses)}
 
-**Saldo do Mês:** ${formatCurrency(balance)} ${balance >= 0 ? '✅ Positivo' : '❌ Negativo'}
+**Saldo do MÃªs:** ${formatCurrency(balance)} ${balance >= 0 ? 'âœ… Positivo' : 'âŒ Negativo'}
 
 **Metas por Categoria:**
 ${goalsLines || '  Nenhuma categoria com meta definida.'}
 
-Por favor, analise esses dados, destaque pontos de atenção, celebre conquistas e dê dicas práticas e personalizadas em português do Brasil.`;
+Por favor, analise esses dados, destaque pontos de atenÃ§Ã£o, celebre conquistas e dÃª dicas prÃ¡ticas e personalizadas em portuguÃªs do Brasil.`;
 }
 
 /**
- * Initialises the AI section: checks if report was already used this month and updates UI.
+ * Initialises the AI section: sets up pagination and checks generation eligibility.
  */
 async function initAIAssistant() {
+    if (!STATE.currentUser) return;
+
+    // â”€â”€ Initialise standalone AI month state (only once per session entry) â”€â”€
+    const allowed = getAllowedAIMonth();
+    if (aiViewMonth === null) {
+        aiViewMonth = allowed.month;
+        aiViewYear = allowed.year;
+    }
+
+    // â”€â”€ Wire pagination buttons (only once) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    const prevBtn = document.getElementById('btn-ai-prev-month');
+    const nextBtn = document.getElementById('btn-ai-next-month');
+    if (prevBtn && !prevBtn._aiPagAttached) {
+        prevBtn._aiPagAttached = true;
+        prevBtn.addEventListener('click', () => {
+            if (aiViewYear === 2026 && aiViewMonth === 0) return;
+            if (--aiViewMonth < 0) { aiViewMonth = 11; aiViewYear--; }
+            initAIAssistant();
+        });
+    }
+    if (nextBtn && !nextBtn._aiPagAttached) {
+        nextBtn._aiPagAttached = true;
+        nextBtn.addEventListener('click', () => {
+            const allowed = getAllowedAIMonth();
+            // Never navigate past the allowed month
+            if (aiViewYear === allowed.year && aiViewMonth >= allowed.month) return;
+            if (++aiViewMonth > 11) { aiViewMonth = 0; aiViewYear++; }
+            initAIAssistant();
+        });
+    }
+
+    updateAIMonthNav();
+
+    // â”€â”€ Determine status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const btn = document.getElementById('btn-generate-ai-report');
     const statusMsg = document.getElementById('ai-status-msg');
     const monthLabel = document.getElementById('ai-month-label');
     const reportArea = document.getElementById('ai-report-area');
 
-    if (!btn || !STATE.currentUser) return;
+    if (!btn) return;
 
-    const monthYear = `${STATE.viewYear}-${String(STATE.viewMonth + 1).padStart(2, '0')}`;
-    const monthDisplayName = `${STATE.monthNames[STATE.viewMonth]} ${STATE.viewYear}`;
-
+    const monthYear = `${aiViewYear}-${String(aiViewMonth + 1).padStart(2, '0')}`;
+    const monthDisplayName = `${STATE.monthNames[aiViewMonth]} ${aiViewYear}`;
     if (monthLabel) monthLabel.textContent = monthDisplayName;
     if (reportArea) reportArea.classList.add('hidden');
 
-    // Check if user already used the report this month
+    // Determine if this month is "generatable":
+    // Only the previous calendar month (relative to today) is allowed.
+    const isAllowedMonth = (aiViewMonth === allowed.month && aiViewYear === allowed.year);
+    // Past months that are NOT the allowed one have expired
+    const monthIndex = aiViewYear * 12 + aiViewMonth;
+    const allowedIndex = allowed.year * 12 + allowed.month;
+    const isExpired = monthIndex < allowedIndex;
+
+    // â”€â”€ Check Supabase for an existing report â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     try {
         const { data: existing } = await supabaseClient
             .from('ai_reports')
@@ -1212,33 +1292,54 @@ async function initAIAssistant() {
             .maybeSingle();
 
         if (existing) {
+            // Report already generated â€” show it
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-lock"></i> Relatório já gerado este mês';
-            if (statusMsg) statusMsg.textContent = `Você já utilizou o relatório de IA em ${monthDisplayName}. O próximo estará disponível no mês que vem! 📅`;
-            
-            // Se o texto já existir no banco, exibe-o diretamente
+            btn.innerHTML = '<i class="fa-solid fa-lock"></i> RelatÃ³rio jÃ¡ gerado este mÃªs';
+            if (statusMsg) statusMsg.textContent = `RelatÃ³rio de ${monthDisplayName} jÃ¡ foi gerado. O prÃ³ximo estarÃ¡ disponÃ­vel no mÃªs que vem! ðŸ“…`;
+
             if (existing.report_text) {
                 const reportContent = document.getElementById('ai-report-content');
                 const reportBadge = document.getElementById('ai-report-month-badge');
+                const reportTimestamp = document.getElementById('ai-report-timestamp');
                 if (reportBadge) reportBadge.textContent = monthDisplayName;
+                if (reportTimestamp) {
+                    const dateObj = new Date(existing.created_at);
+                    reportTimestamp.textContent = `(Gerado em ${dateObj.toLocaleDateString('pt-BR')} Ã s ${dateObj.toLocaleTimeString('pt-BR')})`;
+                }
                 if (reportContent) reportContent.innerHTML = parseAIMarkdown(existing.report_text);
                 if (reportArea) reportArea.classList.remove('hidden');
             }
-        } else {
+
+        } else if (isAllowedMonth) {
+            // This is the correct month and no report yet â€” allow generation
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Gerar Relatório do Mês';
-            if (statusMsg) statusMsg.innerHTML = `Clique no botão abaixo para gerar seu relatório financeiro personalizado com inteligência artificial para <strong>${monthDisplayName}</strong>.`;
-            
-            // Ocultar área de relatório se não houver
+            btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Gerar RelatÃ³rio do MÃªs';
+            if (statusMsg) statusMsg.innerHTML = `Clique no botÃ£o abaixo para gerar seu relatÃ³rio financeiro personalizado com inteligÃªncia artificial para <strong>${monthDisplayName}</strong>.`;
             const reportContent = document.getElementById('ai-report-content');
-            if (reportArea) reportArea.classList.add('hidden');
+            if (reportContent) reportContent.innerHTML = '';
+
+        } else if (isExpired) {
+            // Months older than the allowed window â€” permanently locked
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-ban"></i> Prazo expirado';
+            if (statusMsg) statusMsg.innerHTML = `<span style="color:var(--c-danger)"><i class="fa-solid fa-circle-xmark"></i> O relatÃ³rio de <strong>${monthDisplayName}</strong> nÃ£o foi gerado no prazo e nÃ£o pode mais ser criado.</span>`;
+            const reportContent = document.getElementById('ai-report-content');
+            if (reportContent) reportContent.innerHTML = '';
+
+        } else {
+            // Future / current month â€” not closed yet
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-clock"></i> MÃªs em andamento';
+            if (statusMsg) statusMsg.innerHTML = `<span style="color:var(--c-text-muted)"><i class="fa-solid fa-hourglass-half"></i> O relatÃ³rio de <strong>${monthDisplayName}</strong> ficarÃ¡ disponÃ­vel a partir do dia 1 do mÃªs seguinte.</span>`;
+            const reportContent = document.getElementById('ai-report-content');
             if (reportContent) reportContent.innerHTML = '';
         }
+
     } catch (err) {
         console.error('Erro ao verificar limite da IA:', err);
     }
 
-    // Attach button listener (once)
+    // â”€â”€ Attach generate button listener (only once) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (!btn._aiListenerAttached) {
         btn._aiListenerAttached = true;
         btn.addEventListener('click', handleAIReport);
@@ -1286,9 +1387,9 @@ async function handleAIReport() {
 
     if (!btn || btn.disabled) return;
 
-    const monthYear = `${STATE.viewYear}-${String(STATE.viewMonth + 1).padStart(2, '0')}`;
-    const monthDisplayName = `${STATE.monthNames[STATE.viewMonth]} ${STATE.viewYear}`;
-    const promptData = buildAIPrompt();
+    const monthYear = `${aiViewYear}-${String(aiViewMonth + 1).padStart(2, '0')}`;
+    const monthDisplayName = `${STATE.monthNames[aiViewMonth]} ${aiViewYear}`;
+    const promptData = buildAIPrompt(aiViewYear, aiViewMonth);
 
     // Show loading state
     btn.disabled = true;
@@ -1308,7 +1409,7 @@ async function handleAIReport() {
 
         if (data?.error === 'limite_mensal') {
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-lock"></i> Relatório já gerado este mês';
+            btn.innerHTML = '<i class="fa-solid fa-lock"></i> RelatÃ³rio jÃ¡ gerado este mÃªs';
             if (statusMsg) statusMsg.textContent = data.message;
             return;
         }
@@ -1332,12 +1433,17 @@ async function handleAIReport() {
         if (data?.success && data?.report) {
             // Success! Show report
             if (reportBadge) reportBadge.textContent = monthDisplayName;
+            const reportTimestamp = document.getElementById('ai-report-timestamp');
+            if (reportTimestamp) {
+                const dateObj = new Date();
+                reportTimestamp.textContent = `(Gerado em ${dateObj.toLocaleDateString('pt-BR')} Ã s ${dateObj.toLocaleTimeString('pt-BR')})`;
+            }
             if (reportContent) reportContent.innerHTML = parseAIMarkdown(data.report);
             if (reportArea) reportArea.classList.remove('hidden');
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-lock"></i> Relatório já gerado este mês';
-            if (statusMsg) statusMsg.textContent = `Relatório gerado com sucesso para ${monthDisplayName}! ✨`;
+            btn.innerHTML = '<i class="fa-solid fa-lock"></i> RelatÃ³rio jÃ¡ gerado este mÃªs';
+            if (statusMsg) statusMsg.textContent = `RelatÃ³rio gerado com sucesso para ${monthDisplayName}! âœ¨`;
             document.querySelector('.content-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
