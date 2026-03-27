@@ -200,6 +200,64 @@
 }
 
 /* --------------------------------------------------------------------------
+   3.1 AI Assistant LED Button
+   -------------------------------------------------------------------------- */
+#nav-ai-assistant {
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    padding: 0;
+    gap: 0;
+    background: transparent !important;
+}
+
+#nav-ai-assistant .nav-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+}
+
+#nav-ai-assistant::before {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: -100%;
+    width: 300%;
+    height: 300%;
+    background: conic-gradient(from 0deg, transparent 0%, transparent 60%, var(--c-primary) 85%, #d8b4fe 95%, transparent 100%);
+    animation: spin-led 3s linear infinite;
+    filter: blur(4px) brightness(1.5);
+    z-index: 0;
+}
+
+#nav-ai-assistant::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    background: var(--c-bg-card);
+    border-radius: calc(var(--radius-md) - 2px);
+    z-index: 1;
+    transition: background 0.2s;
+}
+
+#nav-ai-assistant:hover::after {
+    background: var(--c-bg);
+}
+
+#nav-ai-assistant.active::after {
+    background: var(--c-primary);
+}
+
+@keyframes spin-led {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* --------------------------------------------------------------------------
    4. Footer da Sidebar (botão de logout)
    -------------------------------------------------------------------------- */
 .sidebar-footer {
@@ -289,7 +347,7 @@
 }
 
 .goals-charts-grid {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
 }
 
 .card-section {
@@ -384,7 +442,7 @@
 .footer-content {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     flex-wrap: wrap;
     gap: 2rem;
     max-width: 1200px;
@@ -398,8 +456,8 @@
 }
 
 .footer-logo {
-    max-width: 120px;
-    max-height: 60px;
+    max-width: 220px;
+    max-height: 120px;
     height: auto;
     object-fit: contain;
 }

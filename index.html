@@ -151,7 +151,9 @@
                 <a href="#consolidated-extracts" id="nav-consolidated-extracts"><i
                         class="fa-solid fa-file-invoice-dollar"></i> Extratos Consolidados</a>
                 <a href="#categories"><i class="fa-solid fa-tags"></i> Categorias</a>
-                <a href="#ai-assistant" id="nav-ai-assistant"><i class="fa-solid fa-robot"></i> Assistente IA</a>
+                <a href="#ai-assistant" id="nav-ai-assistant">
+                    <span class="nav-content"><i class="fa-solid fa-robot"></i> Assistente IA</span>
+                </a>
                 <a href="#settings"><i class="fa-solid fa-gear"></i> Configurações</a>
             </nav>
             <div class="sidebar-footer">
@@ -773,6 +775,13 @@
                             </div>
                         </div>
 
+                        <!-- AI & Custom Insights -->
+                        <div id="extract-insights" style="margin-bottom: 2rem; padding: 1.5rem; background: var(--c-bg-main); border-radius: var(--radius-lg); border: 1px solid var(--c-border); display: none;">
+                            <h4 style="margin-bottom: 1rem; color: var(--c-primary);"><i class="fa-solid fa-lightbulb"></i> Insights do Mês</h4>
+                            <p id="extract-insight-installments" style="margin-bottom: 0.75rem; color: var(--c-text-main); line-height: 1.5;"></p>
+                            <p id="extract-insight-card" style="color: var(--c-text-main); line-height: 1.5;"></p>
+                        </div>
+
                         <!-- Extract Goals Balance Widget -->
                         <div id="extract-balance-widget" style="margin-bottom: 2rem;"></div>
 
@@ -784,8 +793,14 @@
                                     <canvas id="extract-pie-chart"></canvas>
                                 </div>
                             </div>
+                            <div class="chart-container" style="margin-top: 0; padding-top: 0; border-top: none;">
+                                <h4>Divisão por Tipo (Crédito, Débito, Parcelas)</h4>
+                                <div class="chart-wrapper" style="height: 320px;">
+                                    <canvas id="extract-type-chart"></canvas>
+                                </div>
+                            </div>
                             <div class="chart-container"
-                                style="margin-top: 0; padding-top: 0; border-top: none; display: flex; flex-direction: column;">
+                                style="margin-top: 0; padding-top: 0; border-top: none; display: flex; flex-direction: column; grid-column: 1 / -1;">
                                 <h4>Resumo das Metas</h4>
                                 <div id="extract-goals-summary"
                                     style="flex: 1; padding: 0.5rem 0; margin-top: 0.75rem;">

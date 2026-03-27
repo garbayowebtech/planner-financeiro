@@ -831,13 +831,23 @@ function renderInstallmentsChart() {
 
 // ── CONSOLIDATED EXTRACTS ────────────────────────────────────────
 let extractPieChartInstance = null;
-
+let extractTypeChartInstance = null;
 window.renderConsolidatedExtracts = function renderConsolidatedExtracts() {
     const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
     document.getElementById('extract-month-label').textContent = `${months[STATE.viewMonth]} ${STATE.viewYear}`;
 
     let totalIncome = 0;
     let totalExpense = 0;
+
+    let totalTypeDebit = 0;
+    let totalTypeCredit = 0;
+    let totalTypeInst = 0;
+    let activeInstCount = 0;
+    let activeInstTotal = 0;
+    let maxInstMonth = -1;
+    let maxInstYear = -1;
+    let cardUsage = {};
+
     const catExp = {};
     (STATE.userData.categories || []).forEach(c => { catExp[c.id] = { name: c.name, color: c.color, spent: 0, goal: c.goal || 0 }; });
 
@@ -848,6 +858,7 @@ window.renderConsolidatedExtracts = function renderConsolidatedExtracts() {
             if (txn.type === 'income') totalIncome += txn.amount;
             else {
                 totalExpense += txn.amount;
+                totalTypeDebit += txn.amount;
                 if (catExp[txn.categoryId]) catExp[txn.categoryId].spent += txn.amount;
             }
         }
@@ -858,6 +869,9 @@ window.renderConsolidatedExtracts = function renderConsolidatedExtracts() {
         const p = exp.dueDate.split('-');
         if (parseInt(p[0]) === STATE.viewYear && parseInt(p[1]) - 1 === STATE.viewMonth) {
             totalExpense += exp.amount;
+            totalTypeCredit += exp.amount;
+            const cid = exp.cardId || 'card1';
+            cardUsage[cid] = (cardUsage[cid] || 0) + exp.amount;
             if (catExp[exp.categoryId]) catExp[exp.categoryId].spent += exp.amount;
         }
     });
@@ -865,12 +879,27 @@ window.renderConsolidatedExtracts = function renderConsolidatedExtracts() {
     // Installments
     (STATE.userData.installments || []).forEach(inst => {
         const p = inst.date.split('-'), py = parseInt(p[0]), pm = parseInt(p[1]) - 1;
-        const card = (STATE.userData.settings?.cards || []).find(c => c.id === (inst.cardId || 'card1'));
+        const cid = inst.cardId || 'card1';
+        const card = (STATE.userData.settings?.cards || []).find(c => c.id === cid);
         const closing = card?.closingDay || 11;
         const diff = (STATE.viewYear - py) * 12 + (STATE.viewMonth - pm) - instCycleOffset(inst.date, closing);
         const proj = inst.currentInstallment + diff;
         if (proj >= 1 && proj <= inst.totalInstallments) {
             totalExpense += inst.installmentAmount;
+            totalTypeInst += inst.installmentAmount;
+            cardUsage[cid] = (cardUsage[cid] || 0) + inst.installmentAmount;
+            activeInstCount++;
+            activeInstTotal += inst.installmentAmount;
+            
+            const remainingMonths = inst.totalInstallments - proj;
+            let endM = STATE.viewMonth + remainingMonths;
+            let endY = STATE.viewYear + Math.floor(endM / 12);
+            endM = endM % 12;
+            if (endY > maxInstYear || (endY === maxInstYear && endM > maxInstMonth)) {
+                maxInstYear = endY;
+                maxInstMonth = endM;
+            }
+
             if (catExp[inst.categoryId]) catExp[inst.categoryId].spent += inst.installmentAmount;
         }
     });
@@ -898,6 +927,61 @@ window.renderConsolidatedExtracts = function renderConsolidatedExtracts() {
         if (data.length > 0) {
             extractPieChartInstance = new Chart(ctx, { type: 'pie', data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { family: "'Inter', sans-serif", size: 10 } } } } } });
         }
+    }
+
+    // Type Chart
+    const ctxType = document.getElementById('extract-type-chart');
+    if (ctxType) {
+        if (extractTypeChartInstance) extractTypeChartInstance.destroy();
+        const tLabels = ['Cartão de Crédito', 'Débito / Pix', 'Compras Parceladas'];
+        const tData = [totalTypeCredit, totalTypeDebit, totalTypeInst];
+        const tColors = ['#4F46E5', '#10B981', '#F59E0B'];
+        if (tData.some(v => v > 0)) {
+            extractTypeChartInstance = new Chart(ctxType, { type: 'pie', data: { labels: tLabels, datasets: [{ data: tData, backgroundColor: tColors, borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { family: "'Inter', sans-serif", size: 10 } } } } } });
+        }
+    }
+
+    // Insights Update
+    const insightsContainer = document.getElementById('extract-insights');
+    const insightInst = document.getElementById('extract-insight-installments');
+    const insightCard = document.getElementById('extract-insight-card');
+    
+    if (insightsContainer && insightInst && insightCard) {
+        let hasInsights = false;
+        
+        if (activeInstCount > 0) {
+            let lastMonthStr = 'N/A';
+            if (maxInstMonth >= 0) {
+                const maxMFormat = (maxInstMonth < 12 && maxInstMonth >= 0) ? months[maxInstMonth] : 'N/A';
+                lastMonthStr = `${maxMFormat}/${maxInstYear}`;
+            }
+            insightInst.innerHTML = `Este mês você teve <strong>${activeInstCount}</strong> compras ativas parceladas, num valor total de: <strong>${formatCurrency(activeInstTotal)}</strong>.<br>A última parcela a ser paga está prevista para o mês: <strong>${lastMonthStr}</strong>.`;
+            insightInst.style.display = 'block';
+            hasInsights = true;
+        } else {
+            insightInst.style.display = 'none';
+        }
+
+        let bestCardId = null;
+        let bestCardVal = 0;
+        Object.keys(cardUsage).forEach(cid => {
+            if (cardUsage[cid] > bestCardVal) {
+                bestCardVal = cardUsage[cid];
+                bestCardId = cid;
+            }
+        });
+
+        if (bestCardId && bestCardVal > 0) {
+            const cardDef = (STATE.userData.settings?.cards || []).find(c => c.id === bestCardId);
+            const cardName = cardDef ? cardDef.name : 'Cartão Principal';
+            insightCard.innerHTML = `O cartão de crédito mais usado foi: <strong>${cardName}</strong> (Movimentação no mês: ${formatCurrency(bestCardVal)}).`;
+            insightCard.style.display = 'block';
+            hasInsights = true;
+        } else {
+            insightCard.style.display = 'none';
+        }
+
+        insightsContainer.style.display = hasInsights ? 'block' : 'none';
     }
 
     // ── Balance Widget on Extratos ────────────────────────────────
