@@ -1,4 +1,4 @@
-﻿/**
+/**
  * script.js â€” Render Functions, Charts & Utilities
  * Depends on: STATE, DOM, DB (all from app-auth.js / app-crud.js / db.js)
  */
@@ -242,8 +242,8 @@ function initDashboard() {
     const hasIncomeCats = (STATE.userData.categories || []).some(c => c.type === 'income');
     if (!hasIncomeCats && STATE.currentUser) {
         (async () => {
-            const c1 = await DB.createCategory(STATE.currentUser.id, { name: 'SalÃ¡rio', goal: 0, color: '#10B981', textColor: '#FFFFFF', type: 'income' });
-            const c2 = await DB.createCategory(STATE.currentUser.id, { name: 'PensÃ£o', goal: 0, color: '#3B82F6', textColor: '#FFFFFF', type: 'income' });
+            const c1 = await DB.createCategory(STATE.currentUser.id, { name: 'Salário', goal: 0, color: '#10B981', textColor: '#FFFFFF', type: 'income' });
+            const c2 = await DB.createCategory(STATE.currentUser.id, { name: 'Pensão', goal: 0, color: '#3B82F6', textColor: '#FFFFFF', type: 'income' });
             STATE.userData.categories.push(c1, c2);
             renderCategoriesTable();
             initDashboard(); // Re-populate selects
@@ -332,7 +332,7 @@ window.editCreditExpense = function (id) {
     const exp = STATE.userData.creditExpenses.find(e => e.id === id);
     if (!exp) return;
     STATE.editingCreditId = id;
-    document.querySelector('#expense-modal .modal-header h3').textContent = 'Editar Despesa de CrÃ©dito';
+    document.querySelector('#expense-modal .modal-header h3').textContent = 'Editar Despesa de Crédito';
     document.getElementById('exp-name').value = exp.name;
     document.getElementById('exp-amount').value = exp.amount;
     document.getElementById('exp-date').value = exp.date;
@@ -438,7 +438,7 @@ function renderDebitTable() {
     else paged.forEach(txn => {
         const cat = STATE.userData.categories.find(c => c.id === txn.categoryId);
         const catHtml = cat ? `<span class="category-badge" style="background:${cat.color};color:${cat.textColor || '#fff'}">${cat.name}</span>` : '-';
-        const typeLabel = txn.type === 'debit' ? 'DÃ©bito' : (txn.type === 'pix' ? 'Pix' : (txn.type === 'expense' ? 'SaÃ­da' : txn.type));
+        const typeLabel = txn.type === 'debit' ? 'Débito' : (txn.type === 'pix' ? 'Pix' : (txn.type === 'expense' ? 'Saída' : txn.type));
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${formatDate(txn.date)}</td><td><strong>${txn.name}</strong></td><td class="text-danger">-${formatCurrency(txn.amount)}</td><td>${catHtml}</td><td><small>${typeLabel}</small></td><td class="text-center"><div style="display:flex;justify-content:center;gap:.5rem"><button class="btn-icon" style="color:var(--c-primary)" onclick="editDebitTransaction('${txn.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn-delete" onclick="deleteDebitTransaction('${txn.id}')"><i class="fa-solid fa-trash"></i></button></div></td>`;
         DOM.debitTableBody.appendChild(tr);
@@ -495,7 +495,7 @@ function renderDebitChart() {
         const cat = STATE.userData.categories.find(c => c.id === catId);
         if (cat) { labels.push(cat.name); bgColors.push(cat.color); data.push(catTotals[catId]); }
     });
-    debitChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels, datasets: [{ data, backgroundColor: bgColors, borderWidth: 0, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: "'Inter',sans-serif" } } }, title: { display: true, text: 'Somente SaÃ­das (Despesas)' } } } });
+    debitChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels, datasets: [{ data, backgroundColor: bgColors, borderWidth: 0, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: "'Inter',sans-serif" } } }, title: { display: true, text: 'Somente Saídas (Despesas)' } } } });
 }
 
 // â”€â”€ CATEGORIES TABLE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -533,7 +533,7 @@ function editCategory(id) {
     document.getElementById('cat-goal').value = cat.goal || 0;
     document.getElementById('cat-bg').value = cat.color;
     document.getElementById('cat-text').value = cat.textColor || '#ffffff';
-    DOM.btnSaveCategory.textContent = 'Salvar AlteraÃ§Ãµes';
+    DOM.btnSaveCategory.textContent = 'Salvar Alterações';
     DOM.btnCancelCategoryEdit.classList.remove('hidden');
     document.querySelector('.content-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -577,7 +577,7 @@ function renderOverallPieChart() {
     });
 
     if (!totalCredit && !totalDebit && !totalInst) return;
-    overallPieChartInstance = new Chart(ctx, { type: 'pie', data: { labels: ['CartÃ£o de CrÃ©dito', 'DÃ©bito / Pix', 'Compras Parceladas'], datasets: [{ data: [totalCredit, totalDebit, totalInst], backgroundColor: ['#4F46E5', '#10B981', '#F59E0B'], borderWidth: 0, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: "'Inter',sans-serif" } } }, tooltip: { callbacks: { label: ctx => (ctx.label || '') + ': ' + formatCurrency(ctx.parsed) } } } } });
+    overallPieChartInstance = new Chart(ctx, { type: 'pie', data: { labels: ['Cartão de Crédito', 'Débito / Pix', 'Compras Parceladas'], datasets: [{ data: [totalCredit, totalDebit, totalInst], backgroundColor: ['#4F46E5', '#10B981', '#F59E0B'], borderWidth: 0, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: "'Inter',sans-serif" } } }, tooltip: { callbacks: { label: ctx => (ctx.label || '') + ': ' + formatCurrency(ctx.parsed) } } } } });
 }
 
 // â”€â”€ GOALS BALANCE WIDGET â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -610,8 +610,8 @@ function renderGoalsBalanceWidget(containerId, catExpMap, categories) {
         ? '<i class="fa-solid fa-triangle-exclamation" style="color:#EF4444"></i>'
         : '<i class="fa-solid fa-scale-balanced" style="color:#10B981"></i>';
     const statusMsg = isOver
-        ? 'O total de gastos excedeu o orÃ§amento global das metas neste mÃªs.'
-        : 'Mesmo excedendo alguns limites, o total geral ainda estÃ¡ dentro do orÃ§amento.';
+        ? 'O total de gastos excedeu o orçamento global das metas neste mês.'
+        : 'Mesmo excedendo alguns limites, o total geral ainda está dentro do orçamento.';
 
     el.innerHTML = `
     <div style="
@@ -631,7 +631,7 @@ function renderGoalsBalanceWidget(containerId, catExpMap, categories) {
         </div>
         <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
             <div style="text-align:center;">
-                <span style="display:block; font-size:0.75rem; color:var(--c-text-muted); margin-bottom:0.2rem;">SomatÃ³rio de Todas as Metas</span>
+                <span style="display:block; font-size:0.75rem; color:var(--c-text-muted); margin-bottom:0.2rem;">Somatório de Todas as Metas</span>
                 <span style="font-size:1.1rem; font-weight:700;">${formatCurrency(totalGoal)}</span>
             </div>
             <div style="text-align:center;">
@@ -639,14 +639,14 @@ function renderGoalsBalanceWidget(containerId, catExpMap, categories) {
                 <span style="font-size:1.1rem; font-weight:700; color:${isOver ? '#EF4444' : 'var(--c-text-main)'}">${formatCurrency(totalSpent)}</span>
             </div>
             <div style="text-align:center;">
-                <span style="display:block; font-size:0.75rem; color:var(--c-text-muted); margin-bottom:0.2rem;">${isOver ? 'Estouro' : 'Saldo DisponÃ­vel'}</span>
+                <span style="display:block; font-size:0.75rem; color:var(--c-text-muted); margin-bottom:0.2rem;">${isOver ? 'Estouro' : 'Saldo Disponível'}</span>
                 <span style="font-size:1.1rem;">${diffLabel}</span>
             </div>
         </div>
         <div style="width:100%; background: var(--c-border); border-radius: 99px; height: 8px; margin-top:0.25rem;">
             <div style="width:${pct}%; background:${barColor}; height:8px; border-radius:99px; transition: width .4s;"></div>
         </div>
-        <p style="width:100%; text-align:right; font-size:0.75rem; color:var(--c-text-muted); margin:0;">${pct}% do orÃ§amento utilizado</p>
+        <p style="width:100%; text-align:right; font-size:0.75rem; color:var(--c-text-muted); margin:0;">${pct}% do orçamento utilizado</p>
     </div>`;
 }
 
@@ -684,7 +684,7 @@ function renderGoalsChart() {
     const tsEl = document.getElementById('goals-text-summary');
     if (tsEl) tsEl.innerHTML = '';
 
-    // â”€â”€ Balance Widget on VisÃ£o Geral â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â”€â”€ Balance Widget on Visão Geral â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const balWidgetCats = {};
     STATE.userData.categories.forEach(cat => { balWidgetCats[cat.id] = { spent: catExp[cat.id] || 0, goal: cat.goal || 0 }; });
     renderGoalsBalanceWidget('goals-balance-widget', balWidgetCats, STATE.userData.categories);
@@ -833,7 +833,7 @@ function renderInstallmentsChart() {
 let extractPieChartInstance = null;
 let extractTypeChartInstance = null;
 window.renderConsolidatedExtracts = function renderConsolidatedExtracts() {
-    const months = ['Janeiro', 'Fevereiro', 'MarÃ§o', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
     document.getElementById('extract-month-label').textContent = `${months[STATE.viewMonth]} ${STATE.viewYear}`;
 
     let totalIncome = 0;
@@ -933,7 +933,7 @@ window.renderConsolidatedExtracts = function renderConsolidatedExtracts() {
     const ctxType = document.getElementById('extract-type-chart');
     if (ctxType) {
         if (extractTypeChartInstance) extractTypeChartInstance.destroy();
-        const tLabels = ['CartÃ£o de CrÃ©dito', 'DÃ©bito / Pix', 'Compras Parceladas'];
+        const tLabels = ['Cartão de Crédito', 'Débito / Pix', 'Compras Parceladas'];
         const tData = [totalTypeCredit, totalTypeDebit, totalTypeInst];
         const tColors = ['#4F46E5', '#10B981', '#F59E0B'];
         if (tData.some(v => v > 0)) {
@@ -955,7 +955,7 @@ window.renderConsolidatedExtracts = function renderConsolidatedExtracts() {
                 const maxMFormat = (maxInstMonth < 12 && maxInstMonth >= 0) ? months[maxInstMonth] : 'N/A';
                 lastMonthStr = `${maxMFormat}/${maxInstYear}`;
             }
-            insightInst.innerHTML = `Este mÃªs vocÃª teve <strong>${activeInstCount}</strong> compras ativas parceladas, num valor total de: <strong>${formatCurrency(activeInstTotal)}</strong>.<br>A Ãºltima parcela a ser paga estÃ¡ prevista para o mÃªs: <strong>${lastMonthStr}</strong>.`;
+            insightInst.innerHTML = `Este mês você teve <strong>${activeInstCount}</strong> compras ativas parceladas, num valor total de: <strong>${formatCurrency(activeInstTotal)}</strong>.<br>A última parcela a ser paga está prevista para o mês: <strong>${lastMonthStr}</strong>.`;
             insightInst.style.display = 'block';
             hasInsights = true;
         } else {
@@ -973,8 +973,8 @@ window.renderConsolidatedExtracts = function renderConsolidatedExtracts() {
 
         if (bestCardId && bestCardVal > 0) {
             const cardDef = (STATE.userData.settings?.cards || []).find(c => c.id === bestCardId);
-            const cardName = cardDef ? cardDef.name : 'CartÃ£o Principal';
-            insightCard.innerHTML = `O cartÃ£o de crÃ©dito mais usado foi: <strong>${cardName}</strong> (MovimentaÃ§Ã£o no mÃªs: ${formatCurrency(bestCardVal)}).`;
+            const cardName = cardDef ? cardDef.name : 'Cartão Principal';
+            insightCard.innerHTML = `O cartão de crédito mais usado foi: <strong>${cardName}</strong> (Movimentação no mês: ${formatCurrency(bestCardVal)}).`;
             insightCard.style.display = 'block';
             hasInsights = true;
         } else {
@@ -1013,13 +1013,13 @@ window.renderConsolidatedExtracts = function renderConsolidatedExtracts() {
             
             // Note: keeping the original text/icon logic, just sorted differently
             if (isOver) {
-                text = `VocÃª excedeu a meta de ${formatCurrency(c.goal)} em <strong class="text-danger">${formatCurrency(diff)}</strong> (${pct}% consumido).`;
+                text = `Você excedeu a meta de ${formatCurrency(c.goal)} em <strong class="text-danger">${formatCurrency(diff)}</strong> (${pct}% consumido).`;
                 icon = '<i class="fa-solid fa-circle-exclamation text-danger"></i>';
             } else if (c.spent > 0) {
-                text = `VocÃª gastou ${formatCurrency(c.spent)} de sua meta de ${formatCurrency(c.goal)}. Ainda tem <strong class="text-success">${formatCurrency(diff)}</strong> disponÃ­vel (${pct}% consumido).`;
+                text = `Você gastou ${formatCurrency(c.spent)} de sua meta de ${formatCurrency(c.goal)}. Ainda tem <strong class="text-success">${formatCurrency(diff)}</strong> disponível (${pct}% consumido).`;
                 icon = '<i class="fa-solid fa-circle-check text-success"></i>';
             } else {
-                text = `VocÃª ainda nÃ£o registrou gastos. Sua meta inteira de <strong class="text-success">${formatCurrency(c.goal)}</strong> estÃ¡ disponÃ­vel.`;
+                text = `Você ainda não registrou gastos. Sua meta inteira de <strong class="text-success">${formatCurrency(c.goal)}</strong> está disponível.`;
                 icon = '<i class="fa-regular fa-circle-check" style="color:var(--c-text-muted)"></i>';
             }
             summaryEl.insertAdjacentHTML('beforeend', `<div style="margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--c-border); display:flex; gap:1rem; align-items:flex-start;">
@@ -1410,7 +1410,7 @@ async function handleAIReport() {
 
         if (data?.error === 'limite_mensal') {
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-lock"></i> RelatÃ³rio jÃ¡ gerado este mÃªs';
+            btn.innerHTML = '<i class="fa-solid fa-lock"></i> Relatório já gerado este mês';
             if (statusMsg) statusMsg.textContent = data.message;
             return;
         }
@@ -1437,14 +1437,14 @@ async function handleAIReport() {
             const reportTimestamp = document.getElementById('ai-report-timestamp');
             if (reportTimestamp) {
                 const dateObj = new Date();
-                reportTimestamp.textContent = `(Gerado em ${dateObj.toLocaleDateString('pt-BR')} Ã s ${dateObj.toLocaleTimeString('pt-BR')})`;
+                reportTimestamp.textContent = `(Gerado em ${dateObj.toLocaleDateString('pt-BR')} às ${dateObj.toLocaleTimeString('pt-BR')})`;
             }
             if (reportContent) reportContent.innerHTML = parseAIMarkdown(data.report);
             if (reportArea) reportArea.classList.remove('hidden');
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-lock"></i> RelatÃ³rio jÃ¡ gerado este mÃªs';
-            if (statusMsg) statusMsg.textContent = `RelatÃ³rio gerado com sucesso para ${monthDisplayName}! âœ¨`;
+            btn.innerHTML = '<i class="fa-solid fa-lock"></i> Relatório já gerado este mês';
+            if (statusMsg) statusMsg.textContent = `Relatório gerado com sucesso para ${monthDisplayName}! ✨`;
             document.querySelector('.content-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
