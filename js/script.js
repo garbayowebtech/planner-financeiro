@@ -1,4 +1,4 @@
-/**
+﻿/**
  * script.js â€” Render Functions, Charts & Utilities
  * Depends on: STATE, DOM, DB (all from app-auth.js / app-crud.js / db.js)
  */
@@ -1103,30 +1103,31 @@ function updateAIMonthNav() {
         label.textContent = `${STATE.monthNames[aiViewMonth]} ${aiViewYear}`;
     }
 
-    // Disable prev if we're at the minimum (Jan 2026 or first available month)
+    // Disable prev if we're at the minimum (Jan 2026)
     const prevBtn = document.getElementById('btn-ai-prev-month');
     if (prevBtn) {
         prevBtn.disabled = (aiViewYear === 2026 && aiViewMonth === 0);
     }
 
-    // Disable next if we're at or past the allowed month
-    // (don't let user go into current or future months â€” no report possible)
+    // Disable next only when 6 months past the current real month (generous future cap)
     const nextBtn = document.getElementById('btn-ai-next-month');
     if (nextBtn) {
-        const allowed = getAllowedAIMonth();
-        const isAtOrPastAllowed = (aiViewYear > allowed.year)
-            || (aiViewYear === allowed.year && aiViewMonth >= allowed.month);
-        nextBtn.disabled = isAtOrPastAllowed;
+        const now = new Date();
+        const capIndex = (now.getFullYear() * 12 + now.getMonth()) + 6;
+        const viewIndex = aiViewYear * 12 + aiViewMonth;
+        nextBtn.disabled = (viewIndex >= capIndex);
     }
 }
 
+
+/**
 /**
  * Builds a text summary of a given month/year's financial data to send to the AI.
  */
 function buildAIPrompt(y, m) {
     const monthName = STATE.monthNames[m];
 
-    // â”€â”€ Incomes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Incomes ───────────────────────────────────────────────────
     let totalIncome = 0;
     (STATE.userData.debitTransactions || []).forEach(txn => {
         const p = txn.date.split('-');
@@ -1135,7 +1136,7 @@ function buildAIPrompt(y, m) {
         }
     });
 
-    // â”€â”€ Debit expenses â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Debit expenses ────────────────────────────────────────────
     let totalDebit = 0;
     (STATE.userData.debitTransactions || []).forEach(txn => {
         const p = txn.date.split('-');
@@ -1144,7 +1145,7 @@ function buildAIPrompt(y, m) {
         }
     });
 
-    // â”€â”€ Credit expenses â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Credit expenses ───────────────────────────────────────────
     let totalCredit = 0;
     (STATE.userData.creditExpenses || []).forEach(exp => {
         const p = exp.dueDate.split('-');
@@ -1153,7 +1154,7 @@ function buildAIPrompt(y, m) {
         }
     });
 
-    // â”€â”€ Installments (projected for this month) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Installments (projected for this month) ───────────────────
     let totalInst = 0, activeInstCount = 0;
     (STATE.userData.installments || []).forEach(inst => {
         const p = inst.date.split('-'), py = parseInt(p[0]), pm = parseInt(p[1]) - 1;
@@ -1167,7 +1168,7 @@ function buildAIPrompt(y, m) {
         }
     });
 
-    // â”€â”€ Goals by category â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Goals by category ─────────────────────────────────────────
     const catSpent = {};
     (STATE.userData.categories || []).filter(c => (c.type || 'expense') === 'expense').forEach(cat => {
         catSpent[cat.id] = { name: cat.name, goal: cat.goal || 0, spent: 0 };
@@ -1198,46 +1199,45 @@ function buildAIPrompt(y, m) {
         .filter(c => c.goal > 0 || c.spent > 0)
         .map(c => {
             const pct = c.goal > 0 ? ((c.spent / c.goal) * 100).toFixed(0) : '-';
-            const status = c.goal > 0 && c.spent > c.goal ? 'âš ï¸ META EXCEDIDA' : (c.goal > 0 && c.spent > c.goal * 0.8 ? 'âš ï¸ Quase no limite' : 'âœ… OK');
+            const status = c.goal > 0 && c.spent > c.goal ? '⚠️ META EXCEDIDA' : (c.goal > 0 && c.spent > c.goal * 0.8 ? '⚠️ Quase no limite' : '✅ OK');
             return `  - ${c.name}: Gasto ${formatCurrency(c.spent)} / Meta ${formatCurrency(c.goal)} (${pct}%) ${status}`;
         }).join('\n');
 
     const totalExpenses = totalDebit + totalCredit + totalInst;
     const balance = totalIncome - totalExpenses;
 
-    return `## Dados Financeiros â€” ${monthName} ${y}
+    return `## Dados Financeiros — ${monthName} ${y}
 
 **Receitas:**
 - Total de Rendimentos: ${formatCurrency(totalIncome)}
 
 **Despesas:**
-- DÃ©bito / Pix: ${formatCurrency(totalDebit)}
-- CartÃ£o de CrÃ©dito (Ã  vista): ${formatCurrency(totalCredit)}
+- Débito / Pix: ${formatCurrency(totalDebit)}
+- Cartão de Crédito (à vista): ${formatCurrency(totalCredit)}
 - Compras Parceladas (${activeInstCount} parcelas ativas): ${formatCurrency(totalInst)}
 - Total de Despesas: ${formatCurrency(totalExpenses)}
 
-**Saldo do MÃªs:** ${formatCurrency(balance)} ${balance >= 0 ? 'âœ… Positivo' : 'âŒ Negativo'}
+**Saldo do Mês:** ${formatCurrency(balance)} ${balance >= 0 ? '✅ Positivo' : '❌ Negativo'}
 
 **Metas por Categoria:**
 ${goalsLines || '  Nenhuma categoria com meta definida.'}
 
-Por favor, analise esses dados, destaque pontos de atenÃ§Ã£o, celebre conquistas e dÃª dicas prÃ¡ticas e personalizadas em portuguÃªs do Brasil.`;
+Por favor, analise esses dados, destaque pontos de atenção, celebre conquistas e dê dicas práticas e personalizadas em português do Brasil.`;
 }
-
 /**
  * Initialises the AI section: sets up pagination and checks generation eligibility.
  */
 async function initAIAssistant() {
     if (!STATE.currentUser) return;
 
-    // â”€â”€ Initialise standalone AI month state (only once per session entry) â”€â”€
+    // ── Initialise standalone AI month state (only once per session entry) ──
     const allowed = getAllowedAIMonth();
     if (aiViewMonth === null) {
         aiViewMonth = allowed.month;
         aiViewYear = allowed.year;
     }
 
-    // â”€â”€ Wire pagination buttons (only once) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Wire pagination buttons (only once) ──────────────────────
     const prevBtn = document.getElementById('btn-ai-prev-month');
     const nextBtn = document.getElementById('btn-ai-next-month');
     if (prevBtn && !prevBtn._aiPagAttached) {
@@ -1251,9 +1251,10 @@ async function initAIAssistant() {
     if (nextBtn && !nextBtn._aiPagAttached) {
         nextBtn._aiPagAttached = true;
         nextBtn.addEventListener('click', () => {
-            const allowed = getAllowedAIMonth();
-            // Never navigate past the allowed month
-            if (aiViewYear === allowed.year && aiViewMonth >= allowed.month) return;
+            const now = new Date();
+            const capIndex = (now.getFullYear() * 12 + now.getMonth()) + 6;
+            const viewIndex = aiViewYear * 12 + aiViewMonth;
+            if (viewIndex >= capIndex) return;
             if (++aiViewMonth > 11) { aiViewMonth = 0; aiViewYear++; }
             initAIAssistant();
         });
@@ -1261,7 +1262,7 @@ async function initAIAssistant() {
 
     updateAIMonthNav();
 
-    // â”€â”€ Determine status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Determine status ──────────────────────────────────────────
     const btn = document.getElementById('btn-generate-ai-report');
     const statusMsg = document.getElementById('ai-status-msg');
     const monthLabel = document.getElementById('ai-month-label');
@@ -1282,7 +1283,7 @@ async function initAIAssistant() {
     const allowedIndex = allowed.year * 12 + allowed.month;
     const isExpired = monthIndex < allowedIndex;
 
-    // â”€â”€ Check Supabase for an existing report â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Check Supabase for an existing report ────────────────────
     try {
         const { data: existing } = await supabaseClient
             .from('ai_reports')
@@ -1292,10 +1293,10 @@ async function initAIAssistant() {
             .maybeSingle();
 
         if (existing) {
-            // Report already generated â€” show it
+            // Report already generated — show it
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-lock"></i> RelatÃ³rio jÃ¡ gerado este mÃªs';
-            if (statusMsg) statusMsg.textContent = `RelatÃ³rio de ${monthDisplayName} jÃ¡ foi gerado. O prÃ³ximo estarÃ¡ disponÃ­vel no mÃªs que vem! ðŸ“…`;
+            btn.innerHTML = '<i class="fa-solid fa-lock"></i> Relatório já gerado este mês';
+            if (statusMsg) statusMsg.textContent = `Relatório de ${monthDisplayName} já foi gerado. O próximo estará disponível no mês que vem! 📅`;
 
             if (existing.report_text) {
                 const reportContent = document.getElementById('ai-report-content');
@@ -1304,33 +1305,33 @@ async function initAIAssistant() {
                 if (reportBadge) reportBadge.textContent = monthDisplayName;
                 if (reportTimestamp) {
                     const dateObj = new Date(existing.created_at);
-                    reportTimestamp.textContent = `(Gerado em ${dateObj.toLocaleDateString('pt-BR')} Ã s ${dateObj.toLocaleTimeString('pt-BR')})`;
+                    reportTimestamp.textContent = `(Gerado em ${dateObj.toLocaleDateString('pt-BR')} às ${dateObj.toLocaleTimeString('pt-BR')})`;
                 }
                 if (reportContent) reportContent.innerHTML = parseAIMarkdown(existing.report_text);
                 if (reportArea) reportArea.classList.remove('hidden');
             }
 
         } else if (isAllowedMonth) {
-            // This is the correct month and no report yet â€” allow generation
+             // This is the correct month and no report yet — allow generation
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Gerar RelatÃ³rio do MÃªs';
-            if (statusMsg) statusMsg.innerHTML = `Clique no botÃ£o abaixo para gerar seu relatÃ³rio financeiro personalizado com inteligÃªncia artificial para <strong>${monthDisplayName}</strong>.`;
+            btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Gerar Relatório do Mês';
+            if (statusMsg) statusMsg.innerHTML = `Clique no botão abaixo para gerar seu relatório financeiro personalizado com inteligência artificial para <strong>${monthDisplayName}</strong>.`;
             const reportContent = document.getElementById('ai-report-content');
             if (reportContent) reportContent.innerHTML = '';
 
         } else if (isExpired) {
-            // Months older than the allowed window â€” permanently locked
+            // Months older than the allowed window — permanently locked
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-ban"></i> Prazo expirado';
-            if (statusMsg) statusMsg.innerHTML = `<span style="color:var(--c-danger)"><i class="fa-solid fa-circle-xmark"></i> O relatÃ³rio de <strong>${monthDisplayName}</strong> nÃ£o foi gerado no prazo e nÃ£o pode mais ser criado.</span>`;
+            if (statusMsg) statusMsg.innerHTML = `<span style="color:var(--c-danger)"><i class="fa-solid fa-circle-xmark"></i> O relatório de <strong>${monthDisplayName}</strong> não foi gerado no prazo e não pode mais ser criado.</span>`;
             const reportContent = document.getElementById('ai-report-content');
             if (reportContent) reportContent.innerHTML = '';
 
         } else {
-            // Future / current month â€” not closed yet
+            // Future / current month — not closed yet
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-clock"></i> MÃªs em andamento';
-            if (statusMsg) statusMsg.innerHTML = `<span style="color:var(--c-text-muted)"><i class="fa-solid fa-hourglass-half"></i> O relatÃ³rio de <strong>${monthDisplayName}</strong> ficarÃ¡ disponÃ­vel a partir do dia 1 do mÃªs seguinte.</span>`;
+            btn.innerHTML = '<i class="fa-solid fa-clock"></i> Mês em andamento';
+            if (statusMsg) statusMsg.innerHTML = `<span style="color:var(--c-text-muted)"><i class="fa-solid fa-hourglass-half"></i> O relatório de <strong>${monthDisplayName}</strong> ficará disponível a partir do dia 1 do mês seguinte.</span>`;
             const reportContent = document.getElementById('ai-report-content');
             if (reportContent) reportContent.innerHTML = '';
         }
@@ -1339,7 +1340,7 @@ async function initAIAssistant() {
         console.error('Erro ao verificar limite da IA:', err);
     }
 
-    // â”€â”€ Attach generate button listener (only once) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Attach generate button listener (only once) ───────────────
     if (!btn._aiListenerAttached) {
         btn._aiListenerAttached = true;
         btn.addEventListener('click', handleAIReport);
