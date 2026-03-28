@@ -111,7 +111,7 @@
     .btn-hamburger {
         position: absolute;
         left: 1rem;
-        top: 1rem;
+        top: 0.5rem;
     }
 
     #btn-header-darkmode {
@@ -139,6 +139,7 @@
     .calendar-date-full {
         display: none !important;
     }
+
     .calendar-date-short {
         display: inline !important;
     }
@@ -380,7 +381,8 @@
     /* --- Top Calendar Bar em telas muito pequenas --- */
     .top-calendar-bar {
         padding: 0 0.75rem;
-        font-size: 0.81rem; /* ~10% menor que o padrão de 0.9rem */
+        font-size: 0.81rem;
+        /* ~10% menor que o padrão de 0.9rem */
     }
 }
 
