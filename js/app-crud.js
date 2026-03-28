@@ -614,6 +614,33 @@ function setupEventListeners() {
         document.getElementById('btn-cancel-card')?.addEventListener('click', closeCard);
     }
 
+    // --- MOBILE SIDEBAR TOGGLE ---
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    const btnHamburger = document.getElementById('btn-hamburger');
+
+    function openSidebar() {
+        sidebar?.classList.add('open');
+        sidebarOverlay?.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeSidebar() {
+        sidebar?.classList.remove('open');
+        sidebarOverlay?.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    btnHamburger?.addEventListener('click', () => {
+        if (sidebar?.classList.contains('open')) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
+    });
+
+    sidebarOverlay?.addEventListener('click', closeSidebar);
+
     // --- NAVIGATION ---
     DOM.mainNavLinks.forEach(link => {
         link.addEventListener('click', (e) => {
@@ -622,6 +649,9 @@ function setupEventListeners() {
 
             DOM.mainNavLinks.forEach(n => n.classList.remove('active'));
             link.classList.add('active');
+
+            // Always close sidebar on mobile when a nav link is clicked
+            closeSidebar();
 
             if (target === '#consolidated-extracts') {
                 DOM.pageTitle.textContent = 'Extratos Mensais Consolidados';
@@ -706,10 +736,31 @@ function setupEventListeners() {
                 document.getElementById('ai-assistant-grid').classList.add('hidden');
                 DOM.dashboardGrid.classList.remove('hidden');
                 DOM.monthNavContainer.classList.remove('hidden');
-                if (target === '#dashboard') { DOM.pageTitle.textContent = 'Visão Geral'; document.querySelector('.content-scroll')?.scrollTo(0, 0); }
-                else if (target === '#credit') { DOM.pageTitle.textContent = 'Cartão de Crédito'; document.getElementById('section-credit')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-                else if (target === '#installments') { DOM.pageTitle.textContent = 'Compras Parceladas'; document.getElementById('section-installments')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-                else if (target === '#debit') { DOM.pageTitle.textContent = 'Débito / Pix'; document.getElementById('section-debit')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+
+                const contentScroll = document.querySelector('.content-scroll');
+                if (target === '#dashboard') {
+                    DOM.pageTitle.textContent = 'Visão Geral';
+                    contentScroll?.scrollTo(0, 0);
+                } else if (target === '#credit') {
+                    DOM.pageTitle.textContent = 'Cartão de Crédito';
+                    // Use offsetTop relative to content-scroll so header stays visible on mobile
+                    const section = document.getElementById('section-credit');
+                    if (section && contentScroll) {
+                        contentScroll.scrollTo({ top: section.offsetTop - 8, behavior: 'smooth' });
+                    }
+                } else if (target === '#installments') {
+                    DOM.pageTitle.textContent = 'Compras Parceladas';
+                    const section = document.getElementById('section-installments');
+                    if (section && contentScroll) {
+                        contentScroll.scrollTo({ top: section.offsetTop - 8, behavior: 'smooth' });
+                    }
+                } else if (target === '#debit') {
+                    DOM.pageTitle.textContent = 'Débito / Pix';
+                    const section = document.getElementById('section-debit');
+                    if (section && contentScroll) {
+                        contentScroll.scrollTo({ top: section.offsetTop - 8, behavior: 'smooth' });
+                    }
+                }
             }
         });
     });
