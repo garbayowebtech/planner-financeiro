@@ -745,6 +745,17 @@
                                 <i class="fa-solid fa-graduation-cap"></i> Assistir Tutorial Inicial
                             </button>
                         </div>
+
+                        <hr style="border: none; border-top: 1px solid var(--c-border); margin: 1.5rem 0;">
+
+                        <!-- Danger Zone -->
+                        <div style="max-width: 400px; padding: 1.5rem; border: 1px solid var(--c-danger); border-radius: var(--radius-md); background: rgba(239, 68, 68, 0.05);">
+                            <h4 style="color: var(--c-danger); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-triangle-exclamation"></i> Zona de Perigo</h4>
+                            <p class="subtitle" style="margin-bottom: 1.5rem; color: var(--c-text-main);">A exclusão da sua conta apagará permanentemente todos os seus dados e não poderá ser desfeita.</p>
+                            <button id="btn-delete-account-trigger" class="btn btn-danger" style="width: 100%;">
+                                <i class="fa-solid fa-user-xmark"></i> Excluir Minha Conta
+                            </button>
+                        </div>
                     </section>
                 </div>
 
@@ -776,9 +787,12 @@
                         </div>
 
                         <!-- AI & Custom Insights -->
-                        <div id="extract-insights" style="margin-bottom: 2rem; padding: 1.5rem; background: var(--c-bg-main); border-radius: var(--radius-lg); border: 1px solid var(--c-border); display: none;">
-                            <h4 style="margin-bottom: 1rem; color: var(--c-primary);"><i class="fa-solid fa-lightbulb"></i> Insights do Mês</h4>
-                            <p id="extract-insight-installments" style="margin-bottom: 0.75rem; color: var(--c-text-main); line-height: 1.5;"></p>
+                        <div id="extract-insights"
+                            style="margin-bottom: 2rem; padding: 1.5rem; background: var(--c-bg-main); border-radius: var(--radius-lg); border: 1px solid var(--c-border); display: none;">
+                            <h4 style="margin-bottom: 1rem; color: var(--c-primary);"><i
+                                    class="fa-solid fa-lightbulb"></i> Insights do Mês</h4>
+                            <p id="extract-insight-installments"
+                                style="margin-bottom: 0.75rem; color: var(--c-text-main); line-height: 1.5;"></p>
                             <p id="extract-insight-card" style="color: var(--c-text-main); line-height: 1.5;"></p>
                         </div>
 
@@ -820,55 +834,77 @@
                                 <h3>Assistente Financeiro IA</h3>
                             </div>
                         </div>
-                        <p class="subtitle" style="margin-bottom: 1.5rem;">Gere uma análise inteligente dos seus dados financeiros do mês. <strong>Disponível 1 vez por mês por usuário.</strong></p>
+                        <p class="subtitle" style="margin-bottom: 1.5rem;">Gere uma análise inteligente dos seus dados
+                            financeiros do mês. <strong>Disponível 1 vez por mês por usuário.</strong></p>
 
                         <!-- AI Month Pagination -->
-                        <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div
+                            style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1.5rem;">
                             <button id="btn-ai-prev-month" class="btn-icon" title="Mês anterior">
                                 <i class="fa-solid fa-chevron-left"></i>
                             </button>
-                            <span id="ai-month-nav-label" style="font-weight: 600; font-size: 1rem; min-width: 160px; text-align: center;"></span>
+                            <span id="ai-month-nav-label"
+                                style="font-weight: 600; font-size: 1rem; min-width: 160px; text-align: center;"></span>
                             <button id="btn-ai-next-month" class="btn-icon" title="Próximo mês">
                                 <i class="fa-solid fa-chevron-right"></i>
                             </button>
                         </div>
 
                         <!-- Status / CTA area -->
-                        <div id="ai-cta-area" style="display: flex; flex-direction: column; align-items: center; gap: 1.5rem; text-align: center; padding: 2rem 0;">
-                            <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--c-primary), #8B5CF6); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 30px rgba(79,70,229,0.3);">
+                        <div id="ai-cta-area"
+                            style="display: flex; flex-direction: column; align-items: center; gap: 1.5rem; text-align: center; padding: 2rem 0;">
+                            <div
+                                style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--c-primary), #8B5CF6); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 30px rgba(79,70,229,0.3);">
                                 <i class="fa-solid fa-brain" style="font-size: 2rem; color: white;"></i>
                             </div>
                             <div>
                                 <h4 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Análise Mensal com IA</h4>
-                                <p id="ai-status-msg" style="color: var(--c-text-muted); font-size: 0.9rem; max-width: 480px;">Clique no botão abaixo para gerar seu relatório financeiro personalizado com inteligência artificial para <strong id="ai-month-label">este mês</strong>.</p>
+                                <p id="ai-status-msg"
+                                    style="color: var(--c-text-muted); font-size: 0.9rem; max-width: 480px;">Clique no
+                                    botão abaixo para gerar seu relatório financeiro personalizado com inteligência
+                                    artificial para <strong id="ai-month-label">este mês</strong>.</p>
                             </div>
-                            <button id="btn-generate-ai-report" class="btn btn-primary btn-shadow" style="padding: 0.8rem 2.5rem; font-size: 1rem; gap: 0.6rem; display: flex; align-items: center;">
+                            <button id="btn-generate-ai-report" class="btn btn-primary btn-shadow"
+                                style="padding: 0.8rem 2.5rem; font-size: 1rem; gap: 0.6rem; display: flex; align-items: center;">
                                 <i class="fa-solid fa-wand-magic-sparkles"></i> Gerar Relatório do Mês
                             </button>
-                            <div id="ai-loading" class="hidden" style="display: flex; align-items: center; gap: 0.75rem; color: var(--c-text-muted);">
-                                <i class="fa-solid fa-spinner fa-spin" style="font-size: 1.5rem; color: var(--c-primary);"></i>
+                            <div id="ai-loading" class="hidden"
+                                style="display: flex; align-items: center; gap: 0.75rem; color: var(--c-text-muted);">
+                                <i class="fa-solid fa-spinner fa-spin"
+                                    style="font-size: 1.5rem; color: var(--c-primary);"></i>
                                 <span>A IA está analisando seus dados... aguarde.</span>
                             </div>
                         </div>
 
                         <!-- Report display area -->
                         <div id="ai-report-area" class="hidden" style="margin-top: 1.5rem;">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--c-border);">
+                            <div
+                                style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--c-border);">
                                 <h4 style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
-                                    <i class="fa-solid fa-file-lines" style="color: var(--c-primary);"></i> Relatório Gerado
-                                    <span id="ai-report-timestamp" style="font-size: 0.8rem; font-weight: normal; color: var(--c-text-muted); margin-left: 0.5rem;"></span>
+                                    <i class="fa-solid fa-file-lines" style="color: var(--c-primary);"></i> Relatório
+                                    Gerado
+                                    <span id="ai-report-timestamp"
+                                        style="font-size: 0.8rem; font-weight: normal; color: var(--c-text-muted); margin-left: 0.5rem;"></span>
                                 </h4>
-                                <span id="ai-report-month-badge" style="font-size: 0.8rem; color: var(--c-text-muted); background: var(--c-bg-main); padding: 0.3rem 0.75rem; border-radius: 99px; border: 1px solid var(--c-border);"></span>
+                                <span id="ai-report-month-badge"
+                                    style="font-size: 0.8rem; color: var(--c-text-muted); background: var(--c-bg-main); padding: 0.3rem 0.75rem; border-radius: 99px; border: 1px solid var(--c-border);"></span>
                             </div>
-                            <div id="ai-report-content" style="line-height: 1.8; color: var(--c-text-main); white-space: pre-wrap; font-size: 0.95rem;"></div>
+                            <div id="ai-report-content"
+                                style="line-height: 1.8; color: var(--c-text-main); white-space: pre-wrap; font-size: 0.95rem;">
+                            </div>
                         </div>
 
                         <!-- Info box -->
-                        <div style="margin-top: 2.5rem; padding: 1rem 1.25rem; background: var(--c-bg-main); border-radius: var(--radius-md); border: 1px solid var(--c-border); display: flex; gap: 1rem; align-items: flex-start;">
-                            <i class="fa-solid fa-circle-info" style="color: var(--c-primary); margin-top: 0.15rem; flex-shrink: 0;"></i>
+                        <div
+                            style="margin-top: 2.5rem; padding: 1rem 1.25rem; background: var(--c-bg-main); border-radius: var(--radius-md); border: 1px solid var(--c-border); display: flex; gap: 1rem; align-items: flex-start;">
+                            <i class="fa-solid fa-circle-info"
+                                style="color: var(--c-primary); margin-top: 0.15rem; flex-shrink: 0;"></i>
                             <div style="font-size: 0.85rem; color: var(--c-text-muted); line-height: 1.6;">
                                 <strong style="color: var(--c-text-main);">Como funciona?</strong><br>
-                                O relatório fica disponível a partir do <strong>dia 1 de cada mês</strong>, sempre referente ao <strong>mês imediatamente anterior</strong>. Se não for gerado durante esse mês, o prazo expira e não poderá mais ser criado. O uso é <strong>limitado a 1 relatório por mês</strong> para garantir o funcionamento gratuito do sistema.
+                                O relatório fica disponível a partir do <strong>dia 1 de cada mês</strong>, sempre
+                                referente ao <strong>mês imediatamente anterior</strong>. Se não for gerado durante esse
+                                mês, o prazo expira e não poderá mais ser criado. O uso é <strong>limitado a 1 relatório
+                                    por mês</strong> para garantir o funcionamento gratuito do sistema.
                             </div>
                         </div>
                     </section>
@@ -1155,13 +1191,34 @@
         </div>
     </div>
 
+    <!-- Delete Account Modal -->
+    <div id="delete-account-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header" style="border-bottom-color: rgba(239, 68, 68, 0.2);">
+                <h3 style="color: var(--c-danger); display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-triangle-exclamation"></i> Excluir Conta</h3>
+                <button class="btn-close" id="btn-close-delete-account"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="delete-account-form" class="modal-body">
+                <p style="margin-bottom: 1rem; line-height: 1.5;">Para confirmar a exclusão <strong>permanente</strong> da sua conta e de todos os seus dados, por favor, digite a sua senha atual.</p>
+                <div class="form-group">
+                    <label for="delete-account-pw">Sua Senha</label>
+                    <input type="password" id="delete-account-pw" required autocomplete="current-password" placeholder="••••••">
+                </div>
+                <div class="form-actions mt-4">
+                    <button type="button" id="btn-cancel-delete-account" class="btn btn-outline">Cancelar</button>
+                    <button type="submit" id="btn-confirm-delete-account" class="btn btn-danger">Confirmar Exclusão</button>
+                </div>
+                <p id="delete-account-msg" style="margin-top: 1rem; font-size: 0.85rem; color: var(--c-danger); display: none; text-align: center;"></p>
+            </form>
+        </div>
+    </div>
+
     <!-- Tutorial Modal -->
     <div id="tutorial-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <div class="modal-header">
                 <h3>Tutorial do App</h3>
-                <button class="btn-close" id="btn-close-tutorial" title="Pular Tutorial"><i
-                        class="fa-solid fa-xmark"></i></button>
+                <!-- Close tutorial button removed to force passing through all pages -->
             </div>
             <div class="modal-body" style="padding: 0;">
                 <div class="tutorial-slider" id="tutorial-slider">
@@ -1171,6 +1228,12 @@
                         <h4 class="tutorial-title">Bem-vindo(a)!</h4>
                         <p class="tutorial-text">Obrigado por utilizar o nosso app! Preparamos esse passo-a-passo para
                             te mostrar como aproveitar ao máximo cada funcionalidade do Planner Financeiro.</p>
+                    </div>
+                    <!-- Slide 2 (Primeiro passo) -->
+                    <div class="tutorial-slide">
+                        <div class="tutorial-icon"><i class="fa-solid fa-shoe-prints"></i></div>
+                        <h4 class="tutorial-title">Primeiro passo</h4>
+                        <p class="tutorial-text">Antes de tudo, assim que você fechar este tutorial, deve ir em configurações e adicionar um cartão de crédito: lembre-se de inserir corretamente as informações para que o app possa te ajudar de forma precisa!</p>
                     </div>
                     <!-- Slide 2 -->
                     <div class="tutorial-slide">
@@ -1241,6 +1304,22 @@
                     <button class="btn btn-primary" id="btn-tut-next">Próximo <i
                             class="fa-solid fa-arrow-right"></i></button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Bot Fixed Popup -->
+    <div id="ai-bot-popup" class="bot-popup hidden">
+        <button id="btn-close-bot-popup" class="bot-popup-close" title="Fechar (X)"><i
+                class="fa-solid fa-xmark"></i></button>
+        <div class="bot-popup-content">
+            <img src="./assets/robot_overlay.png" alt="G-Tech Bot" class="bot-popup-img">
+            <div class="bot-popup-text">
+                <p>Olá! Eu sou o <strong>G-Tech Bot</strong>, o seu assistente financeiro virtual! Teste os meus
+                    conselhos financeiros na aba "Assistente IA" !</p>
+                <button id="btn-bot-popup-dismiss" class="btn btn-text btn-sm"
+                    style="font-size: 0.65rem; margin-top: 0.5rem; color: var(--c-text-muted); padding: 0.25rem 0.5rem;">Fechar
+                    e não mostrar novamente por 30 dias</button>
             </div>
         </div>
     </div>

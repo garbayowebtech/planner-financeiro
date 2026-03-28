@@ -1457,3 +1457,48 @@ async function handleAIReport() {
         if (statusMsg) statusMsg.innerHTML = `<span style="color: var(--c-danger)"><i class="fa-solid fa-circle-xmark"></i> Erro ao conectar com o serviço. Tente novamente.</span>`;
     }
 }
+
+// ── AI BOT POPUP LOGIC ──────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    const botPopup = document.getElementById('ai-bot-popup');
+    const btnCloseBot = document.getElementById('btn-close-bot-popup');
+    const btnDismissBot = document.getElementById('btn-bot-popup-dismiss');
+    
+    if (!botPopup || !btnCloseBot || !btnDismissBot) return;
+
+    // Check localStorage for 30-day dismissal
+    const dismissedUntil = localStorage.getItem('hideAiBotPopupUntil_v2');
+    const now = new Date().getTime();
+    
+    let shouldShow = true;
+    if (dismissedUntil && now < parseInt(dismissedUntil, 10)) {
+        shouldShow = false;
+    }
+
+    // Also check sessionStorage so it doesn't reappear on every navigation/reload in the same session
+    const sessionHidden = sessionStorage.getItem('aiBotPopupHidden_v2');
+    if (sessionHidden === 'true') {
+        shouldShow = false;
+    }
+
+    if (shouldShow) {
+        // Slight delay for better UX
+        setTimeout(() => {
+            botPopup.classList.remove('hidden');
+        }, 1500);
+    }
+
+    // "Fechar (X)" - hides for current session
+    btnCloseBot.addEventListener('click', () => {
+        botPopup.classList.add('hidden');
+        sessionStorage.setItem('aiBotPopupHidden_v2', 'true');
+    });
+
+    // "Fechar e não mostrar novamente por 30 dias"
+    btnDismissBot.addEventListener('click', () => {
+        botPopup.classList.add('hidden');
+        const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
+        const expiryTime = now + thirtyDaysInMs;
+        localStorage.setItem('hideAiBotPopupUntil_v2', expiryTime.toString());
+    });
+});

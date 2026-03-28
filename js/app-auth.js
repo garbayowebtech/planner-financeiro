@@ -230,7 +230,7 @@ function loadAndEnterApp(user) {
             initDashboard();
             // Auto-start tutorial on first login
             if (!STATE.userData.settings.tutorialSeen) {
-                setTimeout(window.startTutorial, 600);
+                setTimeout(window.startTutorial, 1500);
             } else {
                 setTimeout(checkGoalAlerts, 500);
             }
@@ -296,7 +296,7 @@ window.applyCalendarBar = function (isVisible) {
 
 // ── TUTORIAL ───────────────────────────────────────────────────
 let tutorialCurrentStep = 0;
-const TUTORIAL_TOTAL_STEPS = 8;
+const TUTORIAL_TOTAL_STEPS = 9;
 
 window.startTutorial = function () {
     const modal = document.getElementById('tutorial-modal');

@@ -632,7 +632,7 @@ function setupEventListeners() {
                 document.getElementById('extracts-grid').classList.remove('hidden');
                 DOM.monthNavContainer.classList.remove('hidden');
                 if (window.renderConsolidatedExtracts) window.renderConsolidatedExtracts();
-                document.querySelector('.content-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
+                document.querySelector('.content-scroll')?.scrollTo(0, 0);
             } else if (target === '#categories') {
                 DOM.pageTitle.textContent = 'Gerenciar Categorias';
                 DOM.dashboardGrid.classList.add('hidden');
@@ -642,7 +642,7 @@ function setupEventListeners() {
                 DOM.categoriesGrid.classList.remove('hidden');
                 DOM.monthNavContainer.classList.add('hidden');
                 renderCategoriesTable();
-                document.querySelector('.content-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
+                document.querySelector('.content-scroll')?.scrollTo(0, 0);
             } else if (target === '#settings') {
                 DOM.pageTitle.textContent = 'Configurações';
                 DOM.dashboardGrid.classList.add('hidden');
@@ -651,7 +651,7 @@ function setupEventListeners() {
                 document.getElementById('ai-assistant-grid').classList.add('hidden');
                 DOM.settingsGrid.classList.remove('hidden');
                 DOM.monthNavContainer.classList.add('hidden');
-                document.querySelector('.content-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
+                document.querySelector('.content-scroll')?.scrollTo(0, 0);
                 const cardSelect = document.getElementById('settings-card-select');
                 const cardName = document.getElementById('set-card-name');
                 const closingDay = document.getElementById('set-closing-day');
@@ -697,7 +697,7 @@ function setupEventListeners() {
                 document.getElementById('extracts-grid').classList.add('hidden');
                 document.getElementById('ai-assistant-grid').classList.remove('hidden');
                 DOM.monthNavContainer.classList.add('hidden');
-                document.querySelector('.content-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
+                document.querySelector('.content-scroll')?.scrollTo(0, 0);
                 if (typeof initAIAssistant === 'function') initAIAssistant();
             } else {
                 DOM.categoriesGrid.classList.add('hidden');
@@ -706,7 +706,7 @@ function setupEventListeners() {
                 document.getElementById('ai-assistant-grid').classList.add('hidden');
                 DOM.dashboardGrid.classList.remove('hidden');
                 DOM.monthNavContainer.classList.remove('hidden');
-                if (target === '#dashboard') { DOM.pageTitle.textContent = 'Visão Geral'; document.querySelector('.content-scroll')?.scrollTo({ top: 0, behavior: 'smooth' }); }
+                if (target === '#dashboard') { DOM.pageTitle.textContent = 'Visão Geral'; document.querySelector('.content-scroll')?.scrollTo(0, 0); }
                 else if (target === '#credit') { DOM.pageTitle.textContent = 'Cartão de Crédito'; document.getElementById('section-credit')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
                 else if (target === '#installments') { DOM.pageTitle.textContent = 'Compras Parceladas'; document.getElementById('section-installments')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
                 else if (target === '#debit') { DOM.pageTitle.textContent = 'Débito / Pix'; document.getElementById('section-debit')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
@@ -819,6 +819,66 @@ function setupEventListeners() {
             showUserSettingsMsg(msg, err.message || 'Erro ao alterar senha.', false);
         }
     });
+
+    // --- DELETE ACCOUNT ---
+    const btnDeleteAccTrigger = document.getElementById('btn-delete-account-trigger');
+    const deleteAccModal = document.getElementById('delete-account-modal');
+    if (btnDeleteAccTrigger && deleteAccModal) {
+        btnDeleteAccTrigger.addEventListener('click', () => {
+            document.getElementById('delete-account-form').reset();
+            document.getElementById('delete-account-msg').style.display = 'none';
+            deleteAccModal.classList.remove('hidden');
+        });
+        const closeDeleteAcc = () => deleteAccModal.classList.add('hidden');
+        document.getElementById('btn-close-delete-account')?.addEventListener('click', closeDeleteAcc);
+        document.getElementById('btn-cancel-delete-account')?.addEventListener('click', closeDeleteAcc);
+
+        document.getElementById('delete-account-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const pw = document.getElementById('delete-account-pw').value;
+            const msg = document.getElementById('delete-account-msg');
+            const submitBtn = document.getElementById('btn-confirm-delete-account');
+            
+            if (!pw) return;
+
+            try {
+                msg.style.display = 'none';
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verificando...';
+
+                // 1. Verify password natively by attempting to sign in locally
+                await DB.signIn(STATE.currentUser.email, pw);
+                
+                // 2. If it succeeds, the password is correct, call the RPC to delete
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Excluindo...';
+                await DB.deleteAccount();
+
+                // 3. Close modal and logout
+                closeDeleteAcc();
+                alert('Conta excluída com sucesso. Lamentamos ver você partir!');
+                window.processLogout();
+                
+            } catch (err) {
+                console.error("Erro na exclusão de conta: ", err);
+                msg.style.display = 'block';
+                const errStr = (err.message || '').toLowerCase();
+                
+                // Detecting if the password was wrong (Supabase auth error) or the RPC failed
+                if (errStr.includes('login') || errStr.includes('credentials') || errStr.includes('senha') || errStr.includes('invalid log')) {
+                    msg.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Senha incorreta. A exclusão não foi autorizada.';
+                } else if (errStr.includes('não encontrado') || errStr.includes('not found') || errStr.includes('function delete_user_account')) {
+                    msg.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> A exclusão falhou: o administrador precisa rodar o script SQL no Supabase.';
+                } else {
+                    msg.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Ocorreu um erro ao excluir a conta. Tente novamente mais tarde.';
+                }
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Confirmar Exclusão';
+                }
+            }
+        });
+    }
 
     // --- DARK MODE ---
     document.getElementById('user-dark-mode')?.addEventListener('change', (e) => window.applyDarkMode(e.target.checked));

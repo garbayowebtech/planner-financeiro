@@ -82,6 +82,12 @@ const DB = {
         if (error) throw error;
     },
 
+    async deleteAccount() {
+        // Calling custom Supabase RPC function (needs to be created by the user)
+        const { error } = await supabaseClient.rpc('delete_user_account');
+        if (error) throw error;
+    },
+
     // ================================================================
     // PROFILE
     // ================================================================
