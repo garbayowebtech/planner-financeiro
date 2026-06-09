@@ -1,7 +1,12 @@
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/app/*"
+  to = "/app.html"
   status = 200
+
+[[redirects]]
+  from = "/login"
+  to = "/app.html"
+  status = 301
 
 # HTML: nunca cachear — garante que o usuário sempre receba a versão mais recente
 [[headers]]

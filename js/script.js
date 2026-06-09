@@ -231,6 +231,7 @@ function initDashboard() {
 
     if (!STATE.userData.installments) STATE.userData.installments = [];
     STATE.creditPage = 1; STATE.instPage = 1; STATE.debitPage = 1;
+    STATE.creditFilterCat = 'all'; STATE.instFilterCat = 'all'; STATE.debitFilterCat = 'all';
 
     renderCardTabs();
     renderCreditTable(); renderCreditChart();
@@ -256,30 +257,38 @@ function initDashboard() {
     }
 }
 
-// â”€â”€ CREDIT TABLE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderCreditTable() {
     DOM.creditTableBody.innerHTML = '';
-    if (!STATE.userData.creditExpenses || STATE.userData.creditExpenses.length === 0) {
-        DOM.creditTableBody.innerHTML = '<tr class="empty-row"><td colspan="7">Nenhuma despesa registrada.</td></tr>';
-        updatePaginationUI('credit', 0, 1); return;
-    }
-
-    let filtered = STATE.userData.creditExpenses.filter(exp => {
-        const p = exp.dueDate.split('-');
-        return parseInt(p[0]) === STATE.viewYear && parseInt(p[1]) - 1 === STATE.viewMonth && (exp.cardId || 'card1') === STATE.currentCardId;
-    });
+    const cv = document.getElementById('credit-current-value');
+    const nv = document.getElementById('credit-next-value');
+    const tv = document.getElementById('credit-total-value');
 
     let currentTotal = 0;
+    let nextTotal = 0;
     const nextMonth = STATE.viewMonth === 11 ? 0 : STATE.viewMonth + 1;
     const nextYear = STATE.viewMonth === 11 ? STATE.viewYear + 1 : STATE.viewYear;
-    let nextTotal = 0;
-    STATE.userData.creditExpenses.forEach(exp => {
-        if ((exp.cardId || 'card1') !== STATE.currentCardId) return;
-        const p = exp.dueDate.split('-');
-        const dy = parseInt(p[0]), dm = parseInt(p[1]) - 1;
-        if (dy === STATE.viewYear && dm === STATE.viewMonth) currentTotal += exp.amount;
-        else if (dy === nextYear && dm === nextMonth) nextTotal += exp.amount;
-    });
+
+    const creditExpenses = STATE.userData.creditExpenses || [];
+    let filtered = [];
+
+    if (creditExpenses.length > 0) {
+        filtered = creditExpenses.filter(exp => {
+            if (!exp.dueDate) return false;
+            const p = exp.dueDate.split('-');
+            if (p.length < 2) return false;
+            return parseInt(p[0]) === STATE.viewYear && parseInt(p[1]) - 1 === STATE.viewMonth && (exp.cardId || 'card1') === STATE.currentCardId;
+        });
+
+        creditExpenses.forEach(exp => {
+            if ((exp.cardId || 'card1') !== STATE.currentCardId) return;
+            if (!exp.dueDate) return;
+            const p = exp.dueDate.split('-');
+            if (p.length < 2) return;
+            const dy = parseInt(p[0]), dm = parseInt(p[1]) - 1;
+            if (dy === STATE.viewYear && dm === STATE.viewMonth) currentTotal += exp.amount;
+            else if (dy === nextYear && dm === nextMonth) nextTotal += exp.amount;
+        });
+    }
 
     if (STATE.creditFilterCat !== 'all') filtered = filtered.filter(e => e.categoryId === STATE.creditFilterCat);
     filtered.sort((a, b) => {
@@ -295,23 +304,24 @@ function renderCreditTable() {
     const paged = filtered.slice((STATE.creditPage - 1) * STATE.itemsPerPage, STATE.creditPage * STATE.itemsPerPage);
     updatePaginationUI('credit', STATE.creditPage, totalPages);
 
-    if (paged.length === 0) { DOM.creditTableBody.innerHTML = '<tr class="empty-row"><td colspan="7">Nenhuma despesa correspondente.</td></tr>'; }
-    else paged.forEach(exp => {
-        const cat = STATE.userData.categories.find(c => c.id === exp.categoryId);
-        const catHtml = cat ? `<span class="category-badge" style="background:${cat.color};color:${cat.textColor || '#fff'}">${cat.name}</span>` : '-';
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${formatDate(exp.date)}</td><td><strong>${exp.name}</strong></td><td class="text-danger">-${formatCurrency(exp.amount)}</td><td>${catHtml}</td><td><small>${formatDate(exp.cycleStart)} a ${formatDate(exp.cycleEnd)}</small></td><td>${formatDate(exp.dueDate)}</td><td class="text-center"><div style="display:flex;justify-content:center;gap:.5rem"><button class="btn-icon" style="color:var(--c-primary)" onclick="editCreditExpense('${exp.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn-delete" onclick="deleteCreditExpense('${exp.id}')"><i class="fa-solid fa-trash"></i></button></div></td>`;
-        DOM.creditTableBody.appendChild(tr);
-    });
-
-    const cv = document.getElementById('credit-current-value');
-    const nv = document.getElementById('credit-next-value');
-    const tv = document.getElementById('credit-total-value');
+    if (paged.length === 0) {
+        DOM.creditTableBody.innerHTML = '<tr class="empty-row"><td colspan="7">Nenhuma despesa correspondente.</td></tr>';
+    } else {
+        paged.forEach(exp => {
+            const cat = STATE.userData.categories.find(c => c.id === exp.categoryId);
+            const catHtml = cat ? `<span class="category-badge" style="background:${cat.color};color:${cat.textColor || '#fff'}">${cat.name}</span>` : '-';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${formatDate(exp.date)}</td><td><strong>${exp.name}</strong></td><td class="text-danger">-${formatCurrency(exp.amount)}</td><td>${catHtml}</td><td><small>${formatDate(exp.cycleStart)} a ${formatDate(exp.cycleEnd)}</small></td><td>${formatDate(exp.dueDate)}</td><td class="text-center"><div style="display:flex;justify-content:center;gap:.5rem"><button class="btn-icon" style="color:var(--c-primary)" onclick="editCreditExpense('${exp.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn-delete" onclick="deleteCreditExpense('${exp.id}')"><i class="fa-solid fa-trash"></i></button></div></td>`;
+            DOM.creditTableBody.appendChild(tr);
+        });
+    }
 
     let instThisMonth = 0, instNextMonth = 0;
     (STATE.userData.installments || []).forEach(inst => {
         if ((inst.cardId || 'card1') !== STATE.currentCardId) return;
-        const p = inst.date.split('-'), py = parseInt(p[0]), pm = parseInt(p[1]) - 1;
+        const p = inst.date.split('-');
+        if (p.length < 2) return;
+        const py = parseInt(p[0]), pm = parseInt(p[1]) - 1;
         const card = (STATE.userData.settings?.cards || []).find(c => c.id === STATE.currentCardId);
         const closing = card?.closingDay || 11;
         const offset = instCycleOffset(inst.date, closing);
@@ -554,18 +564,20 @@ function renderOverallPieChart() {
     if (!ctx || !expenseCategories.length) return;
     if (overallPieChartInstance) overallPieChartInstance.destroy();
 
-    const now = new Date(), cy = now.getFullYear(), cm = now.getMonth();
     let totalCredit = 0, totalDebit = 0, totalInst = 0;
 
     (STATE.userData.creditExpenses || []).forEach(exp => {
-        const s = exp.cycleStart.split('-'), e = exp.cycleEnd.split('-');
-        const cs = new Date(+s[0], +s[1] - 1, +s[2]), ce = new Date(+e[0], +e[1] - 1, +e[2]);
-        if (now >= cs && now <= ce) totalCredit += exp.amount;
+        const p = exp.dueDate.split('-');
+        if (p.length >= 2 && +p[0] === STATE.viewYear && +p[1] - 1 === STATE.viewMonth) {
+            totalCredit += exp.amount;
+        }
     });
     (STATE.userData.debitTransactions || []).forEach(txn => {
         if (txn.type !== 'expense') return;
         const p = txn.date.split('-');
-        if (+p[0] === cy && +p[1] - 1 === cm) totalDebit += txn.amount;
+        if (p.length >= 2 && +p[0] === STATE.viewYear && +p[1] - 1 === STATE.viewMonth) {
+            totalDebit += txn.amount;
+        }
     });
     (STATE.userData.installments || []).forEach(inst => {
         const p = inst.date.split('-');
@@ -684,7 +696,7 @@ function renderGoalsChart() {
     const tsEl = document.getElementById('goals-text-summary');
     if (tsEl) tsEl.innerHTML = '';
 
-    // â”€â”€ Balance Widget on Visão Geral â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Balance Widget on Visão Geral ──
     const balWidgetCats = {};
     STATE.userData.categories.forEach(cat => { balWidgetCats[cat.id] = { spent: catExp[cat.id] || 0, goal: cat.goal || 0 }; });
     renderGoalsBalanceWidget('goals-balance-widget', balWidgetCats, STATE.userData.categories);
@@ -732,23 +744,45 @@ function renderGoalsChart() {
     goalsChartInstance = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ label: 'Gasto Atual', data: spentData, backgroundColor: spentColors, borderRadius: 4 }, { label: 'Meta', data: goalData, backgroundColor: goalColors, borderRadius: 4 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { beginAtZero: true, ticks: { font: { family: "'Inter',sans-serif" } } }, y: { ticks: { font: { family: "'Inter',sans-serif" } } } }, plugins: { legend: { position: 'top', labels: { font: { family: "'Inter',sans-serif" } } }, tooltip: { callbacks: { label: ctx => { const l = (ctx.dataset.label || '') + ': '; return l + new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(ctx.parsed.x); } } } } } });
 }
 
-// â”€â”€ INSTALLMENTS TABLE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── INSTALLMENTS TABLE ──────────────────────────────────────────────────────
 function renderInstallmentsTable() {
     const tbody = DOM.installmentsTableBody;
     if (!tbody) return;
     tbody.innerHTML = '';
     const installments = STATE.userData.installments || [];
 
-    if (installments.length === 0) { tbody.innerHTML = '<tr class="empty-row"><td colspan="7">Nenhuma compra parcelada registrada.</td></tr>'; updatePaginationUI('inst', 0, 1); return; }
+    const oe = document.getElementById('inst-total-open'), me = document.getElementById('inst-this-month'), ae = document.getElementById('inst-active-count'), le = document.getElementById('inst-last-date');
+    if (installments.length === 0) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="7">Nenhuma compra parcelada registrada.</td></tr>';
+        updatePaginationUI('inst', 0, 1);
+        if (oe) oe.textContent = formatCurrency(0);
+        if (me) me.textContent = formatCurrency(0);
+        if (ae) ae.textContent = 0;
+        if (le) le.textContent = '-';
+        return;
+    }
 
     let totalOpen = 0, totalThisMonth = 0, activeCount = 0;
     let active = [];
+    let maxEndValue = -1;
     installments.forEach(inst => {
         if ((inst.cardId || 'card1') !== STATE.currentCardId) return;
-        const p = inst.date.split('-'), py = +p[0], pm = +p[1] - 1;
+        const p = inst.date.split('-');
+        if (p.length < 2) return;
+        const py = parseInt(p[0]), pm = parseInt(p[1]) - 1;
+        if (isNaN(py) || isNaN(pm)) return;
+
         const card = (STATE.userData.settings?.cards || []).find(c => c.id === STATE.currentCardId);
         const closing = card?.closingDay || 11;
-        const diff = (STATE.viewYear - py) * 12 + (STATE.viewMonth - pm) - instCycleOffset(inst.date, closing);
+        const offset = instCycleOffset(inst.date, closing);
+
+        const endMonthTotal = pm + offset + (inst.totalInstallments || 1) - 1;
+        const endValue = py * 12 + endMonthTotal;
+        if (!isNaN(endValue) && endValue > maxEndValue) {
+            maxEndValue = endValue;
+        }
+
+        const diff = (STATE.viewYear - py) * 12 + (STATE.viewMonth - pm) - offset;
         const proj = inst.currentInstallment + diff;
         if (proj >= 1 && proj <= inst.totalInstallments) {
             const rem = (inst.totalInstallments - proj + 1) * inst.installmentAmount;
@@ -778,10 +812,20 @@ function renderInstallmentsTable() {
         tbody.appendChild(tr);
     });
 
-    const oe = document.getElementById('inst-total-open'), me = document.getElementById('inst-this-month'), ae = document.getElementById('inst-active-count');
     if (oe) oe.textContent = formatCurrency(totalOpen);
     if (me) me.textContent = formatCurrency(totalThisMonth);
     if (ae) ae.textContent = activeCount;
+    if (le) {
+        if (maxEndValue !== -1) {
+            const finalYear = Math.floor(maxEndValue / 12);
+            const finalMonth = maxEndValue % 12;
+            const monthNames = STATE.monthNames || ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            const monthName = monthNames[finalMonth] || 'Mês Inválido';
+            le.textContent = `${monthName} / ${finalYear}`;
+        } else {
+            le.textContent = '-';
+        }
+    }
 }
 
 window.editInstallment = function (id) {

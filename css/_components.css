@@ -36,6 +36,13 @@
     box-shadow: 0 0 0 3px var(--c-primary-light);
 }
 
+.form-group input[readonly] {
+    background-color: var(--c-bg) !important;
+    color: var(--c-text-muted) !important;
+    cursor: not-allowed;
+    opacity: 0.75;
+}
+
 /* --- Select estilizado com seta customizada --- */
 .form-select {
     width: 100%;

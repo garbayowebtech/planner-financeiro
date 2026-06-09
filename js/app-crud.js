@@ -4,6 +4,13 @@
  * Load order: supabase-js > db.js > app-auth.js > app-crud.js > script.js
  */
 
+function toLocalYYYYMMDD(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 // ── CREDIT EXPENSES ─────────────────────────────────────────────
 async function handleExpenseSubmit(e) {
     e.preventDefault();
@@ -39,9 +46,9 @@ async function handleExpenseSubmit(e) {
         const dueDate = new Date(cycle.end.getFullYear(), cycle.end.getMonth(), dueDay);
         const expData = {
             name, amount, date, categoryId: catId,
-            cycleStart: cycle.start.toISOString().split('T')[0],
-            cycleEnd: cycle.end.toISOString().split('T')[0],
-            dueDate: dueDate.toISOString().split('T')[0],
+            cycleStart: toLocalYYYYMMDD(cycle.start),
+            cycleEnd: toLocalYYYYMMDD(cycle.end),
+            dueDate: toLocalYYYYMMDD(dueDate),
             cardId: STATE.currentCardId
         };
 
@@ -320,9 +327,9 @@ async function handleSettingsSubmit(e) {
         if ((exp.cardId || 'card1') === cardId) {
             const cycle = calculateCycle(exp.date, closing);
             const dueDate = new Date(cycle.end.getFullYear(), cycle.end.getMonth(), due);
-            exp.cycleStart = cycle.start.toISOString().split('T')[0];
-            exp.cycleEnd = cycle.end.toISOString().split('T')[0];
-            exp.dueDate = dueDate.toISOString().split('T')[0];
+            exp.cycleStart = toLocalYYYYMMDD(cycle.start);
+            exp.cycleEnd = toLocalYYYYMMDD(cycle.end);
+            exp.dueDate = toLocalYYYYMMDD(dueDate);
             updates.push(DB.updateCreditExpense(exp.id, exp));
         }
     });
@@ -513,7 +520,7 @@ function setupEventListeners() {
         STATE.editingCreditId = null;
         DOM.expenseForm.reset();
         document.querySelector('#expense-modal .modal-header h3').textContent = 'Nova Despesa de Crédito';
-        document.getElementById('exp-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('exp-date').value = toLocalYYYYMMDD(new Date());
         DOM.expenseModal.classList.remove('hidden');
     });
     const closeExpense = () => { STATE.editingCreditId = null; DOM.expenseModal.classList.add('hidden'); };
@@ -526,7 +533,7 @@ function setupEventListeners() {
         STATE.editingDebitId = null;
         DOM.debitForm.reset();
         document.querySelector('#debit-modal .modal-header h3').textContent = 'Nova Despesa Conta-corrente';
-        document.getElementById('deb-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('deb-date').value = toLocalYYYYMMDD(new Date());
         document.getElementById('deb-type').value = 'debit';
         DOM.debitModal.classList.remove('hidden');
     });
@@ -544,7 +551,7 @@ function setupEventListeners() {
             STATE.editingDebitId = null;
             incomeForm.reset();
             document.querySelector('#income-modal .modal-header h3').textContent = 'Novo Rendimento (Apenas Receitas)';
-            document.getElementById('inc-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('inc-date').value = toLocalYYYYMMDD(new Date());
             incomeModal.classList.remove('hidden');
         });
         const closeIncome = () => { STATE.editingDebitId = null; incomeModal.classList.add('hidden'); };
@@ -566,7 +573,7 @@ function setupEventListeners() {
         STATE.editingInstId = null;
         DOM.installmentForm.reset();
         document.querySelector('#installment-modal .modal-header h3').textContent = 'Nova Compra Parcelada';
-        document.getElementById('inst-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('inst-date').value = toLocalYYYYMMDD(new Date());
         const defaultRadio = document.querySelector('input[name="inst-value-type"][value="installment"]');
         if (defaultRadio) defaultRadio.checked = true;
         if (labelInstAmount) labelInstAmount.textContent = 'Valor da Parcela (R$)';
@@ -716,6 +723,8 @@ function setupEventListeners() {
                 if (cb && STATE.userData?.settings) cb.checked = STATE.userData.settings.calendarBar !== false;
                 const nameInput = document.getElementById('user-new-name');
                 if (nameInput && STATE.userData) nameInput.value = STATE.userData.name;
+                const currentEmailInput = document.getElementById('user-current-email');
+                if (currentEmailInput && STATE.currentUser?.email) currentEmailInput.value = STATE.currentUser.email;
                 // Preenche campo oculto de username para o gerenciador de senhas
                 const pinUsername = document.getElementById('change-pin-username');
                 if (pinUsername && STATE.currentUser?.email) pinUsername.value = STATE.currentUser.email;
