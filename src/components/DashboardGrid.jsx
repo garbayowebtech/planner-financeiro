@@ -1840,7 +1840,7 @@ Por favor, analise esses dados, destaque pontos de atenção, celebre conquistas
       <footer className="app-footer">
         <div className="footer-content">
           <div className="footer-brand">
-            <img src="assets/logo_garbayo.png" alt="Logo Garbayo Web&Tech" className="footer-logo" />
+            <img src="/assets/logo_garbayo.png" alt="Logo Garbayo Web&Tech" className="footer-logo" />
           </div>
           <div className="footer-info">
             <p>CNPJ: 00.000.000.0000/00</p>

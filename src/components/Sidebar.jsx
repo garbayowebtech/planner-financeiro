@@ -42,7 +42,7 @@ export function Sidebar() {
     <>
       <aside className={`sidebar ${mobileSidebarOpen ? 'open' : ''}`} id="sidebar">
         <div className="sidebar-header">
-          <img src="assets/logo_main.png" alt="G-TECH PLANNER Logo" className="sidebar-logo" style={{ height: '100px', width: 'auto', objectFit: 'contain', display: 'block', margin: '0 auto' }} />
+          <img src="/assets/logo_main.png" alt="G-TECH PLANNER Logo" className="sidebar-logo" style={{ height: '100px', width: 'auto', objectFit: 'contain', display: 'block', margin: '0 auto' }} />
         </div>
         
         <div className="user-profile">

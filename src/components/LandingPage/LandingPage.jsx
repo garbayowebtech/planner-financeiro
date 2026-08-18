@@ -6,7 +6,7 @@ export function LandingPage({ onOpenApp }) {
       {/* NAVBAR PÚBLICA FINTECH */}
       <nav className="landing-nav" id="main-nav">
         <a href="#hero" className="landing-nav__logo">
-          <img src="assets/logo_main.png" alt="G-Tech Planner Logo" className="landing-nav__logo-img" />
+          <img src="/assets/logo_main.png" alt="G-Tech Planner Logo" className="landing-nav__logo-img" />
           <div className="landing-nav__logo-text">G-TECH <span>PLANNER</span></div>
         </a>
         <div className="landing-nav__links">
@@ -91,7 +91,7 @@ export function LandingPage({ onOpenApp }) {
                 <span className="dot green"></span>
                 <span className="mockup-title">G-Tech Planner Dashboard (React v18)</span>
               </div>
-              <img src="assets/financial_dashboard_preview.png" alt="G-Tech Planner Dashboard Preview" className="hero__illustration" />
+              <img src="/assets/financial_dashboard_preview.png" alt="G-Tech Planner Dashboard Preview" className="hero__illustration" />
             </div>
           </div>
         </div>
@@ -220,7 +220,7 @@ export function LandingPage({ onOpenApp }) {
       <footer className="landing-footer">
         <div className="landing-footer__container">
           <div className="landing-footer__logo">
-            <img src="assets/logo_main.png" alt="Logo" style={{ height: '32px', width: 'auto' }} />
+            <img src="/assets/logo_main.png" alt="Logo" style={{ height: '32px', width: 'auto' }} />
             <span>G-TECH PLANNER REACT</span>
           </div>
           <p>&copy; 2026 G-TECH PLANNER. Aplicação React SPA integrada com Supabase Cloud.</p>

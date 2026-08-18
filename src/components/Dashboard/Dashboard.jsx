@@ -101,7 +101,7 @@ export function Dashboard({ onBackToLanding }) {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <button onClick={onBackToLanding} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>
-            <img src="assets/logo_main.png" alt="Logo" style={{ height: '36px' }} />
+            <img src="/assets/logo_main.png" alt="Logo" style={{ height: '36px' }} />
           </button>
           <div style={{ fontSize: '1.2rem', fontWeight: 800, fontFamily: 'Plus Jakarta Sans' }}>
             G-TECH <span style={{ color: '#34D399' }}>PLANNER REACT</span>

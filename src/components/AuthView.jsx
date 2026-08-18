@@ -66,7 +66,7 @@ export function AuthView() {
       <div className="auth-card">
         <div className="auth-header">
           <img
-            src="assets/logo_main.png"
+            src="/assets/logo_main.png"
             alt="Logo"
             className="auth-logo"
             style={{ height: '100px', objectFit: 'contain', marginBottom: '0.6rem' }}
