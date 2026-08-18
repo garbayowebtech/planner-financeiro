@@ -1,0 +1,371 @@
+import { createClient } from '@supabase/supabase-js';
+
+const SUPABASE_URL = 'https://ctveuoeoyymzozzwqqln.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_0eXOKvszzLOxPlP6cf7MbQ_DgHpF9gd';
+
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+export const DB = {
+  // AUTH
+  async signUp(email, password, name) {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { name } }
+    });
+    if (error) throw error;
+    return data;
+  },
+
+  async signIn(email, password) {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    return data.user;
+  },
+
+  async signInWithGoogle() {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin }
+    });
+    if (error) throw error;
+    return data;
+  },
+
+  async signOut() {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+  },
+
+  async getSession() {
+    const { data } = await supabase.auth.getSession();
+    return data.session;
+  },
+
+  // PROFILE
+  async getProfile(userId) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
+  },
+
+  async updateProfileSettings(userId, settings) {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ settings })
+      .eq('id', userId);
+    if (error) throw error;
+  },
+
+  async updateProfileName(userId, name) {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ name })
+      .eq('id', userId);
+    if (error) throw error;
+  },
+
+  async updateEmail(newEmail) {
+    const { data, error } = await supabase.auth.updateUser({ email: newEmail });
+    if (error) throw error;
+    return data;
+  },
+
+  async updatePassword(newPassword) {
+    const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) throw error;
+    return data;
+  },
+
+  async deleteAccount() {
+    const { error } = await supabase.rpc('delete_user_account');
+    if (error) throw error;
+  },
+
+  async uploadAvatar(userId, file) {
+    const ext = file.name.split('.').pop();
+    const path = `${userId}/avatar.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(path, file, { upsert: true });
+    if (uploadError) throw uploadError;
+    const { data } = supabase.storage.from('avatars').getPublicUrl(path);
+    return data.publicUrl;
+  },
+
+  async updateProfileAvatar(userId, avatarUrl) {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ avatar_url: avatarUrl })
+      .eq('id', userId);
+    if (error) throw error;
+  },
+
+  // CATEGORIES
+  async getCategories(userId) {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at');
+    if (error) throw error;
+    return (data || []).map(c => ({
+      id: c.id,
+      name: c.name,
+      color: c.color,
+      textColor: c.text_color,
+      goal: parseFloat(c.goal || 0),
+      type: c.type || 'expense'
+    }));
+  },
+
+  async createCategory(userId, cat) {
+    const { data, error } = await supabase
+      .from('categories')
+      .insert([{
+        user_id: userId,
+        name: cat.name,
+        color: cat.color,
+        text_color: cat.textColor || '#ffffff',
+        goal: cat.goal || 0,
+        type: cat.type || 'expense'
+      }])
+      .select('*')
+      .single();
+    if (error) throw error;
+    return {
+      id: data.id,
+      name: data.name,
+      color: data.color,
+      textColor: data.text_color,
+      goal: parseFloat(data.goal || 0),
+      type: data.type
+    };
+  },
+
+  async updateCategory(catId, cat) {
+    const { error } = await supabase
+      .from('categories')
+      .update({
+        name: cat.name,
+        color: cat.color,
+        text_color: cat.textColor || '#ffffff',
+        goal: cat.goal || 0,
+        type: cat.type || 'expense'
+      })
+      .eq('id', catId);
+    if (error) throw error;
+  },
+
+  async deleteCategory(catId) {
+    const { error } = await supabase.from('categories').delete().eq('id', catId);
+    if (error) throw error;
+  },
+
+  // CREDIT EXPENSES
+  async getCreditExpenses(userId) {
+    const { data, error } = await supabase
+      .from('credit_expenses')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at');
+    if (error) throw error;
+    return (data || []).map(e => ({
+      id: e.id,
+      name: e.name,
+      amount: parseFloat(e.amount),
+      date: e.date,
+      categoryId: e.category_id,
+      cycleStart: e.cycle_start,
+      cycleEnd: e.cycle_end,
+      dueDate: e.due_date,
+      cardId: e.card_id || 'card1'
+    }));
+  },
+
+  async createCreditExpense(userId, exp) {
+    const { data, error } = await supabase
+      .from('credit_expenses')
+      .insert([{
+        user_id: userId,
+        name: exp.name,
+        amount: exp.amount,
+        date: exp.date,
+        category_id: exp.categoryId,
+        cycle_start: exp.cycleStart,
+        cycle_end: exp.cycleEnd,
+        due_date: exp.dueDate,
+        card_id: exp.cardId || 'card1'
+      }])
+      .select('*')
+      .single();
+    if (error) throw error;
+    return {
+      id: data.id,
+      name: data.name,
+      amount: parseFloat(data.amount),
+      date: data.date,
+      categoryId: data.category_id,
+      cycleStart: data.cycle_start,
+      cycleEnd: data.cycle_end,
+      dueDate: data.due_date,
+      cardId: data.card_id
+    };
+  },
+
+  async updateCreditExpense(expId, exp) {
+    const { error } = await supabase
+      .from('credit_expenses')
+      .update({
+        name: exp.name,
+        amount: exp.amount,
+        date: exp.date,
+        category_id: exp.categoryId,
+        cycle_start: exp.cycleStart,
+        cycle_end: exp.cycleEnd,
+        due_date: exp.dueDate,
+        card_id: exp.cardId || 'card1'
+      })
+      .eq('id', expId);
+    if (error) throw error;
+  },
+
+  async deleteCreditExpense(expId) {
+    const { error } = await supabase.from('credit_expenses').delete().eq('id', expId);
+    if (error) throw error;
+  },
+
+  // DEBIT TRANSACTIONS
+  async getDebitTransactions(userId) {
+    const { data, error } = await supabase
+      .from('debit_transactions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at');
+    if (error) throw error;
+    return (data || []).map(t => ({
+      id: t.id,
+      name: t.name,
+      amount: parseFloat(t.amount),
+      date: t.date,
+      categoryId: t.category_id,
+      type: t.type
+    }));
+  },
+
+  async createDebitTransaction(userId, txn) {
+    const { data, error } = await supabase
+      .from('debit_transactions')
+      .insert([{
+        user_id: userId,
+        name: txn.name,
+        amount: txn.amount,
+        date: txn.date,
+        category_id: txn.categoryId,
+        type: txn.type
+      }])
+      .select('*')
+      .single();
+    if (error) throw error;
+    return {
+      id: data.id,
+      name: data.name,
+      amount: parseFloat(data.amount),
+      date: data.date,
+      categoryId: data.category_id,
+      type: data.type
+    };
+  },
+
+  async updateDebitTransaction(txnId, txn) {
+    const { error } = await supabase
+      .from('debit_transactions')
+      .update({
+        name: txn.name,
+        amount: txn.amount,
+        date: txn.date,
+        category_id: txn.categoryId,
+        type: txn.type
+      })
+      .eq('id', txnId);
+    if (error) throw error;
+  },
+
+  async deleteDebitTransaction(txnId) {
+    const { error } = await supabase.from('debit_transactions').delete().eq('id', txnId);
+    if (error) throw error;
+  },
+
+  // INSTALLMENTS
+  async getInstallments(userId) {
+    const { data, error } = await supabase
+      .from('installments')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at');
+    if (error) throw error;
+    return (data || []).map(i => ({
+      id: i.id,
+      name: i.name,
+      installmentAmount: parseFloat(i.installment_amount),
+      totalInstallments: i.total_installments,
+      currentInstallment: i.current_installment,
+      date: i.date,
+      categoryId: i.category_id,
+      cardId: i.card_id || 'card1'
+    }));
+  },
+
+  async createInstallment(userId, inst) {
+    const { data, error } = await supabase
+      .from('installments')
+      .insert([{
+        user_id: userId,
+        name: inst.name,
+        installment_amount: inst.installmentAmount,
+        total_installments: inst.totalInstallments,
+        current_installment: inst.currentInstallment,
+        date: inst.date,
+        category_id: inst.categoryId,
+        card_id: inst.cardId || 'card1'
+      }])
+      .select('*')
+      .single();
+    if (error) throw error;
+    return {
+      id: data.id,
+      name: data.name,
+      installmentAmount: parseFloat(data.installment_amount),
+      totalInstallments: data.total_installments,
+      currentInstallment: data.currentInstallment,
+      date: data.date,
+      categoryId: data.category_id,
+      cardId: data.card_id
+    };
+  },
+
+  async updateInstallment(instId, inst) {
+    const { error } = await supabase
+      .from('installments')
+      .update({
+        name: inst.name,
+        installment_amount: inst.installmentAmount,
+        total_installments: inst.totalInstallments,
+        current_installment: inst.currentInstallment,
+        date: inst.date,
+        category_id: inst.categoryId,
+        card_id: inst.cardId || 'card1'
+      })
+      .eq('id', instId);
+    if (error) throw error;
+  },
+
+  async deleteInstallment(instId) {
+    const { error } = await supabase.from('installments').delete().eq('id', instId);
+    if (error) throw error;
+  }
+};

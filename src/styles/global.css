@@ -1,0 +1,8 @@
+@import '../../css/styles.css';
+@import '../../css/public.css';
+
+/* Fix for React root container */
+#root {
+  min-height: 100vh;
+  width: 100%;
+}
