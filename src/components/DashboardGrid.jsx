@@ -1845,6 +1845,7 @@ Por favor, analise esses dados, destaque pontos de atenção, celebre conquistas
           </div>
           <div className="footer-info">
             <p>CNPJ: 00.000.000.0000/00</p>
+            <p><i className="fa-solid fa-globe"></i> <a href="https://garbayowebtech.com" target="_blank" rel="noopener noreferrer">garbayowebtech.com</a></p>
             <p><i className="fa-brands fa-whatsapp"></i> (21) 98769-2747</p>
             <p><i className="fa-regular fa-envelope"></i> <a href="mailto:garbayowebtech@gmail.com">garbayowebtech@gmail.com</a></p>
           </div>
@@ -1854,7 +1855,7 @@ Por favor, analise esses dados, destaque pontos de atenção, celebre conquistas
           </div>
         </div>
         <div className="footer-bottom">
-          &copy; {new Date().getFullYear()} Garbayo Web&Tech. Todos os direitos reservados.
+          &copy; {new Date().getFullYear()} <a href="https://garbayowebtech.com" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>Garbayo Web&amp;Tech (garbayowebtech.com)</a>. Todos os direitos reservados.
         </div>
       </footer>
     </div>

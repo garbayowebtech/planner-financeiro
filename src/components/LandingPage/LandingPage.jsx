@@ -62,7 +62,7 @@ export function LandingPage({ onOpenApp }) {
           <div className="hero__content">
             <div className="hero__badge">
               <span className="hero__badge-pulse"></span>
-              ⚡ INTELIGÊNCIA FINANCEIRA DE ELITE (REACT SPA)
+              ⚡ INTELIGÊNCIA FINANCEIRA DE ELITE
             </div>
             <h1 className="hero__title">
               Controle suas finanças com <span className="hero__title-gradient">Precisão Fintech &amp; IA</span>
@@ -73,7 +73,7 @@ export function LandingPage({ onOpenApp }) {
             
             <div className="hero__actions">
               <button onClick={onOpenApp} className="btn btn--emerald btn--lg cta-btn-auth">
-                <i className="fa-solid fa-rocket"></i> Abrir Painel React
+                <i className="fa-solid fa-rocket"></i> Abrir Painel
               </button>
               <a href="#features" className="btn btn--outline-glass btn--lg">
                 Explorar Recursos <i className="fa-solid fa-arrow-right"></i>
@@ -91,7 +91,7 @@ export function LandingPage({ onOpenApp }) {
                 <span className="dot red"></span>
                 <span className="dot yellow"></span>
                 <span className="dot green"></span>
-                <span className="mockup-title">G-Tech Planner Dashboard (React v18)</span>
+                <span className="mockup-title">G-Tech Planner Dashboard</span>
               </div>
               <img src={dashboardPreview} alt="G-Tech Planner Dashboard Preview" className="hero__illustration" />
             </div>
@@ -323,9 +323,9 @@ export function LandingPage({ onOpenApp }) {
         <div className="landing-footer__container">
           <div className="landing-footer__logo">
             <img src={logoMain} alt="Logo" style={{ height: '32px', width: 'auto' }} />
-            <span>G-TECH PLANNER REACT</span>
+            <span>G-TECH PLANNER</span>
           </div>
-          <p>&copy; 2026 G-TECH PLANNER. Aplicação React SPA integrada com Supabase Cloud.</p>
+          <p>&copy; {new Date().getFullYear()} G-TECH PLANNER. Desenvolvido por <a href="https://garbayowebtech.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--c-emerald-glow)', textDecoration: 'underline' }}>Garbayo Web&amp;Tech (garbayowebtech.com)</a>.</p>
         </div>
       </footer>
     </div>
