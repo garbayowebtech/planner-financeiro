@@ -1,4 +1,6 @@
 import React from 'react';
+import logoMain from '../../assets/logo_main.png';
+import dashboardPreview from '../../assets/financial_dashboard_preview.png';
 
 export function LandingPage({ onOpenApp }) {
   return (
@@ -6,7 +8,7 @@ export function LandingPage({ onOpenApp }) {
       {/* NAVBAR PÚBLICA FINTECH */}
       <nav className="landing-nav" id="main-nav">
         <a href="#hero" className="landing-nav__logo">
-          <img src="/assets/logo_main.png" alt="G-Tech Planner Logo" className="landing-nav__logo-img" />
+          <img src={logoMain} alt="G-Tech Planner Logo" className="landing-nav__logo-img" />
           <div className="landing-nav__logo-text">G-TECH <span>PLANNER</span></div>
         </a>
         <div className="landing-nav__links">
@@ -91,30 +93,30 @@ export function LandingPage({ onOpenApp }) {
                 <span className="dot green"></span>
                 <span className="mockup-title">G-Tech Planner Dashboard (React v18)</span>
               </div>
-              <img src="/assets/financial_dashboard_preview.png" alt="G-Tech Planner Dashboard Preview" className="hero__illustration" />
+              <img src={dashboardPreview} alt="G-Tech Planner Dashboard Preview" className="hero__illustration" />
             </div>
           </div>
         </div>
       </header>
 
       {/* METRICS TICKER / SOCIAL PROOF */}
-      <section className="social-proof">
+      <section className="social-proof" style={{ background: '#F8FAFC', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0', padding: '2.5rem 0' }}>
         <div className="social-proof__container">
           <div className="proof-stat">
             <div className="proof-stat__value">100%</div>
-            <div className="proof-stat__label">Privado &amp; Criptografado</div>
+            <div className="proof-stat__label" style={{ color: '#0F172A', fontWeight: 700, fontSize: '0.9rem' }}>Privado &amp; Criptografado</div>
           </div>
           <div className="proof-stat">
             <div className="proof-stat__value">3x</div>
-            <div className="proof-stat__label">Mais Previsibilidade de Faturas</div>
+            <div className="proof-stat__label" style={{ color: '#0F172A', fontWeight: 700, fontSize: '0.9rem' }}>Mais Previsibilidade de Faturas</div>
           </div>
           <div className="proof-stat">
             <div className="proof-stat__value">0</div>
-            <div className="proof-stat__label">Burocracia de Cadastro</div>
+            <div className="proof-stat__label" style={{ color: '#0F172A', fontWeight: 700, fontSize: '0.9rem' }}>Burocracia de Cadastro</div>
           </div>
           <div className="proof-stat">
             <div className="proof-stat__value">24/7</div>
-            <div className="proof-stat__label">Assistente IA Integrado</div>
+            <div className="proof-stat__label" style={{ color: '#0F172A', fontWeight: 700, fontSize: '0.9rem' }}>Assistente IA Integrado</div>
           </div>
         </div>
       </section>
@@ -304,10 +306,10 @@ export function LandingPage({ onOpenApp }) {
       </section>
 
       {/* SEÇÃO CTA FINAL */}
-      <section className="cta-section">
+      <section className="cta-section" style={{ background: '#F1F5F9', borderTop: '1px solid #E2E8F0' }}>
         <div className="cta-section__container">
-          <h2 className="cta-section__title">Pronto para assumir o controle total das suas finanças?</h2>
-          <p className="cta-section__desc">Junte-se ao G-TECH PLANNER hoje e experimente o futuro da gestão financeira pessoal.</p>
+          <h2 className="cta-section__title" style={{ color: '#0F172A', fontWeight: 800 }}>Pronto para assumir o controle total das suas finanças?</h2>
+          <p className="cta-section__desc" style={{ color: '#0F172A', fontWeight: 600, fontSize: '1.1rem' }}>Junte-se ao G-TECH PLANNER hoje e experimente o futuro da gestão financeira pessoal.</p>
           <div className="cta-section__buttons">
             <button onClick={onOpenApp} className="btn btn--emerald btn--lg">
               <i className="fa-solid fa-rocket"></i> Acessar Aplicação
@@ -320,7 +322,7 @@ export function LandingPage({ onOpenApp }) {
       <footer className="landing-footer">
         <div className="landing-footer__container">
           <div className="landing-footer__logo">
-            <img src="/assets/logo_main.png" alt="Logo" style={{ height: '32px', width: 'auto' }} />
+            <img src={logoMain} alt="Logo" style={{ height: '32px', width: 'auto' }} />
             <span>G-TECH PLANNER REACT</span>
           </div>
           <p>&copy; 2026 G-TECH PLANNER. Aplicação React SPA integrada com Supabase Cloud.</p>

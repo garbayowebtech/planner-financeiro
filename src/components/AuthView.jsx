@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { DB } from '../services/supabaseClient';
+import logoMain from '../assets/logo_main.png';
 
 export function AuthView() {
   const { authSection, setAuthSection, handleLogin, handleRegister, setCurrentView } = useApp();
@@ -66,7 +67,7 @@ export function AuthView() {
       <div className="auth-card">
         <div className="auth-header">
           <img
-            src="/assets/logo_main.png"
+            src={logoMain}
             alt="Logo"
             className="auth-logo"
             style={{ height: '100px', objectFit: 'contain', marginBottom: '0.6rem' }}

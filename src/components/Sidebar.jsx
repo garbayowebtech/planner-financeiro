@@ -1,5 +1,6 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
+import logoMain from '../assets/logo_main.png';
 
 export function Sidebar() {
   const { activeNav, setActiveNav, currentUser, profile, handleLogout, mobileSidebarOpen, setMobileSidebarOpen } = useApp();
@@ -42,7 +43,7 @@ export function Sidebar() {
     <>
       <aside className={`sidebar ${mobileSidebarOpen ? 'open' : ''}`} id="sidebar">
         <div className="sidebar-header">
-          <img src="/assets/logo_main.png" alt="G-TECH PLANNER Logo" className="sidebar-logo" style={{ height: '100px', width: 'auto', objectFit: 'contain', display: 'block', margin: '0 auto' }} />
+          <img src={logoMain} alt="G-TECH PLANNER Logo" className="sidebar-logo" style={{ height: '100px', width: 'auto', objectFit: 'contain', display: 'block', margin: '0 auto' }} />
         </div>
         
         <div className="user-profile">

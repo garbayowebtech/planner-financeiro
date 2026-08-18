@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
+import robotOverlay from '../assets/robot_overlay.png';
 
 export function AIBotPopup() {
   const { setActiveNav } = useApp();
@@ -52,7 +53,7 @@ export function AIBotPopup() {
         <i className="fa-solid fa-xmark"></i>
       </button>
       <div className="bot-popup-content">
-        <img src="/assets/robot_overlay.png" alt="Assistente IA" className="bot-popup-img" />
+        <img src={robotOverlay} alt="Assistente IA" className="bot-popup-img" />
         <div className="bot-popup-text">
           <p>
             Olá! Sou o seu <strong>Assistente de IA</strong>. Quer uma análise das suas finanças este mês?
