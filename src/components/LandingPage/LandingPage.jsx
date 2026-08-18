@@ -2,7 +2,7 @@ import React from 'react';
 
 export function LandingPage({ onOpenApp }) {
   return (
-    <div className="dark-theme">
+    <div className="dark-theme" style={{ height: '100vh', overflowY: 'auto', width: '100%', position: 'fixed', top: 0, left: 0, zIndex: 999, scrollBehavior: 'smooth' }}>
       {/* NAVBAR PÚBLICA FINTECH */}
       <nav className="landing-nav" id="main-nav">
         <a href="#hero" className="landing-nav__logo">
@@ -212,6 +212,106 @@ export function LandingPage({ onOpenApp }) {
                 Visualização completa de todas as suas entradas e saídas em um extrato limpo com filtros rápidos.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SEÇÃO COMO FUNCIONA */}
+      <section className="how-it-works" id="como-funciona">
+        <div className="how-it-works__container">
+          <div className="how-it-works__header">
+            <span className="features__subtitle">Simplicidade &amp; Eficiência</span>
+            <h2 className="features__title">Como o G-Tech Planner Funciona</h2>
+            <p className="features__desc">Três passos simples para transformar sua gestão financeira pessoal.</p>
+          </div>
+
+          <div className="how-it-works__steps">
+            <div className="step-card">
+              <div className="step-card__number">1</div>
+              <div>
+                <h3 className="step-card__title">Cadastre seus Cartões &amp; Categorias</h3>
+                <p className="step-card__desc">
+                  Informe o dia de fechamento e vencimento de cada cartão de crédito, e configure suas metas de categorias personalizadas.
+                </p>
+              </div>
+            </div>
+
+            <div className="step-card">
+              <div className="step-card__number">2</div>
+              <div>
+                <h3 className="step-card__title">Registre suas Movimentações</h3>
+                <p className="step-card__desc">
+                  Adicione compras à vista, parcelamentos ou despesas em débito/pix. O app atribui automaticamente cada gasto ao mês correto.
+                </p>
+              </div>
+            </div>
+
+            <div className="step-card">
+              <div className="step-card__number">3</div>
+              <div>
+                <h3 className="step-card__title">Receba Diagnósticos Inteligentes de IA</h3>
+                <p className="step-card__desc">
+                  No início de cada mês, gere seu relatório completo alimentado por Inteligência Artificial para otimizar economias e cortar desperdícios.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SEÇÃO DE PLANOS / PRICING */}
+      <section className="pricing" id="planos">
+        <div className="pricing__container">
+          <div className="pricing__header">
+            <span className="features__subtitle">Acesso Ilimitado</span>
+            <h2 className="features__title">Plano 100% Gratuito durante a Fase Beta</h2>
+            <p className="features__desc">Aproveite todas as funcionalidades premium sem custos ou letras miúdas.</p>
+          </div>
+
+          <div className="pricing-card">
+            <div className="pricing-card__crown"><i className="fa-solid fa-crown"></i></div>
+            <h3 className="pricing-card__name">G-Tech Founder Beta</h3>
+            <p className="pricing-card__desc">Acesso completo para gerenciamento pessoal ilimitado</p>
+            <div className="pricing-card__price-wrap">
+              <span className="pricing-card__currency">R$</span>
+              <span className="pricing-card__amount">0</span>
+              <span className="pricing-card__period">/mês</span>
+            </div>
+            <div className="pricing-card__trial-badge">Sem necessidade de cartão de crédito</div>
+            <div className="pricing-card__divider"></div>
+            <div className="pricing-card__features">
+              <div className="pricing-card__feature">
+                <i className="fa-solid fa-check pricing-card__check"></i> Gestão ilimitada de cartões e faturas
+              </div>
+              <div className="pricing-card__feature">
+                <i className="fa-solid fa-check pricing-card__check"></i> Projeção inteligente de parcelamentos futuros
+              </div>
+              <div className="pricing-card__feature">
+                <i className="fa-solid fa-check pricing-card__check"></i> Metas visuais de categorias com balancete
+              </div>
+              <div className="pricing-card__feature">
+                <i className="fa-solid fa-check pricing-card__check"></i> Relatórios mensais com Inteligência Artificial
+              </div>
+              <div className="pricing-card__feature">
+                <i className="fa-solid fa-check pricing-card__check"></i> Sincronização em nuvem segura via Supabase
+              </div>
+            </div>
+            <button onClick={onOpenApp} className="btn btn--emerald btn--lg pricing-card__cta">
+              <i className="fa-solid fa-bolt"></i> Criar Conta Grátis Agora
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* SEÇÃO CTA FINAL */}
+      <section className="cta-section">
+        <div className="cta-section__container">
+          <h2 className="cta-section__title">Pronto para assumir o controle total das suas finanças?</h2>
+          <p className="cta-section__desc">Junte-se ao G-TECH PLANNER hoje e experimente o futuro da gestão financeira pessoal.</p>
+          <div className="cta-section__buttons">
+            <button onClick={onOpenApp} className="btn btn--emerald btn--lg">
+              <i className="fa-solid fa-rocket"></i> Acessar Aplicação
+            </button>
           </div>
         </div>
       </section>

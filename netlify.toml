@@ -13,9 +13,10 @@
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
 
-# Assets estáticos
+# Assets estáticos: revalidar para evitar cache de 404 anterior
 [[headers]]
   for = "/assets/*"
   [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Cache-Control = "public, max-age=0, must-revalidate"
+
 
